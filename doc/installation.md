@@ -11,7 +11,7 @@
 * Download `shalm` (e.g. for mac os)
 
 ```bash
-curl -L https://github.com/wonderix/shalm/releases/download/0.4.3/shalm-binary-darwin.tgz | tar xzvf -
+curl -L https://github.com/wonderix/shalm/releases/latest/download/shalm-binary-darwin.tgz | tar xzvf -
 ```
 
 ## Build `shalm` from source
