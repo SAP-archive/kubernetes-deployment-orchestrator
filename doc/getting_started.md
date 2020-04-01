@@ -2,7 +2,7 @@
 
 ## Setting up WordPress with an external database
 
-During this tutorial, we would like to setup WordPress with an external production ready database.
+During this tutorial, we would like to setup WordPress with an external production ready database. You can find the complete source code under `charts/examples/tutorial`
 
 ### Install shalm
 
@@ -29,26 +29,30 @@ kube-system       Active   55d
 1. Create a new folder `postgres-operator`
 2. Create a `Chart.star` file inside this folder with the following content:
 
-    ```python
-    def init(self):
-        self.pg_operator = chart("https://github.com/zalando/postgres-operator/archive/v1.4.0.zip#charts/postgres-operator")
-        self.pg_operator.load_yaml("values-crd.yaml") # Configure the postgres operator to use CRDs
-        self.pg_operator.configAwsOrGcp.aws_region =  "eu-central-1" # Configure the AWS region
-    ```
+  ```python
+  def init(self):
+    # Load chart from github
+    self.pg_operator = chart("https://github.com/zalando/postgres-operator/archive/v1.4.0.zip#charts/postgres-operator")
+    # Configure the postgres operator to use CRDs. This loads a yaml located in the same directory as the chart
+    self.pg_operator.load_yaml("values-crd.yaml")
+    # Configure the AWS region
+    # You can modify any values of a helm chart
+    self.pg_operator.configAwsOrGcp.aws_region =  "eu-central-1" 
+  ```
 
 3. Apply it to your cluster
 
-```bash
-shalm apply postgres-operator
-```
+  ```bash
+  shalm apply postgres-operator
+  ```
 
 4. After this step, there should be a running pod inside the default namespace
 
-```bash
-$ kubectl get pods
-NAME                                 READY   STATUS    RESTARTS   AGE
-postgres-operator-8677b8bc76-vm48f   1/1     Running   0          29s
-```
+  ```bash
+  $ kubectl get pods
+  NAME                                 READY   STATUS    RESTARTS   AGE
+  postgres-operator-8677b8bc76-vm48f   1/1     Running   0          29s
+  ```
 
 ### 2. Create a postgres database instance
 
@@ -56,35 +60,40 @@ postgres-operator-8677b8bc76-vm48f   1/1     Running   0          29s
 2. Create a new folder `postgres-instance/ytt-templates`
 3. Create a `Chart.star` file inside this folder with the following content:
 
-    ```python
-    def init(self,username=):
-        self.pg_operator = chart("https://github.com/zalando/postgres-operator/archive/v1.4.0.zip#charts/postgres-operator")
-        self.pg_operator.load_yaml("values-crd.yaml") # Configure the postgres operator to use CRDs
-        self.pg_operator.configAwsOrGcp.aws_region =  "eu-central-1" # Configure the AWS region
-    ```
+  ```python
+  def init(self):
+    pass
+  ```
 
 
-4. Put the following template into (if you would like a HA setup use [this one](https://github.com/zalando/postgres-operator/blob/master/manifests/complete-postgres-manifest.yaml))
+4. Put the following template into `postgres-instance/ytt-templates/postgres.yml` (if you would like a HA setup use [this one](https://github.com/zalando/postgres-operator/blob/master/manifests/complete-postgres-manifest.yaml))
 
-    ```yaml
-    apiVersion: "acid.zalan.do/v1"
-    kind: postgresql
-    metadata:
+  ```yaml
+  apiVersion: "acid.zalan.do/v1"
+  kind: postgresql
+  metadata:
     name: acid-minimal-cluster
     namespace: default
-    spec:
+  spec:
     teamId: "acid"
     volume:
-        size: 1Gi
+      size: 1Gi
     numberOfInstances: 2
     users:
-        zalando:  # database owner
-        - superuser
-        - createdb
-        foo_user: []  # role for application foo
+      zalando:  #! database owner
+      - superuser
+      - createdb
+      foo_user: []  #! role for application foo
     databases:
-        foo: zalando  # dbname: owner
+      foo: zalando  #! dbname: owner
     postgresql:
-        version: "12"
-    ```
+      version: "12"
+  ```
+
+5. Apply it to your cluster
+
+  ```bash
+  shalm apply postgres-instance
+  ```
+
 ### More comming soon
