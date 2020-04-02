@@ -59,14 +59,14 @@ kube-system       Active   55d
 ### 2. Create a postgres database instance
 
 1. Create a new folder `postgres-instance`
-2. Create a new folder `postgres-instance/ytt-templates`
-3. Create a `Chart.star` file inside this folder with the following content:
+2. Create a `Chart.star` file inside this folder with the following content:
 
     ```python
     def init(self):
       pass
     ```
 
+3. Create a new folder `postgres-instance/ytt-templates`
 4. Put the following template into `postgres-instance/ytt-templates/postgres.yml` (if you would like a HA setup use [this one](https://github.com/zalando/postgres-operator/blob/master/manifests/complete-postgres-manifest.yaml))
 
     ```yaml
