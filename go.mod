@@ -7,8 +7,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/fatih/color v1.9.0
 	github.com/go-logr/logr v0.1.0
-	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/k14s/ytt v0.26.1-0.20200402224901-a4011a2ec8e9
+	github.com/k14s/ytt v0.26.1-0.20200402233022-1aaca8db2e6a
 	github.com/manifoldco/promptui v0.7.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.2.3-0.20200303032533-a447b6683e1c
 	github.com/onsi/ginkgo v1.12.0
@@ -20,7 +19,6 @@ require (
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/pflag v1.0.5
 	go.starlark.net v0.0.0-20191021185836-28350e608555
-	golang.org/x/sys v0.0.0-20200120151820-655fe14d7479 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.4

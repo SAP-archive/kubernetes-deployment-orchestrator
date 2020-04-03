@@ -97,6 +97,16 @@ type FakeK8s struct {
 		result1 *shalm.Object
 		result2 error
 	}
+	HostStub        func() string
+	hostMutex       sync.RWMutex
+	hostArgsForCall []struct {
+	}
+	hostReturns struct {
+		result1 string
+	}
+	hostReturnsOnCall map[int]struct {
+		result1 string
+	}
 	InspectStub        func() string
 	inspectMutex       sync.RWMutex
 	inspectArgsForCall []struct {
@@ -603,6 +613,58 @@ func (fake *FakeK8s) GetReturnsOnCall(i int, result1 *shalm.Object, result2 erro
 	}{result1, result2}
 }
 
+func (fake *FakeK8s) Host() string {
+	fake.hostMutex.Lock()
+	ret, specificReturn := fake.hostReturnsOnCall[len(fake.hostArgsForCall)]
+	fake.hostArgsForCall = append(fake.hostArgsForCall, struct {
+	}{})
+	fake.recordInvocation("Host", []interface{}{})
+	fake.hostMutex.Unlock()
+	if fake.HostStub != nil {
+		return fake.HostStub()
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.hostReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeK8s) HostCallCount() int {
+	fake.hostMutex.RLock()
+	defer fake.hostMutex.RUnlock()
+	return len(fake.hostArgsForCall)
+}
+
+func (fake *FakeK8s) HostCalls(stub func() string) {
+	fake.hostMutex.Lock()
+	defer fake.hostMutex.Unlock()
+	fake.HostStub = stub
+}
+
+func (fake *FakeK8s) HostReturns(result1 string) {
+	fake.hostMutex.Lock()
+	defer fake.hostMutex.Unlock()
+	fake.HostStub = nil
+	fake.hostReturns = struct {
+		result1 string
+	}{result1}
+}
+
+func (fake *FakeK8s) HostReturnsOnCall(i int, result1 string) {
+	fake.hostMutex.Lock()
+	defer fake.hostMutex.Unlock()
+	fake.HostStub = nil
+	if fake.hostReturnsOnCall == nil {
+		fake.hostReturnsOnCall = make(map[int]struct {
+			result1 string
+		})
+	}
+	fake.hostReturnsOnCall[i] = struct {
+		result1 string
+	}{result1}
+}
+
 func (fake *FakeK8s) Inspect() string {
 	fake.inspectMutex.Lock()
 	ret, specificReturn := fake.inspectReturnsOnCall[len(fake.inspectArgsForCall)]
@@ -1002,6 +1064,8 @@ func (fake *FakeK8s) Invocations() map[string][][]interface{} {
 	defer fake.forSubChartMutex.RUnlock()
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
+	fake.hostMutex.RLock()
+	defer fake.hostMutex.RUnlock()
 	fake.inspectMutex.RLock()
 	defer fake.inspectMutex.RUnlock()
 	fake.isNotExistMutex.RLock()

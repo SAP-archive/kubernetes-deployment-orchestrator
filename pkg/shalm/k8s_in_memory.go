@@ -30,6 +30,10 @@ func NewK8sInMemory(namespace string, objects ...Object) *K8sInMemory {
 
 var _ K8s = (*K8sInMemory)(nil)
 
+func (k K8sInMemory) Host() string {
+	return "memory.local"
+}
+
 // ForSubChart -
 func (k K8sInMemory) ForSubChart(namespace string, app string, version semver.Version) K8s {
 	return &K8sInMemory{namespace: namespace, objects: k.objects}

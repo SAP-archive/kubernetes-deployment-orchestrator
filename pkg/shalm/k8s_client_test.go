@@ -8,7 +8,11 @@ import (
 var _ = Describe("k8s client", func() {
 
 	It("can read kubernetes service", func() {
-		client, err := newK8sClient("")
+		config, err := configKube("")
+		if err != nil {
+			Skip("no connection to k8s")
+		}
+		client, err := newK8sClient(config)
 		if err != nil {
 			Skip("no connection to k8s")
 		}

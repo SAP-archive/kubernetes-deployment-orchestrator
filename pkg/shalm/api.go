@@ -55,6 +55,7 @@ type K8sOptions struct {
 
 // K8sReader kubernetes reader API
 type K8sReader interface {
+	Host() string
 	Get(kind string, name string, options *K8sOptions) (*Object, error)
 	IsNotExist(err error) bool
 }

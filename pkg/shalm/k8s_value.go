@@ -158,6 +158,8 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 		}
 	case "progress":
 		return k.progressFunction()
+	case "host":
+		return starlark.String(k.Host()), nil
 
 	}
 
@@ -176,7 +178,9 @@ func (k *k8sValueImpl) progressFunction() (starlark.Callable, error) {
 }
 
 // AttrNames -
-func (k *k8sValueImpl) AttrNames() []string { return []string{"rollout_status", "delete", "get"} }
+func (k *k8sValueImpl) AttrNames() []string {
+	return []string{"rollout_status", "delete", "get", "wait", "for_config", "host"}
+}
 
 func unpackK8sOptions(parser *kwargsParser) *K8sOptions {
 	result := &K8sOptions{Namespaced: true}

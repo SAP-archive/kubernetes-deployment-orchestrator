@@ -16,6 +16,9 @@ var _ = Describe("K8sValue", func() {
 			InspectStub: func() string {
 				return "kubeconfig = "
 			},
+			HostStub: func() string {
+				return "test.local"
+			},
 		}}
 		Expect(k8s.String()).To(ContainSubstring("kubeconfig = "))
 		Expect(k8s.Type()).To(Equal("k8s"))
@@ -27,7 +30,10 @@ var _ = Describe("K8sValue", func() {
 			_, ok := value.(starlark.Callable)
 			Expect(ok).To(BeTrue())
 		}
-		Expect(k8s.AttrNames()).To(ConsistOf("rollout_status", "delete", "get"))
+		host, err := k8s.Attr("host")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(host).To(BeEquivalentTo("test.local"))
+		Expect(k8s.AttrNames()).To(ConsistOf("rollout_status", "delete", "get", "wait", "for_config", "host"))
 	})
 
 	It("methods behave well", func() {

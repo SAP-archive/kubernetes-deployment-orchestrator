@@ -63,11 +63,7 @@ func configKube(kubeConfig string) (*rest.Config, error) {
 	return clientcmd.BuildConfigFromFlags("", kubeConfig)
 
 }
-func newK8sClient(kubeConfig string) (*k8sClient, error) {
-	config, err := configKube(kubeConfig)
-	if err != nil {
-		return nil, err
-	}
+func newK8sClient(config *rest.Config) (*k8sClient, error) {
 	config.NegotiatedSerializer = scheme.Codecs
 	client, err := rest.UnversionedRESTClientFor(config)
 	if err != nil {

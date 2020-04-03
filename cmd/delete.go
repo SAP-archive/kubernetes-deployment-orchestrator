@@ -24,7 +24,7 @@ var deleteCmd = &cobra.Command{
 		if err != nil {
 			exit(err)
 		}
-		exit(delete(args[0], k8s, deleteChartArgs.Merge()))
+		exit(delete(args[0], k8s, deleteChartArgs.Merge(), shalm.WithK8s(k8s)))
 	},
 }
 

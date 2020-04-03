@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -151,9 +152,21 @@ func NewK8s(configs ...K8sConfig) (K8s, error) {
 			return nil, err
 		}
 	}
-	result.client, err = newK8sClient(result.kubeConfig)
+	config, err := configKube(result.kubeConfig)
 	if err != nil {
 		return nil, err
+	}
+	result.client, err = newK8sClient(config)
+	if err != nil {
+		return nil, err
+	}
+	if len(config.Host) != 0 {
+		u, err := url.Parse(config.Host)
+		if err != nil {
+			result.host = config.Host
+		} else {
+			result.host = u.Hostname()
+		}
 	}
 	return result, nil
 }
@@ -168,6 +181,7 @@ type k8sImpl struct {
 	version          semver.Version
 	root             bool
 	client           *k8sClient
+	host             string
 }
 
 var (
@@ -179,6 +193,10 @@ func (k *k8sImpl) Inspect() string {
 		return "kubeConfig = " + k.kubeConfig + " namespace = " + k.namespace
 	}
 	return "namespace = " + k.namespace
+}
+
+func (k *k8sImpl) Host() string {
+	return k.host
 }
 
 // Apply -
