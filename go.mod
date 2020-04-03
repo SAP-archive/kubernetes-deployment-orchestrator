@@ -8,7 +8,7 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/go-logr/logr v0.1.0
 	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/k14s/ytt v0.22.0
+	github.com/k14s/ytt v0.26.1-0.20200402224901-a4011a2ec8e9
 	github.com/manifoldco/promptui v0.7.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.2.3-0.20200303032533-a447b6683e1c
 	github.com/onsi/ginkgo v1.10.2
@@ -29,6 +29,4 @@ require (
 
 )
 
-replace go.starlark.net => github.com/wonderix/starlark-go v0.0.0-20200331102949-46a1d2522494
-
-replace github.com/k14s/ytt => github.com/wonderix/ytt v0.26.1-0.20200331105310-71f8f1d9e7c8
+replace go.starlark.net => github.com/k14s/starlark-go v0.0.0-20200402152745-409c85f3828d // ytt branch
