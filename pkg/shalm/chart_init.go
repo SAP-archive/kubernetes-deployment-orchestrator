@@ -46,7 +46,7 @@ func (c *chartImpl) loadYamlFunction() starlark.Callable {
 }
 
 // NewChartFunction -
-func NewChartFunction(repo Repo, dir string, namespace string, suffix string) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
+func NewChartFunction(repo Repo, dir string, options ...ChartOption) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 		if len(args) == 0 {
 			return starlark.None, fmt.Errorf("%s: got %d arguments, want at most %d", "chart", 0, 1)
@@ -55,7 +55,7 @@ func NewChartFunction(repo Repo, dir string, namespace string, suffix string) fu
 		if !(filepath.IsAbs(url) || strings.HasPrefix(url, "http")) {
 			url = path.Join(dir, url)
 		}
-		co := ChartOptions{namespace: namespace, suffix: suffix}
+		co := chartOptions(options)
 		parser := &kwargsParser{kwargs: kwargs}
 		parser.Arg("namespace", func(value starlark.Value) {
 			co.namespace = value.(starlark.String).GoString()
@@ -93,7 +93,7 @@ func (c *chartImpl) init(thread *starlark.Thread, repo Repo, hasChartYaml bool, 
 	internal := starlark.StringDict{
 		"version":         starlark.String(version),
 		"kube_version":    starlark.String(kubeVersion),
-		"chart":           c.builtin("chart", NewChartFunction(repo, c.dir, c.namespace, c.suffix)),
+		"chart":           c.builtin("chart", NewChartFunction(repo, c.dir, c.ChartOptions.Merge())),
 		"user_credential": c.builtin("user_credential", makeUserCredential),
 		"config_value":    c.builtin("config_value", makeConfigValue),
 		"certificate":     c.builtin("certificate", makeCertificate),

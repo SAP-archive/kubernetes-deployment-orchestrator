@@ -13,14 +13,13 @@ import (
 )
 
 type chartImpl struct {
-	clazz     chartClass
-	Version   semver.Version
-	values    starlark.StringDict
-	methods   map[string]starlark.Callable
-	dir       string
-	namespace string
-	suffix    string
-	initFunc  *starlark.Function
+	ChartOptions
+	clazz    chartClass
+	Version  semver.Version
+	values   starlark.StringDict
+	methods  map[string]starlark.Callable
+	dir      string
+	initFunc *starlark.Function
 }
 
 var (
@@ -34,7 +33,7 @@ func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOptio
 	}
 	name := strings.Split(filepath.Base(abs), ":")[0]
 	co := chartOptions(opts)
-	c := &chartImpl{dir: dir, namespace: co.namespace, suffix: co.suffix, clazz: chartClass{Name: name}}
+	c := &chartImpl{dir: dir, ChartOptions: *co, clazz: chartClass{Name: name}}
 	c.values = make(map[string]starlark.Value)
 	c.methods = make(map[string]starlark.Callable)
 	hasChartYaml := false
