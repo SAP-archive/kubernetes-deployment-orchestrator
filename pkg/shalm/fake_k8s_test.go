@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/blang/semver"
+
 )
 
 type FakeK8s struct {
@@ -144,6 +145,11 @@ type FakeK8s struct {
 	}
 	rolloutStatusReturnsOnCall map[int]struct {
 		result1 error
+	}
+	SetToolStub        func(Tool)
+	setToolMutex       sync.RWMutex
+	setToolArgsForCall []struct {
+		arg1 Tool
 	}
 	ToolStub        func() Tool
 	toolMutex       sync.RWMutex
@@ -869,6 +875,37 @@ func (fake *FakeK8s) RolloutStatusReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *FakeK8s) SetTool(arg1 Tool) {
+	fake.setToolMutex.Lock()
+	fake.setToolArgsForCall = append(fake.setToolArgsForCall, struct {
+		arg1 Tool
+	}{arg1})
+	fake.recordInvocation("SetTool", []interface{}{arg1})
+	fake.setToolMutex.Unlock()
+	if fake.SetToolStub != nil {
+		fake.SetToolStub(arg1)
+	}
+}
+
+func (fake *FakeK8s) SetToolCallCount() int {
+	fake.setToolMutex.RLock()
+	defer fake.setToolMutex.RUnlock()
+	return len(fake.setToolArgsForCall)
+}
+
+func (fake *FakeK8s) SetToolCalls(stub func(Tool)) {
+	fake.setToolMutex.Lock()
+	defer fake.setToolMutex.Unlock()
+	fake.SetToolStub = stub
+}
+
+func (fake *FakeK8s) SetToolArgsForCall(i int) Tool {
+	fake.setToolMutex.RLock()
+	defer fake.setToolMutex.RUnlock()
+	argsForCall := fake.setToolArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *FakeK8s) Tool() Tool {
 	fake.toolMutex.Lock()
 	ret, specificReturn := fake.toolReturnsOnCall[len(fake.toolArgsForCall)]
@@ -1073,6 +1110,8 @@ func (fake *FakeK8s) Invocations() map[string][][]interface{} {
 	defer fake.progressMutex.RUnlock()
 	fake.rolloutStatusMutex.RLock()
 	defer fake.rolloutStatusMutex.RUnlock()
+	fake.setToolMutex.RLock()
+	defer fake.setToolMutex.RUnlock()
 	fake.toolMutex.RLock()
 	defer fake.toolMutex.RUnlock()
 	fake.waitMutex.RLock()

@@ -12,12 +12,19 @@ import (
 var _ = Describe("K8sValue", func() {
 
 	It("behaves like starlark value", func() {
+		var tool Tool
 		k8s := &k8sValueImpl{&FakeK8s{
 			InspectStub: func() string {
 				return "kubeconfig = "
 			},
 			HostStub: func() string {
 				return "test.local"
+			},
+			ToolStub: func() Tool {
+				return tool
+			},
+			SetToolStub: func(t Tool) {
+				tool = t
 			},
 		}}
 		Expect(k8s.String()).To(ContainSubstring("kubeconfig = "))
@@ -33,7 +40,16 @@ var _ = Describe("K8sValue", func() {
 		host, err := k8s.Attr("host")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(host).To(BeEquivalentTo("test.local"))
-		Expect(k8s.AttrNames()).To(ConsistOf("rollout_status", "delete", "get", "wait", "for_config", "host"))
+		t, err := k8s.Attr("tool")
+		Expect(err).NotTo(HaveOccurred())
+		Expect(t).To(BeEquivalentTo(tool.String()))
+
+		err = k8s.SetField("tool", starlark.String("kapp"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(tool).To(BeEquivalentTo(ToolKapp))
+		Expect(k8s.SetField("tool", starlark.String("xxx"))).To(HaveOccurred())
+		Expect(k8s.SetField("xxx", starlark.String("xxx"))).To(HaveOccurred())
+		Expect(k8s.AttrNames()).To(ConsistOf("rollout_status", "delete", "get", "wait", "for_config", "host", "tool"))
 	})
 
 	It("methods behave well", func() {

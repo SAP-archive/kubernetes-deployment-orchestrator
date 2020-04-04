@@ -136,6 +136,11 @@ func (v *K8sConfigs) Tool() Tool {
 	return v.tool
 }
 
+// SetTool -
+func (v *K8sConfigs) SetTool(tool Tool) {
+	v.tool = tool
+}
+
 // AddFlags -
 func (v *K8sConfigs) AddFlags(flagsSet *pflag.FlagSet) {
 	flagsSet.VarP(&v.tool, "tool", "t", "Tool to do the installation. Possible values kubectl (default) and kapp")

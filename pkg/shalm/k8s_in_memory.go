@@ -49,6 +49,10 @@ func (k K8sInMemory) Tool() Tool {
 	return ToolKubectl
 }
 
+// SetTool -
+func (k K8sInMemory) SetTool(tool Tool)  {
+}
+
 // Watch -
 func (k K8sInMemory) Watch(kind string, name string, options *K8sOptions) ObjectStream {
 	obj, err := k.GetObject(kind, name)

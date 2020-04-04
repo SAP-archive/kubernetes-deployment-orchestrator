@@ -30,9 +30,10 @@ type k8sWatcherIterator struct {
 }
 
 var (
-	_ starlark.Iterable = (*k8sWatcher)(nil)
-	_ starlark.Iterator = (*k8sWatcherIterator)(nil)
-	_ K8sValue          = (*k8sValueImpl)(nil)
+	_ starlark.Iterable    = (*k8sWatcher)(nil)
+	_ starlark.Iterator    = (*k8sWatcherIterator)(nil)
+	_ K8sValue             = (*k8sValueImpl)(nil)
+	_ starlark.HasSetField = (*k8sValueImpl)(nil)
 )
 
 func makeK8sValue(k8s K8s, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
@@ -160,10 +161,26 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 		return k.progressFunction()
 	case "host":
 		return starlark.String(k.Host()), nil
+	case "tool":
+		return starlark.String(k.Tool().String()), nil
 
 	}
 
 	return starlark.None, starlark.NoSuchAttrError(fmt.Sprintf("k8s has no .%s attribute", name))
+}
+
+// SetField -
+func (k *k8sValueImpl) SetField(name string, val starlark.Value) error {
+	switch name {
+	case "tool":
+		var tool Tool
+		if err := tool.Set(val.(starlark.String).GoString()); err != nil {
+			return err
+		}
+		k.SetTool(tool)
+		return nil
+	}
+	return starlark.NoSuchAttrError(fmt.Sprintf("k8s has no .%s attribute", name))
 }
 
 func (k *k8sValueImpl) progressFunction() (starlark.Callable, error) {
@@ -179,7 +196,7 @@ func (k *k8sValueImpl) progressFunction() (starlark.Callable, error) {
 
 // AttrNames -
 func (k *k8sValueImpl) AttrNames() []string {
-	return []string{"rollout_status", "delete", "get", "wait", "for_config", "host"}
+	return []string{"rollout_status", "delete", "get", "wait", "for_config", "host", "tool"}
 }
 
 func unpackK8sOptions(parser *kwargsParser) *K8sOptions {

@@ -75,6 +75,7 @@ type K8s interface {
 	ForConfig(config string) (K8s, error)
 	Progress(progress int)
 	Tool() Tool
+	SetTool(tool Tool)
 }
 
 // K8sValue -

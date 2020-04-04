@@ -193,6 +193,13 @@ Report progress of installation
 |-----------|---------------------------|
 | `value`   | A value between 0 and 100 |
 
+#### Attributes
+
+| Name        | Description                                           |
+|-------------|-------------------------------------------------------|
+| `host`      | Name of the host where the kubernetes API server is running |
+| `tool`      | Tool which is used for deployment. Possible values `kapp` or `kubectl`. This value can also be modified |
+
 
 ### user_credential
 
