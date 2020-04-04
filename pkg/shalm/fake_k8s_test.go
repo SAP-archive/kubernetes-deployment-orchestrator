@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/blang/semver"
-
 )
 
 type FakeK8s struct {

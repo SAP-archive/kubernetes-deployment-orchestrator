@@ -50,7 +50,7 @@ func (k K8sInMemory) Tool() Tool {
 }
 
 // SetTool -
-func (k K8sInMemory) SetTool(tool Tool)  {
+func (k K8sInMemory) SetTool(tool Tool) {
 }
 
 // Watch -

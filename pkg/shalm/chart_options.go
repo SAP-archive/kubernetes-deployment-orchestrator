@@ -82,17 +82,16 @@ func (p KwArgsVar) Type() string {
 	return "kwargs"
 }
 
-// KwArgsYamlVar -
-type KwArgsYamlVar struct {
+type kwArgsYamlVar struct {
 	kwargs *KwArgsVar
 }
 
-func (p KwArgsYamlVar) String() string {
+func (p kwArgsYamlVar) String() string {
 	return p.kwargs.String()
 }
 
 // Set -
-func (p *KwArgsYamlVar) Set(val string) error {
+func (p *kwArgsYamlVar) Set(val string) error {
 	return parseSet(val, func(key string, value string) error {
 		var v map[string]interface{}
 		err := readYamlFile(value, &v)
@@ -105,21 +104,21 @@ func (p *KwArgsYamlVar) Set(val string) error {
 }
 
 // Type -
-func (p KwArgsYamlVar) Type() string {
+func (p kwArgsYamlVar) Type() string {
 	return "kwargs-yaml"
 }
 
-// KwArgsFileVar -
-type KwArgsFileVar struct {
+// kwArgsFileVar -
+type kwArgsFileVar struct {
 	kwargs *KwArgsVar
 }
 
-func (p KwArgsFileVar) String() string {
+func (p kwArgsFileVar) String() string {
 	return p.kwargs.String()
 }
 
 // Set -
-func (p *KwArgsFileVar) Set(val string) error {
+func (p *kwArgsFileVar) Set(val string) error {
 	return parseSet(val, func(key string, value string) error {
 		data, err := ioutil.ReadFile(value)
 		if err != nil {
@@ -131,8 +130,29 @@ func (p *KwArgsFileVar) Set(val string) error {
 }
 
 // Type -
-func (p KwArgsFileVar) Type() string {
+func (p kwArgsFileVar) Type() string {
 	return "kwargs-file"
+}
+
+type kwArgsEnvVar struct {
+	kwargs *KwArgsVar
+}
+
+func (p kwArgsEnvVar) String() string {
+	return p.kwargs.String()
+}
+
+// Set -
+func (p *kwArgsEnvVar) Set(val string) error {
+	return parseSet(val, func(key string, value string) error {
+		*p.kwargs = append(*p.kwargs, starlark.Tuple{starlark.String(key), starlark.String(os.Getenv(value))})
+		return nil
+	})
+}
+
+// Type -
+func (p kwArgsEnvVar) Type() string {
+	return "kwargs-env"
 }
 
 type valuesFile map[string]interface{}
@@ -150,14 +170,13 @@ func (p valuesFile) String() string {
 
 // Set -
 func (p *valuesFile) Set(val string) error {
-	return readYamlFile(val,p)
+	return readYamlFile(val, p)
 }
 
 // Type -
 func (p valuesFile) Type() string {
 	return "values"
 }
-
 
 // ChartOptions -
 type ChartOptions struct {
@@ -209,8 +228,9 @@ func (v *ChartOptions) AddFlags(flagsSet *pflag.FlagSet) {
 		defaultNamespace = "default"
 	}
 	flagsSet.Var(&v.kwargs, "set", "Set values (key=val).")
-	flagsSet.Var(&KwArgsYamlVar{kwargs: &v.kwargs}, "set-yaml", "Set values from respective YAML files (key=path).")
-	flagsSet.Var(&KwArgsFileVar{kwargs: &v.kwargs}, "set-file", "Set values from respective files (key=path).")
+	flagsSet.Var(&kwArgsYamlVar{kwargs: &v.kwargs}, "set-yaml", "Set values from respective YAML files (key=path).")
+	flagsSet.Var(&kwArgsFileVar{kwargs: &v.kwargs}, "set-file", "Set values from respective files (key=path).")
+	flagsSet.Var(&kwArgsEnvVar{kwargs: &v.kwargs}, "set-env", "Set values from respective environment variable (key=env).")
 	flagsSet.VarP(&v.proxyMode, "proxy", "p", "Install helm chart using a combination of CR and operator. Possible values off, local and remote")
 	flagsSet.StringVarP(&v.namespace, "namespace", "n", defaultNamespace, "Namespace for installation")
 	flagsSet.StringVarP(&v.suffix, "suffix", "s", "", "Suffix which is used to build the chart name")

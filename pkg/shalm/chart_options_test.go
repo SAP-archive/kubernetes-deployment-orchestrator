@@ -2,6 +2,7 @@ package shalm
 
 import (
 	"fmt"
+	"os"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -49,7 +50,7 @@ var _ = Describe("Chart Options", func() {
 			dir.WriteFile("test.yaml", []byte("a: b\nc: d\n"), 0644)
 			defer dir.Remove()
 			kwargs := KwArgsVar{}
-			kwargsYaml := KwArgsYamlVar{kwargs: &kwargs}
+			kwargsYaml := kwArgsYamlVar{kwargs: &kwargs}
 			err := kwargsYaml.Set(fmt.Sprintf("a=%s", dir.Join("test.yaml")))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(kwargs).To(HaveLen(1))
@@ -60,19 +61,33 @@ var _ = Describe("Chart Options", func() {
 		})
 
 	})
-	Context("KwArgsFileVar", func() {
+	Context("kwArgsFileVar", func() {
 		It("produces the correct output", func() {
 			dir := NewTestDir()
 			dir.WriteFile("test.txt", []byte("hello"), 0644)
 			defer dir.Remove()
 			kwargs := KwArgsVar{}
-			kwargsFile := KwArgsFileVar{kwargs: &kwargs}
+			kwargsFile := kwArgsFileVar{kwargs: &kwargs}
 			err := kwargsFile.Set(fmt.Sprintf("a=%s", dir.Join("test.txt")))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(kwargs).To(HaveLen(1))
 			Expect(kwargs[0]).To(HaveLen(2))
 			Expect(kwargs[0][0]).To(Equal(starlark.String("a")))
 			Expect(kwargs[0][1]).To(Equal(starlark.String("hello")))
+		})
+
+	})
+	Context("kwArgsEnvVar", func() {
+		It("produces the correct output", func() {
+			kwargs := KwArgsVar{}
+			kwargsEnv := kwArgsEnvVar{kwargs: &kwargs}
+			os.Setenv("SHALM_TEST", "XXXX")
+			err := kwargsEnv.Set("test=SHALM_TEST")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(kwargs).To(HaveLen(1))
+			Expect(kwargs[0]).To(HaveLen(2))
+			Expect(kwargs[0][0]).To(Equal(starlark.String("test")))
+			Expect(kwargs[0][1]).To(Equal(starlark.String("XXXX")))
 		})
 
 	})
