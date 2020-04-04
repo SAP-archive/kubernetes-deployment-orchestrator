@@ -105,18 +105,18 @@ func (r *ShalmChartReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 }
 
 func (r *ShalmChartReconciler) apply(spec *shalmv1a2.ChartSpec, progressCb shalm.ProgressSubscription) error {
-	thread := &starlark.Thread{Name: "main", Load: r.Load}
-	chart, err := r.Repo.GetFromSpec(thread, spec)
-	if err != nil {
-		return err
-	}
 	var tool shalm.Tool
-	if err = tool.Set(spec.Tool); err != nil {
+	if err := tool.Set(spec.Tool); err != nil {
 		return err
 	}
 	k8s, err := r.K8s(shalm.WithKubeConfigContent(spec.KubeConfig),
 		shalm.WithProgressSubscription(progressCb),
 		shalm.WithTool(tool))
+	if err != nil {
+		return err
+	}
+	thread := &starlark.Thread{Name: "main", Load: r.Load}
+	chart, err := r.Repo.GetFromSpec(thread, spec)
 	if err != nil {
 		return err
 	}
@@ -124,18 +124,18 @@ func (r *ShalmChartReconciler) apply(spec *shalmv1a2.ChartSpec, progressCb shalm
 }
 
 func (r *ShalmChartReconciler) delete(spec *shalmv1a2.ChartSpec, progressCb shalm.ProgressSubscription) error {
-	thread := &starlark.Thread{Name: "main", Load: r.Load}
-	chart, err := r.Repo.GetFromSpec(thread, spec)
-	if err != nil {
-		return err
-	}
 	var tool shalm.Tool
-	if err = tool.Set(spec.Tool); err != nil {
+	if err := tool.Set(spec.Tool); err != nil {
 		return err
 	}
 	k8s, err := r.K8s(shalm.WithKubeConfigContent(spec.KubeConfig),
 		shalm.WithProgressSubscription(progressCb),
 		shalm.WithTool(tool))
+	if err != nil {
+		return err
+	}
+	thread := &starlark.Thread{Name: "main", Load: r.Load}
+	chart, err := r.Repo.GetFromSpec(thread, spec)
 	if err != nil {
 		return err
 	}

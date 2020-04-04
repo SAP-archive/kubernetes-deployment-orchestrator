@@ -138,7 +138,6 @@ func (p KwArgsFileVar) Type() string {
 type ChartOptions struct {
 	namespace string
 	suffix    string
-	k8s       K8s
 	proxyMode ProxyMode
 	args      starlark.Tuple
 	kwargs    KwArgsVar
@@ -170,11 +169,6 @@ func WithArgs(args starlark.Tuple) ChartOption {
 // WithKwArgs -
 func WithKwArgs(kwargs []starlark.Tuple) ChartOption {
 	return func(options *ChartOptions) { options.kwargs = kwargs }
-}
-
-// WithK8s -
-func WithK8s(value K8s) ChartOption {
-	return func(options *ChartOptions) { options.k8s = value }
 }
 
 // AddFlags -

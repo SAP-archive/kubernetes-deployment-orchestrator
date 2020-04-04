@@ -28,7 +28,7 @@ var applyCmd = &cobra.Command{
 		if err != nil {
 			exit(err)
 		}
-		exit(apply(args[0], k8s, applyChartArgs.Merge(), shalm.WithK8s(k8s)))
+		exit(apply(args[0], k8s, applyChartArgs.Merge()))
 	},
 }
 

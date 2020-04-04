@@ -88,5 +88,5 @@ type Repo interface {
 	// Get -
 	Get(thread *starlark.Thread, url string, options ...ChartOption) (ChartValue, error)
 	// GetFromSpec -
-	GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpec) (ChartValue, error)
+	GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpec, options ...ChartOption) (ChartValue, error)
 }

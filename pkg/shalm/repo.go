@@ -101,7 +101,7 @@ func (r *repoImpl) cacheDirForChart(data []byte) string {
 	return cacheDir
 }
 
-func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpec) (ChartValue, error) {
+func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpec, options ...ChartOption) (ChartValue, error) {
 	var c *chartImpl
 	var err error
 	kwargs, err := spec.GetKwArgs()
@@ -112,16 +112,13 @@ func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpe
 	if err != nil {
 		return nil, err
 	}
+	options = append(options, WithNamespace(spec.Namespace), WithSuffix(spec.Suffix), WithArgs(toStarlark(spec.Args).(starlark.Tuple)),
+		WithKwArgs(kwargsToStarlark(kwargs)))
 	if spec.ChartURL != "" {
-		c, err = r.newChartFromURL(thread, spec.ChartURL,
-			WithNamespace(spec.Namespace), WithSuffix(spec.Suffix), WithArgs(toStarlark(spec.Args).(starlark.Tuple)),
-			WithKwArgs(kwargsToStarlark(kwargs)))
+		c, err = r.newChartFromURL(thread, spec.ChartURL, options...)
 
 	} else {
-		c, err = newChartFromReader(thread, r, r.cacheDirForChart(spec.ChartTgz), bytes.NewReader(spec.ChartTgz), chartDirExpr,
-			WithNamespace(spec.Namespace), WithSuffix(spec.Suffix), WithArgs(toStarlark(spec.Args).(starlark.Tuple)),
-			WithKwArgs(kwargsToStarlark(kwargs)))
-
+		c, err = newChartFromReader(thread, r, r.cacheDirForChart(spec.ChartTgz), bytes.NewReader(spec.ChartTgz), chartDirExpr, options...)
 	}
 	if err != nil {
 		return nil, err
