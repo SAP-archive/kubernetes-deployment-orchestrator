@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/pflag"
 	"go.starlark.net/starlark"
+	"sigs.k8s.io/yaml"
 )
 
 // ProxyMode -
@@ -134,6 +135,30 @@ func (p KwArgsFileVar) Type() string {
 	return "kwargs-file"
 }
 
+type valuesFile map[string]interface{}
+
+func (p valuesFile) String() string {
+	if p == nil {
+		return ""
+	}
+	data, err := yaml.Marshal(p)
+	if err != nil {
+		return err.Error()
+	}
+	return string(data)
+}
+
+// Set -
+func (p *valuesFile) Set(val string) error {
+	return readYamlFile(val,p)
+}
+
+// Type -
+func (p valuesFile) Type() string {
+	return "values"
+}
+
+
 // ChartOptions -
 type ChartOptions struct {
 	namespace string
@@ -141,6 +166,7 @@ type ChartOptions struct {
 	proxyMode ProxyMode
 	args      starlark.Tuple
 	kwargs    KwArgsVar
+	values    valuesFile
 }
 
 // ChartOption -
@@ -171,6 +197,11 @@ func WithKwArgs(kwargs []starlark.Tuple) ChartOption {
 	return func(options *ChartOptions) { options.kwargs = kwargs }
 }
 
+// WithValues -
+func WithValues(values map[string]interface{}) ChartOption {
+	return func(options *ChartOptions) { options.values = valuesFile(values) }
+}
+
 // AddFlags -
 func (v *ChartOptions) AddFlags(flagsSet *pflag.FlagSet) {
 	defaultNamespace := os.Getenv("SHALM_NAMESPACE")
@@ -183,6 +214,7 @@ func (v *ChartOptions) AddFlags(flagsSet *pflag.FlagSet) {
 	flagsSet.VarP(&v.proxyMode, "proxy", "p", "Install helm chart using a combination of CR and operator. Possible values off, local and remote")
 	flagsSet.StringVarP(&v.namespace, "namespace", "n", defaultNamespace, "Namespace for installation")
 	flagsSet.StringVarP(&v.suffix, "suffix", "s", "", "Suffix which is used to build the chart name")
+	flagsSet.VarP(&v.values, "values", "f", "Load additional values from a file")
 }
 
 // Merge -

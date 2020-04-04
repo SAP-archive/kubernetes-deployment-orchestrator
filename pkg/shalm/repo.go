@@ -112,7 +112,7 @@ func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpe
 	if err != nil {
 		return nil, err
 	}
-	options = append(options, WithNamespace(spec.Namespace), WithSuffix(spec.Suffix), WithArgs(toStarlark(spec.Args).(starlark.Tuple)),
+	options = append(options, WithNamespace(spec.Namespace), WithSuffix(spec.Suffix), WithArgs(toStarlark(spec.Args).(starlark.Tuple)), WithValues(values),
 		WithKwArgs(kwargsToStarlark(kwargs)))
 	if spec.ChartURL != "" {
 		c, err = r.newChartFromURL(thread, spec.ChartURL, options...)
@@ -123,7 +123,6 @@ func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpe
 	if err != nil {
 		return nil, err
 	}
-	c.mergeValues(values)
 	return c, nil
 }
 

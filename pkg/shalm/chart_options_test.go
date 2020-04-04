@@ -76,6 +76,19 @@ var _ = Describe("Chart Options", func() {
 		})
 
 	})
+	Context("valuesFile", func() {
+		It("produces the correct output", func() {
+			dir := NewTestDir()
+			dir.WriteFile("test.yaml", []byte("test: test\ntimeout: timeout"), 0644)
+			defer dir.Remove()
+			values := valuesFile{}
+			err := values.Set(dir.Join("test.yaml"))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(values).To(HaveLen(2))
+			Expect(values).To(HaveKeyWithValue("test", "test"), HaveKeyWithValue("timeout", "timeout"))
+		})
+
+	})
 	Context("ChartOptions", func() {
 		It("args are correct", func() {
 			args := ChartOptions{}

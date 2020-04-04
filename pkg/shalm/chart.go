@@ -54,6 +54,7 @@ func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOptio
 	if err := c.init(thread, repo, hasChartYaml, co.args, co.kwargs); err != nil {
 		return nil, err
 	}
+	c.mergeValues(co.values)
 	return c, nil
 
 }
