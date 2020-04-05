@@ -186,6 +186,7 @@ type ChartOptions struct {
 	args      starlark.Tuple
 	kwargs    KwArgsVar
 	values    valuesFile
+	skipChart bool
 }
 
 // ChartOption -
@@ -219,6 +220,11 @@ func WithKwArgs(kwargs []starlark.Tuple) ChartOption {
 // WithValues -
 func WithValues(values map[string]interface{}) ChartOption {
 	return func(options *ChartOptions) { options.values = valuesFile(values) }
+}
+
+// WithSkipChart -
+func WithSkipChart(value bool) ChartOption {
+	return func(options *ChartOptions) { options.skipChart = value }
 }
 
 // AddFlags -

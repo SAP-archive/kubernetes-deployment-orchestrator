@@ -2,11 +2,14 @@ package shalm
 
 import (
 	"fmt"
+	"regexp"
 
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	"go.starlark.net/starlark"
 )
+
+var nameRegexp = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9\\-\\.]*$")
 
 type chartClass struct {
 	APIVersion  string   `json:"apiVersion,omitempty"`
@@ -64,13 +67,28 @@ func (cc *chartClass) AttrNames() []string {
 	return []string{"api_version", "name", "version", "description", "keywords", "home", "sources", "icon"}
 }
 
-func (cc *chartClass) Validate() error {
-	if len(cc.Version) == 0 {
+func validateName(name string) error {
+	if !nameRegexp.MatchString(name) {
+		return fmt.Errorf("Invalid name '%s' for chart", name)
+	}
+	return nil
+}
+func validateVersion(version string) error {
+	if len(version) == 0 {
 		return nil
 	}
-	_, err := semver.ParseTolerant(cc.Version)
+	_, err := semver.ParseTolerant(version)
 	return err
+}
 
+func (cc *chartClass) Validate() error {
+	if err := validateName(cc.Name); err != nil {
+		return err
+	}
+	if err := validateVersion(cc.Version); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (cc *chartClass) GetVersion() semver.Version {
@@ -91,12 +109,15 @@ func (cc *chartClass) SetField(name string, val starlark.Value) error {
 		cc.APIVersion = val.(starlark.String).GoString()
 		return nil
 	case "name":
-		cc.Name = val.(starlark.String).GoString()
+		name := val.(starlark.String).GoString()
+		if err := validateName(name); err != nil {
+			return err
+		}
+		cc.Name = name
 		return nil
 	case "version":
 		version := val.(starlark.String).GoString()
-		_, err := semver.ParseTolerant(version)
-		if err != nil {
+		if err := validateVersion(version); err != nil {
 			return err
 		}
 		cc.Version = version

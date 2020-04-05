@@ -1,6 +1,8 @@
 package shalm
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +12,7 @@ import (
 
 	"github.com/blang/semver"
 	"go.starlark.net/starlark"
+	corev1 "k8s.io/api/core/v1"
 )
 
 type chartImpl struct {
@@ -242,7 +245,42 @@ func (c *chartImpl) applyLocal(thread *starlark.Thread, k K8sValue, k8sOptions *
 		return err
 	}
 	k8sOptions.Namespaced = false
-	return k.Apply(decode(c.template(thread, glob, true)), k8sOptions)
+	return k.Apply(concat(decode(c.template(thread, glob, true)), c.packedChart()), k8sOptions)
+}
+
+func (c *chartImpl) packedChart() ObjectStream {
+	return func(w ObjectWriter) error {
+		if c.skipChart {
+			return nil
+		}
+		values, err := json.Marshal(stringDictToGo(c.values))
+		if err != nil {
+			return err
+		}
+		buffer := &bytes.Buffer{}
+		if err := c.Package(buffer, false); err != nil {
+			return err
+		}
+		data, err := json.Marshal(map[string][]byte{
+			"values": values,
+			"chart":  buffer.Bytes(),
+		})
+		if err != nil {
+			return err
+		}
+		w(&Object{
+			APIVersion: corev1.SchemeGroupVersion.String(),
+			Kind:       "Secret",
+			MetaData: MetaData{
+				Name: "wonderix.chart." + c.GetName(),
+			},
+			Additional: map[string]json.RawMessage{
+				"type": json.RawMessage([]byte(`"github.com/wonderix/shalm"`)),
+				"data": json.RawMessage(data),
+			},
+		})
+		return nil
+	}
 }
 
 func (c *chartImpl) Delete(thread *starlark.Thread, k K8s) error {
@@ -290,7 +328,7 @@ func (c *chartImpl) deleteLocalFunction() starlark.Callable {
 
 func (c *chartImpl) deleteLocal(thread *starlark.Thread, k K8sValue, k8sOptions *K8sOptions, glob string) error {
 	k8sOptions.Namespaced = false
-	err := k.Delete(decode(c.template(thread, glob, false)), k8sOptions)
+	err := k.Delete(concat(decode(c.template(thread, glob, false)), c.packedChart()), k8sOptions)
 	if err != nil {
 		return err
 	}

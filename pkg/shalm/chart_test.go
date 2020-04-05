@@ -161,7 +161,7 @@ def template(self,glob=''):
 				0644)
 			dir.WriteFile("ytt/test.yml", []byte("#@ if True:\ntest: #@ self.timeout\n#@ end\n"), 0644)
 			var err error
-			c, err = newChart(thread, repo, dir.Root())
+			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
@@ -200,7 +200,7 @@ def template(self,glob=''):
 				0644)
 			dir.WriteFile("templates/test.yaml", []byte("#@ timeout = {{ .Values.timeout | quote }}\ntest: #@ timeout\n"), 0644)
 			var err error
-			c, err = newChart(thread, repo, dir.Root())
+			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 
 		})
@@ -242,7 +242,7 @@ def init(self):
 				0644)
 			dir.WriteFile("ytt-templates/test.yaml", []byte("test: #@ self.timeout\n"), 0644)
 			var err error
-			c, err = newChart(thread, repo, dir.Root())
+			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 
 		})
@@ -277,7 +277,7 @@ def init(self):
 			dir.WriteFile("Chart.yaml", []byte("name: mariadb\nversion: 6.12.2\n"), 0644)
 			repo, _ := NewRepo()
 			var err error
-			c, err = newChart(thread, repo, dir.Root(), WithNamespace("namespace"))
+			c, err = newChart(thread, repo, dir.Root(), WithNamespace("namespace"), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(c.GetName()).To(Equal("mariadb"))
 
@@ -352,7 +352,7 @@ def init(self):
 
 			dir.WriteFile("chart2/templates/deployment.yaml", []byte("namespace: {{ .Release.Namespace}}"), 0644)
 			dir.WriteFile("chart2/Chart.yaml", []byte("name: test\nversion: 1.0.0\n"), 0644)
-			c, err := newChart(thread, repo, dir.Join("chart1"))
+			c, err := newChart(thread, repo, dir.Join("chart1"), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 			writer := bytes.Buffer{}
 			k := &FakeK8s{
@@ -402,7 +402,7 @@ def init(self):
 		defer dir.Remove()
 		repo, _ := NewRepo()
 		dir.WriteFile("Chart.star", []byte("def init(self):\n  self.cred = user_credential(\"test\")\n"), 0644)
-		c, err := newChart(thread, repo, dir.Root())
+		c, err := newChart(thread, repo, dir.Root(), WithSkipChart(true))
 		Expect(err).NotTo(HaveOccurred())
 		var obj Object
 		k := &FakeK8s{

@@ -119,8 +119,8 @@ var _ = Describe("k8s", func() {
 		})
 		It("Adds labels", func() {
 			obj := k8s.objMapper()(&Object{})
-			Expect(obj.MetaData.Labels).To(HaveKeyWithValue("shalm.wonderix.github.com/app", digestString("app")))
-			Expect(obj.MetaData.Labels).To(HaveKeyWithValue("shalm.wonderix.github.com/version", digestString("1.2.0")))
+			Expect(obj.MetaData.Labels).To(HaveKeyWithValue("shalm.wonderix.github.com/app", "app"))
+			Expect(obj.MetaData.Labels).To(HaveKeyWithValue("shalm.wonderix.github.com/version", "1.2.0"))
 			Expect(obj.MetaData.Namespace).To(Equal("namespace"))
 		})
 		It("Exclusion works", func() {

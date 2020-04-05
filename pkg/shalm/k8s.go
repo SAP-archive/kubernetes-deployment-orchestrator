@@ -275,14 +275,16 @@ func (k *k8sImpl) Delete(output ObjectStream, options *K8sOptions) (err error) {
 	return err
 }
 
+var invalidValueRegex = regexp.MustCompile("[^a-zA-Z0-9\\-_\\.]")
+
 func (k *k8sImpl) objMapper() func(obj *Object) *Object {
 	return func(obj *Object) *Object {
 		obj.setDefaultNamespace(k.namespace)
 		if obj.MetaData.Labels == nil {
 			obj.MetaData.Labels = make(map[string]string)
 		}
-		obj.MetaData.Labels["shalm.wonderix.github.com/app"] = digestString(k.app)
-		obj.MetaData.Labels["shalm.wonderix.github.com/version"] = digestString(k.version.String())
+		obj.MetaData.Labels["shalm.wonderix.github.com/app"] = invalidValueRegex.ReplaceAllString(k.app, "")
+		obj.MetaData.Labels["shalm.wonderix.github.com/version"] = invalidValueRegex.ReplaceAllString(k.version.String(), "")
 		return obj
 	}
 }
