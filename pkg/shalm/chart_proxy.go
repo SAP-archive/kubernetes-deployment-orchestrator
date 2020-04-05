@@ -57,11 +57,7 @@ func (c *chartProxy) Attr(name string) (starlark.Value, error) {
 
 func (c *chartProxy) applyFunction() starlark.Callable {
 	return c.chartImpl.builtin("apply", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
-		if err := starlark.UnpackArgs("apply", args, kwargs, "k8s", &k); err != nil {
-			return nil, err
-		}
-		var k8s K8s = k.(K8s)
+		var k8s K8s = c.chartImpl.k8s
 		namespace := &corev1.Namespace{
 			TypeMeta: v1.TypeMeta{
 				Kind:       "Namespace",
@@ -80,7 +76,7 @@ func (c *chartProxy) applyFunction() starlark.Callable {
 		shalmSpec.SetValues(stringDictToGo(c.chartImpl.values))
 		shalmSpec.SetKwArgs(c.kwArgs)
 		if c.proxyMode == ProxyModeLocal {
-			kubeConfig := k.ConfigContent()
+			kubeConfig := k8s.ConfigContent()
 			if kubeConfig != nil {
 				shalmSpec.KubeConfig = *kubeConfig
 			}
@@ -115,8 +111,8 @@ func (c *chartProxy) applyFunction() starlark.Callable {
 	})
 }
 
-func (c *chartProxy) Apply(thread *starlark.Thread, k K8s) error {
-	_, err := starlark.Call(thread, c.applyFunction(), starlark.Tuple{NewK8sValue(k)}, nil)
+func (c *chartProxy) Apply(thread *starlark.Thread) error {
+	_, err := starlark.Call(thread, c.applyFunction(), nil, nil)
 	if err != nil {
 		return err
 	}
@@ -125,17 +121,12 @@ func (c *chartProxy) Apply(thread *starlark.Thread, k K8s) error {
 
 func (c *chartProxy) deleteFunction() starlark.Callable {
 	return c.chartImpl.builtin("delete", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
-		if err := starlark.UnpackArgs("delete", args, kwargs, "k8s", &k); err != nil {
-			return nil, err
-		}
-
-		return starlark.None, k.DeleteObject("ShalmChart", c.GetName(), &K8sOptions{})
+		return starlark.None, c.chartImpl.k8s.DeleteObject("ShalmChart", c.GetName(), &K8sOptions{})
 	})
 }
 
-func (c *chartProxy) Delete(thread *starlark.Thread, k K8s) error {
-	_, err := starlark.Call(thread, c.deleteFunction(), starlark.Tuple{NewK8sValue(k)}, nil)
+func (c *chartProxy) Delete(thread *starlark.Thread) error {
+	_, err := starlark.Call(thread, c.deleteFunction(), nil, nil)
 	if err != nil {
 		return err
 	}

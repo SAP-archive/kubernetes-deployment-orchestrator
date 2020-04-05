@@ -116,11 +116,11 @@ func (r *ShalmChartReconciler) apply(spec *shalmv1a2.ChartSpec, progressCb shalm
 		return err
 	}
 	thread := &starlark.Thread{Name: "main", Load: r.Load}
-	chart, err := r.Repo.GetFromSpec(thread, spec)
+	chart, err := r.Repo.GetFromSpec(thread, spec, shalm.WithK8s(k8s))
 	if err != nil {
 		return err
 	}
-	return chart.Apply(thread, k8s)
+	return chart.Apply(thread)
 }
 
 func (r *ShalmChartReconciler) delete(spec *shalmv1a2.ChartSpec, progressCb shalm.ProgressSubscription) error {
@@ -135,11 +135,11 @@ func (r *ShalmChartReconciler) delete(spec *shalmv1a2.ChartSpec, progressCb shal
 		return err
 	}
 	thread := &starlark.Thread{Name: "main", Load: r.Load}
-	chart, err := r.Repo.GetFromSpec(thread, spec)
+	chart, err := r.Repo.GetFromSpec(thread, spec, shalm.WithK8s(k8s))
 	if err != nil {
 		return err
 	}
-	return chart.Delete(thread, k8s)
+	return chart.Delete(thread)
 }
 
 // SetupWithManager -

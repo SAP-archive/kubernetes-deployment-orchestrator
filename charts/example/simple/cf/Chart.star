@@ -11,8 +11,8 @@ def init(self,dummy="test"):
 def __secret_name(self):
   return "mysecret"
 
-def apply(self, k8s):
-  self.mariadb.apply(k8s)
-  k8s.rollout_status("statefulset","mariadb-master")
-  self.uaa.apply(k8s)
-  self.__apply(k8s)
+def apply(self):
+  self.mariadb.apply()
+  self.k8s.rollout_status("statefulset","mariadb-master")
+  self.uaa.apply()
+  self.__apply()

@@ -23,7 +23,6 @@ var templateCmd = &cobra.Command{
 }
 
 func template(url string) shalm.Stream {
-
 	thread := &starlark.Thread{Name: "main", Load: rootExecuteOptions.load}
 	repo, err := repo()
 	if err != nil {

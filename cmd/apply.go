@@ -37,12 +37,13 @@ func apply(url string, k shalm.K8s, opts ...shalm.ChartOption) error {
 	if err != nil {
 		return err
 	}
+	opts = append(opts, shalm.WithK8s(k))
 	thread := &starlark.Thread{Name: "main", Load: rootExecuteOptions.load}
 	c, err := repo.Get(thread, url, opts...)
 	if err != nil {
 		return err
 	}
-	return c.Apply(thread, k)
+	return c.Apply(thread)
 }
 
 func init() {

@@ -12,8 +12,8 @@ def create_database(self,db="db",username="",password=""):
     """.format(username=username, password=password,db=db)
 
 
-def delete(self,k8s):
-  self.__delete(k8s)
-  k8s.delete("persistentvolumeclaims","data-mariadb-master-0")
+def delete(self):
+  self.__delete()
+  self.k8s.delete("persistentvolumeclaims","data-mariadb-master-0")
   for i in range(0,self.slave.replicas):
-    k8s.delete("persistentvolumeclaims","data-mariadb-slave-" + str(i))
+    self.k8s.delete("persistentvolumeclaims","data-mariadb-slave-" + str(i))

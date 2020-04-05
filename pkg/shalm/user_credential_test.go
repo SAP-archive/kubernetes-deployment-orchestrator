@@ -51,8 +51,8 @@ var _ = Describe("userCredentials", func() {
 			userCred := u.(*vault)
 			err := userCred.read(&k8s)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(attValue(userCred, "username")).To(HaveLen(16))
-			Expect(attValue(userCred, "password")).To(HaveLen(16))
+			Expect(attValue(userCred, "username")).To(HaveLen(24))
+			Expect(attValue(userCred, "password")).To(HaveLen(24))
 		})
 
 	})
