@@ -187,6 +187,7 @@ type ChartOptions struct {
 	kwargs    KwArgsVar
 	values    valuesFile
 	skipChart bool
+	readOnly  bool
 }
 
 // ChartOption -
@@ -225,6 +226,11 @@ func WithValues(values map[string]interface{}) ChartOption {
 // WithSkipChart -
 func WithSkipChart(value bool) ChartOption {
 	return func(options *ChartOptions) { options.skipChart = value }
+}
+
+// WithWritable -
+func WithReadOnly(value bool) ChartOption {
+	return func(options *ChartOptions) { options.readOnly = value }
 }
 
 // AddFlags -

@@ -244,6 +244,9 @@ func (c *chartImpl) applyLocal(thread *starlark.Thread, k K8sValue, k8sOptions *
 	if err != nil {
 		return err
 	}
+	if c.readOnly {
+		return nil
+	}
 	k8sOptions.Namespaced = false
 	return k.Apply(concat(decode(c.template(thread, glob, true)), c.packedChart()), k8sOptions)
 }
@@ -327,6 +330,9 @@ func (c *chartImpl) deleteLocalFunction() starlark.Callable {
 }
 
 func (c *chartImpl) deleteLocal(thread *starlark.Thread, k K8sValue, k8sOptions *K8sOptions, glob string) error {
+	if c.readOnly {
+		return nil
+	}
 	k8sOptions.Namespaced = false
 	err := k.Delete(concat(decode(c.template(thread, glob, false)), c.packedChart()), k8sOptions)
 	if err != nil {
