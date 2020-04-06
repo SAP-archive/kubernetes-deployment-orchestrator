@@ -13,35 +13,43 @@ If no namespace is given, the namespace is inherited from the parent chart.
 |-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `url`       | The chart is loaded from the given url. The url can be relative.  In this case the chart is loaded from a path relative to the current chart location.                                                                                       |
 | `namespace` | If no namespace is given, the namespace is inherited from the parent chart.                                                                                                                                                                  |
-| `k8s` | Target for the chart.                                                                                                                                                                 |
 | `suffix`    | This suffix is appended to each chart name. The suffix is inhertied from the parent if no value is given                                                                                                                                     |
 | `proxy`     | If `local` or `remote`, a proxy for the chart is returned. Applying or deleting a proxy chart is done by applying a `CustomerResource` to kubernetes. The installation process is then performed by the `shalm-controller` in the background |
 | `...`       | Additional parameters are passed to the `init` method of the corresponding chart.                                                                                                                                                            |
 
-#### `chart.apply()`
+#### `chart.apply(k8s)`
 
 Applies the chart recursive to k8s. This method can be overwritten.
 
-#### `chart.__apply(timeout=0, glob=pattern)`
+| Parameter | Description |
+|-----------|-------------|
+| `8s`      | See below   |
+
+#### `chart.__apply(k8s, timeout=0, glob=pattern)`
 
 Applies the chart to k8s without recursion. This should only be used within `apply`
 
 | Parameter | Description                                                              |
 |-----------|--------------------------------------------------------------------------|
+| `k8s`     | See below                                                                |
 | `timeout` | Timeout passed to `kubectl apply`. A timeout of zero means wait forever. |
 | `glob`    | Pattern used to find the templates. Default is "*.yaml"                  |
 
-#### `chart.delete()`
+#### `chart.delete(k8s)`
 
 Deletes the chart recursive from k8s. This method can be overwritten.
 
+| Parameter | Description |
+|-----------|-------------|
+| `k8s`     | See below   |
 
-#### `chart.__delete( timeout=0, glob=pattern)`
+#### `chart.__delete(k8s, timeout=0, glob=pattern)`
 
 Deletes the chart from k8s without recursion. This should only be used within `delete`
 
 | Parameter | Description                                                              |
 |-----------|--------------------------------------------------------------------------|
+| `k8s`     | See below                                                                |
 | `timeout` | Timeout passed to `kubectl apply`, A timeout of zero means wait forever. |
 | `glob`    | Pattern used to find the templates. Default is `"*.y*ml"`                |
 

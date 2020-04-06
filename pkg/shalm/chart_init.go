@@ -128,6 +128,9 @@ func (c *chartImpl) init(thread *starlark.Thread, repo Repo, hasChartYaml bool, 
 		}
 	}
 
+	c.methods["apply"] = c.wrapNamespace(c.methods["apply"], c.namespace)
+	c.methods["delete"] = c.wrapNamespace(c.methods["delete"], c.namespace)
+
 	return nil
 }
 

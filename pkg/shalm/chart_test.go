@@ -62,15 +62,8 @@ var _ = Describe("Chart", func() {
 		var dir TestDir
 		var c ChartValue
 		thread := &starlark.Thread{Name: "main"}
-		var k8s *FakeK8s
+		k8s := NewK8sInMemory("test")
 		BeforeEach(func() {
-			k8s = &FakeK8s{}
-			k8s.ForConfigStub = func(context string) (K8s, error) {
-				return k8s, nil
-			}
-			k8s.ForSubChartStub = func(namespace, app string, version semver.Version) K8s {
-				return k8s
-			}
 			dir = NewTestDir()
 			repo, _ := NewRepo()
 			dir.WriteFile("values.yaml", []byte("timeout: \"30s\"\n"), 0644)
@@ -81,18 +74,21 @@ def init(self):
 	self.load_yaml("values_2.yaml")
 def method(self):
 	return self.namespace
-def apply(self):
-	self.k8s.for_config('test')
-	return self.__apply()
+def apply(self,k8s):
+	k8s.for_config('test')
+	return self.__apply(k8s)
 def template(self):
 	return '{ "Kind" : "hello" }'
-def delete(self):
-	return self.__delete()
+def delete(self,k8s):
+	return self.__delete(k8s)
 `),
 				0644)
 			var err error
-			c, err = newChart(thread, repo, dir.Root(), WithK8s(k8s))
+			c, err = newChart(thread, repo, dir.Root())
 			Expect(err).NotTo(HaveOccurred())
+			err = c.Apply(thread, k8s)
+			Expect(err).NotTo(HaveOccurred())
+
 		})
 		AfterEach(func() {
 			dir.Remove()
@@ -118,16 +114,24 @@ def delete(self):
 		It("overrides apply", func() {
 			attr, err := c.Attr("apply")
 			Expect(err).NotTo(HaveOccurred())
-			_, err = starlark.Call(thread, attr.(starlark.Callable), nil, nil)
+			k := &FakeK8s{}
+			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+				return k
+			}
+			_, err = starlark.Call(thread, attr.(starlark.Callable), starlark.Tuple{NewK8sValue(k)}, nil)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(k8s.ApplyCallCount()).To(Equal(1))
+			Expect(k.ApplyCallCount()).To(Equal(1))
 		})
 		It("overrides delete", func() {
 			attr, err := c.Attr("delete")
 			Expect(err).NotTo(HaveOccurred())
-			_, err = starlark.Call(thread, attr.(starlark.Callable), nil, nil)
+			k := &FakeK8s{}
+			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+				return k
+			}
+			_, err = starlark.Call(thread, attr.(starlark.Callable), starlark.Tuple{NewK8sValue(k)}, nil)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(k8s.DeleteCallCount()).To(Equal(1))
+			Expect(k.DeleteCallCount()).To(Equal(1))
 		})
 		It("overrides template", func() {
 			attr, err := c.Attr("template")
@@ -144,15 +148,6 @@ def delete(self):
 		var dir TestDir
 		var c ChartValue
 		thread := &starlark.Thread{Name: "main"}
-		writer := bytes.Buffer{}
-		k := &FakeK8s{
-			ApplyStub: func(i ObjectStream, options *K8sOptions) error {
-				return i.Encode()(&writer)
-			},
-		}
-		k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
-			return k
-		}
 		BeforeEach(func() {
 			dir = NewTestDir()
 			repo, _ := NewRepo()
@@ -166,14 +161,23 @@ def template(self,glob=''):
 				0644)
 			dir.WriteFile("ytt/test.yml", []byte("#@ if True:\ntest: #@ self.timeout\n#@ end\n"), 0644)
 			var err error
-			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true), WithK8s(k))
+			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 		})
 		AfterEach(func() {
 			dir.Remove()
 		})
 		It("applies embedded ytt", func() {
-			err := c.Apply(thread)
+			writer := bytes.Buffer{}
+			k := &FakeK8s{
+				ApplyStub: func(i ObjectStream, options *K8sOptions) error {
+					return i.Encode()(&writer)
+				},
+			}
+			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+				return k
+			}
+			err := c.Apply(thread, k)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(k.ApplyCallCount()).To(Equal(1))
 			Expect(writer.String()).To(Equal("\n---\n{\"test\":\"60s\"}\n"))
@@ -183,15 +187,6 @@ def template(self,glob=''):
 		var dir TestDir
 		var c ChartValue
 		thread := &starlark.Thread{Name: "main"}
-		writer := bytes.Buffer{}
-		k := &FakeK8s{
-			ApplyStub: func(i ObjectStream, options *K8sOptions) error {
-				return i.Encode()(&writer)
-			},
-		}
-		k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
-			return k
-		}
 		BeforeEach(func() {
 			dir = NewTestDir()
 			repo, _ := NewRepo()
@@ -205,7 +200,7 @@ def template(self,glob=''):
 				0644)
 			dir.WriteFile("templates/test.yaml", []byte("#@ timeout = {{ .Values.timeout | quote }}\ntest: #@ timeout\n"), 0644)
 			var err error
-			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true), WithK8s(k))
+			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 
 		})
@@ -217,7 +212,16 @@ def template(self,glob=''):
 			if err != nil {
 				Skip("ytt is not installed")
 			}
-			err = c.Apply(thread)
+			writer := bytes.Buffer{}
+			k := &FakeK8s{
+				ApplyStub: func(i ObjectStream, options *K8sOptions) error {
+					return i.Encode()(&writer)
+				},
+			}
+			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+				return k
+			}
+			err = c.Apply(thread, k)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(k.ApplyCallCount()).To(Equal(1))
 			Expect(writer.String()).To(Equal("\n---\n{\"test\":\"60s\"}\n"))
@@ -227,15 +231,6 @@ def template(self,glob=''):
 		var dir TestDir
 		var c ChartValue
 		thread := &starlark.Thread{Name: "main"}
-		writer := bytes.Buffer{}
-		k := &FakeK8s{
-			ApplyStub: func(i ObjectStream, options *K8sOptions) error {
-				return i.Encode()(&writer)
-			},
-		}
-		k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
-			return k
-		}
 		BeforeEach(func() {
 			dir = NewTestDir()
 			repo, _ := NewRepo()
@@ -247,7 +242,7 @@ def init(self):
 				0644)
 			dir.WriteFile("ytt-templates/test.yaml", []byte("test: #@ self.timeout\n"), 0644)
 			var err error
-			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true), WithK8s(k))
+			c, err = newChart(thread, repo, dir.Root(), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 
 		})
@@ -255,7 +250,16 @@ def init(self):
 			dir.Remove()
 		})
 		It("applies ytt", func() {
-			err := c.Apply(thread)
+			writer := bytes.Buffer{}
+			k := &FakeK8s{
+				ApplyStub: func(i ObjectStream, options *K8sOptions) error {
+					return i.Encode()(&writer)
+				},
+			}
+			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+				return k
+			}
+			err := c.Apply(thread, k)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(k.ApplyCallCount()).To(Equal(1))
 			Expect(writer.String()).To(Equal("\n---\n{\"test\":\"60s\"}\n"))
@@ -265,7 +269,7 @@ def init(self):
 		var dir TestDir
 		var c ChartValue
 		thread := &starlark.Thread{Name: "main"}
-		var writer *bytes.Buffer
+
 		BeforeEach(func() {
 			dir = NewTestDir()
 			dir.MkdirAll("templates", 0755)
@@ -273,20 +277,7 @@ def init(self):
 			dir.WriteFile("Chart.yaml", []byte("name: mariadb\nversion: 6.12.2\n"), 0644)
 			repo, _ := NewRepo()
 			var err error
-			writer = &bytes.Buffer{}
-			k := &FakeK8s{
-				ApplyStub: func(i ObjectStream, options *K8sOptions) error {
-					return i.Encode()(writer)
-				},
-				DeleteStub: func(i ObjectStream, options *K8sOptions) error {
-					i.Encode()(writer)
-					return nil
-				},
-			}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
-				return k
-			}
-			c, err = newChart(thread, repo, dir.Root(), WithNamespace("namespace"), WithSkipChart(true), WithK8s(k))
+			c, err = newChart(thread, repo, dir.Root(), WithNamespace("namespace"), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(c.GetName()).To(Equal("mariadb"))
 
@@ -305,14 +296,33 @@ def init(self):
 
 		It("applies a chart", func() {
 			Expect(c.GetName()).To(Equal("mariadb"))
-			err := c.Apply(thread)
+			writer := bytes.Buffer{}
+			k := &FakeK8s{
+				ApplyStub: func(i ObjectStream, options *K8sOptions) error {
+					return i.Encode()(&writer)
+				},
+			}
+			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+				return k
+			}
+			err := c.Apply(thread, k)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(writer.String()).To(Equal("\n---\n{\"namespace\":\"namespace\"}\n"))
 		})
 
 		It("deletes a chart", func() {
 			Expect(c.GetName()).To(Equal("mariadb"))
-			err := c.Delete(thread)
+			writer := bytes.Buffer{}
+			k := &FakeK8s{
+				DeleteStub: func(i ObjectStream, options *K8sOptions) error {
+					i.Encode()(&writer)
+					return nil
+				},
+			}
+			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+				return k
+			}
+			err := c.Delete(thread, k)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(writer.String()).To(Equal("\n---\n{\"namespace\":\"namespace\"}\n"))
 		})
@@ -342,6 +352,8 @@ def init(self):
 
 			dir.WriteFile("chart2/templates/deployment.yaml", []byte("namespace: {{ .Release.Namespace}}"), 0644)
 			dir.WriteFile("chart2/Chart.yaml", []byte("name: test\nversion: 1.0.0\n"), 0644)
+			c, err := newChart(thread, repo, dir.Join("chart1"), WithSkipChart(true))
+			Expect(err).NotTo(HaveOccurred())
 			writer := bytes.Buffer{}
 			k := &FakeK8s{
 				DeleteStub: func(i ObjectStream, options *K8sOptions) error {
@@ -352,9 +364,7 @@ def init(self):
 			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
 				return k
 			}
-			c, err := newChart(thread, repo, dir.Join("chart1"), WithSkipChart(true), WithK8s(k))
-			Expect(err).NotTo(HaveOccurred())
-			err = c.Delete(thread)
+			err = c.Delete(thread, k)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(k.DeleteCallCount()).To(Equal(2))
 			Expect(writer.String()).To(Equal("\n---\n{\"namespace\":\"chart2\"}\n"))
@@ -392,6 +402,8 @@ def init(self):
 		defer dir.Remove()
 		repo, _ := NewRepo()
 		dir.WriteFile("Chart.star", []byte("def init(self):\n  self.cred = user_credential(\"test\")\n"), 0644)
+		c, err := newChart(thread, repo, dir.Root(), WithSkipChart(true))
+		Expect(err).NotTo(HaveOccurred())
 		var obj Object
 		k := &FakeK8s{
 			ApplyStub: func(i ObjectStream, options *K8sOptions) error {
@@ -407,9 +419,7 @@ def init(self):
 		k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
 			return k
 		}
-		c, err := newChart(thread, repo, dir.Root(), WithSkipChart(true), WithK8s(k))
-		Expect(err).NotTo(HaveOccurred())
-		err = c.Apply(thread)
+		err = c.Apply(thread, k)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(obj.APIVersion).To(Equal("v1"))
 		Expect(obj.Kind).To(Equal("Secret"))
@@ -419,8 +429,8 @@ def init(self):
 			Password []byte `json:"password"`
 		}
 		json.Unmarshal(obj.Additional["data"], &user)
-		Expect(user.Username).To(HaveLen(24))
-		Expect(user.Password).To(HaveLen(24))
+		Expect(user.Username).To(HaveLen(16))
+		Expect(user.Password).To(HaveLen(16))
 	})
 
 	It("merges values ", func() {

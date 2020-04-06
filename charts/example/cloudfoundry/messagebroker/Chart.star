@@ -7,10 +7,10 @@ def credentials(self):
   return struct(user_credential=self.auth,port=self.nats.client["service"]["port"])
 
 
-def apply(self):
-  self.__apply()
+def apply(self,k8s):
+  self.__apply(k8s)
   self.nats.auth["user"] = self.auth.username
   self.nats.auth["password"] = self.auth.password
   self.nats.clusterAuth["user"] = self.cluster_auth.username
   self.nats.clusterAuth["password"] = self.cluster_auth.password
-  self.nats.apply()
+  self.nats.apply(k8s)

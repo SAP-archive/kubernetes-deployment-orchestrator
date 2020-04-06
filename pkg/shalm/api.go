@@ -33,8 +33,8 @@ type Stream = func(io.Writer) error
 type Chart interface {
 	GetName() string
 	GetVersion() semver.Version
-	Apply(thread *starlark.Thread) error
-	Delete(thread *starlark.Thread) error
+	Apply(thread *starlark.Thread, k K8s) error
+	Delete(thread *starlark.Thread, k K8s) error
 	Template(thread *starlark.Thread) Stream
 	Package(writer io.Writer, helmFormat bool) error
 }

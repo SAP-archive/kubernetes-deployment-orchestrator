@@ -33,12 +33,12 @@ func (u *userCredentialBackend) Apply(m map[string][]byte) (map[string][]byte, e
 	if u.username != "" {
 		m[u.usernameKey] = []byte(u.username)
 	} else if m[u.usernameKey] == nil {
-		m[u.usernameKey] = []byte(createRandomString(24))
+		m[u.usernameKey] = []byte(createRandomString(16))
 	}
 	if u.password != "" {
 		m[u.passwordKey] = []byte(u.password)
 	} else if m[u.passwordKey] == nil {
-		m[u.passwordKey] = []byte(createRandomString(24))
+		m[u.passwordKey] = []byte(createRandomString(16))
 	}
 	return m, nil
 }

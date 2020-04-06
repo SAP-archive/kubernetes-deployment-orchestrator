@@ -188,7 +188,6 @@ type ChartOptions struct {
 	values    valuesFile
 	skipChart bool
 	readOnly  bool
-	k8s       K8s
 }
 
 // ChartOption -
@@ -229,14 +228,9 @@ func WithSkipChart(value bool) ChartOption {
 	return func(options *ChartOptions) { options.skipChart = value }
 }
 
-// WithReadOnly -
+// WithWritable -
 func WithReadOnly(value bool) ChartOption {
 	return func(options *ChartOptions) { options.readOnly = value }
-}
-
-// WithK8s -
-func WithK8s(value K8s) ChartOption {
-	return func(options *ChartOptions) { options.k8s = value }
 }
 
 // AddFlags -

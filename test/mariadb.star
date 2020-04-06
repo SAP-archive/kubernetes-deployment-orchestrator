@@ -1,6 +1,6 @@
 
-c = chart("../charts/example/simple/mariadb",k8s=k8s)
-c.apply()
+c = chart("../charts/example/simple/mariadb")
+c.apply(k8s)
 
 print(env("HOME"))
 mariadb = k8s.get("statefulset","mariadb-master")

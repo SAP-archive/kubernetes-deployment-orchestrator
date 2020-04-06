@@ -104,11 +104,11 @@ def init(self):
   self.mariadb = chart("mariadb")
   self.uaa = chart("uaa",database = self.mariadb)
 
-def apply(self):
-  self.mariadb.apply() # Apply mariadb stuff (recursive)
-  self.k8s.rollout_status("statefulset","mariadb-master")  # Interact with kubernetes
-  self.uaa.apply()     # Apply uaa stuff (recursive)
-  self.__apply()       # Apply everthing defined in this chart (not recursive)
+def apply(self,k8s):
+  self.mariadb.apply(k8s) # Apply mariadb stuff (recursive)
+  k8s.rollout_status("statefulset","mariadb-master")  # Interact with kubernetes
+  self.uaa.apply(k8s)     # Apply uaa stuff (recursive)
+  self.__apply(k8s)       # Apply everthing defined in this chart (not recursive)
 
 def template(self,glob=''):
   return self.helm(glob=glob)  # Use helm templating (default)
@@ -147,11 +147,11 @@ def init(self):
    self.nats = chart("https://charts.bitnami.com/bitnami/nats-4.2.6.tgz")
    self.auth = user_credential("nats-auth")
 
-def apply(self):
-  self.__apply()
+def apply(self,k8s):
+  self.__apply(k8s)
   self.nats.auth["user"] = self.auth.username
   self.nats.auth["password"] = self.auth.password
-  self.nats.apply()
+  self.nats.apply(k8s)
 ```
 
 #### Create Certificates
