@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"go.starlark.net/starlark"
 	"gopkg.in/yaml.v2"
 )
 
@@ -39,4 +40,19 @@ func writeYamlFile(filename string, value interface{}) error {
 		return fmt.Errorf("Error during writing file %s: %s", filename, err.Error())
 	}
 	return nil
+}
+
+// ReadYamlFile -
+func ReadYamlFile(filename string) (starlark.Value, error) {
+	var content map[string]interface{}
+	err := readYamlFile(filename, &content)
+	if err != nil {
+		return starlark.None, err
+	}
+	return wrapDict(toStarlark(content)), nil
+}
+
+// WriteYamlFile -
+func WriteYamlFile(filename string, value starlark.Value) error {
+	return writeYamlFile(filename, toGo(value))
 }
