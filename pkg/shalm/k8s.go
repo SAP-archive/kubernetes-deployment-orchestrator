@@ -157,23 +157,27 @@ func NewK8s(configs ...K8sConfig) (K8s, error) {
 			return nil, err
 		}
 	}
-	config, err := configKube(result.kubeConfig)
+	return result.connect()
+}
+
+func (k *k8sImpl) connect() (K8s, error) {
+	config, err := configKube(k.kubeConfig)
 	if err != nil {
 		return nil, err
 	}
-	result.client, err = newK8sClient(config)
+	k.client, err = newK8sClient(config)
 	if err != nil {
 		return nil, err
 	}
 	if len(config.Host) != 0 {
 		u, err := url.Parse(config.Host)
 		if err != nil {
-			result.host = config.Host
+			k.host = config.Host
 		} else {
-			result.host = u.Hostname()
+			k.host = u.Hostname()
 		}
 	}
-	return result, nil
+	return k, nil
 }
 
 // k8sImpl -
@@ -243,7 +247,7 @@ func (k *k8sImpl) addProgressSubscription() ProgressSubscription {
 }
 
 func (k *k8sImpl) ForSubChart(namespace string, app string, version semver.Version) K8s {
-	result := &k8sImpl{namespace: namespace, app: app, version: version, client: k.client,
+	result := &k8sImpl{namespace: namespace, app: app, version: version, client: k.client, host: k.host,
 		K8sConfigs: K8sConfigs{
 			progressSubscription: k.addProgressSubscription(),
 			kubeConfig:           k.kubeConfig,
@@ -391,7 +395,7 @@ func (k *k8sImpl) ConfigContent() *string {
 
 // ForConfig -
 func (k *k8sImpl) ForConfig(config string) (K8s, error) {
-	result := &k8sImpl{namespace: k.namespace, app: k.app, version: k.version, client: k.client,
+	result := &k8sImpl{namespace: k.namespace, app: k.app, version: k.version,
 		K8sConfigs: K8sConfigs{
 			progressSubscription: k.addProgressSubscription(),
 			kubeConfig:           k.kubeConfig,
@@ -400,7 +404,10 @@ func (k *k8sImpl) ForConfig(config string) (K8s, error) {
 			exclude:              k.exclude,
 		}}
 	err := WithKubeConfigContent(config)(&result.K8sConfigs)
-	return result, err
+	if err != nil {
+		return nil, err
+	}
+	return result.connect()
 }
 
 func run(cmd *exec.Cmd) error {
