@@ -108,7 +108,7 @@ var _ = Describe("K8sValue", func() {
 		found := iterator.Next(&obj)
 		Expect(found).To(BeTrue())
 		Expect(fake.WatchCallCount()).To(Equal(1))
-		dict := unwrapDict(obj).(*starlark.Dict)
+		dict := UnwrapDict(obj).(*starlark.Dict)
 		val, found, err := dict.Get(starlark.String("key"))
 		Expect(found).To(BeTrue())
 		Expect(val).To(Equal(starlark.String("value")))

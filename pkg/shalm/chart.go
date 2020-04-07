@@ -1,7 +1,6 @@
 package shalm
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -175,7 +174,7 @@ func (c *chartImpl) Attr(name string) (starlark.Value, error) {
 		}
 		return m, nil
 	}
-	return wrapDict(value), nil
+	return WrapDict(value), nil
 }
 
 // AttrNames returns a new sorted list of the struct fields.
@@ -190,7 +189,7 @@ func (c *chartImpl) AttrNames() []string {
 
 // SetField -
 func (c *chartImpl) SetField(name string, val starlark.Value) error {
-	c.values[name] = unwrapDict(val)
+	c.values[name] = UnwrapDict(val)
 	return nil
 }
 
@@ -260,13 +259,13 @@ func (c *chartImpl) packedChart() ObjectStream {
 		if err != nil {
 			return err
 		}
-		buffer := &bytes.Buffer{}
-		if err := c.Package(buffer, false); err != nil {
-			return err
-		}
+		// buffer := &bytes.Buffer{}
+		// if err := c.Package(buffer, false); err != nil {
+		// 	return err
+		// }
 		data, err := json.Marshal(map[string][]byte{
 			"values": values,
-			"chart":  buffer.Bytes(),
+			// "chart":  buffer.Bytes(),
 		})
 		if err != nil {
 			return err

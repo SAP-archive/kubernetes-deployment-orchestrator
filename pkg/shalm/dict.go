@@ -22,7 +22,7 @@ func (d *dict) Attr(name string) (starlark.Value, error) {
 		return starlark.None, err
 	}
 	if ok {
-		return wrapDict(value), nil
+		return WrapDict(value), nil
 	}
 	return starlark.None, starlark.NoSuchAttrError(
 		fmt.Sprintf("dict has no .%s attribute", name))
@@ -38,10 +38,11 @@ func (d *dict) AttrNames() []string {
 }
 
 func (d *dict) SetField(name string, val starlark.Value) error {
-	return d.Dict.SetKey(starlark.String(name), unwrapDict(val))
+	return d.Dict.SetKey(starlark.String(name), UnwrapDict(val))
 }
 
-func wrapDict(value starlark.Value) starlark.Value {
+// WrapDict -
+func WrapDict(value starlark.Value) starlark.Value {
 	d, ok := value.(*starlark.Dict)
 	if ok {
 		return &dict{Dict: d}
@@ -49,7 +50,8 @@ func wrapDict(value starlark.Value) starlark.Value {
 	return value
 }
 
-func unwrapDict(value starlark.Value) starlark.Value {
+// UnwrapDict -
+func UnwrapDict(value starlark.Value) starlark.Value {
 	d, ok := value.(*dict)
 	if ok {
 		return d.Dict

@@ -49,7 +49,7 @@ func ReadYamlFile(filename string) (starlark.Value, error) {
 	if err != nil {
 		return starlark.None, err
 	}
-	return wrapDict(toStarlark(content)), nil
+	return WrapDict(toStarlark(content)), nil
 }
 
 // WriteYamlFile -

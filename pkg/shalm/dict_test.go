@@ -25,21 +25,21 @@ var _ = Describe("Dict", func() {
 	})
 
 	It("wraps correct", func() {
-		d := wrapDict(starlark.NewDict(10))
+		d := WrapDict(starlark.NewDict(10))
 		_, ok := d.(*dict)
 		Expect(ok).To(BeTrue())
 
-		d = wrapDict(starlark.String(""))
+		d = WrapDict(starlark.String(""))
 		_, ok = d.(starlark.String)
 		Expect(ok).To(BeTrue())
 	})
 
 	It("unwraps correct", func() {
-		d := unwrapDict(wrapDict(starlark.NewDict(10)))
+		d := UnwrapDict(WrapDict(starlark.NewDict(10)))
 		_, ok := d.(*starlark.Dict)
 		Expect(ok).To(BeTrue())
 
-		d = unwrapDict(starlark.String(""))
+		d = UnwrapDict(starlark.String(""))
 		_, ok = d.(starlark.String)
 		Expect(ok).To(BeTrue())
 	})

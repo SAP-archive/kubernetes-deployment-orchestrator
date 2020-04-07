@@ -130,7 +130,7 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 				if err != nil {
 					return starlark.None, err
 				}
-				return wrapDict(toStarlark(obj)), nil
+				return WrapDict(toStarlark(obj)), nil
 			}), nil
 		}
 	case "watch":
@@ -243,7 +243,7 @@ func (w *k8sWatcher) Iterate() starlark.Iterator {
 
 func (i *k8sWatcherIterator) Next(p *starlark.Value) bool {
 	obj := <-i.next
-	*p = wrapDict(toStarlark(obj))
+	*p = WrapDict(toStarlark(obj))
 	return true
 }
 
