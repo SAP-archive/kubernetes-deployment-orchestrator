@@ -1,6 +1,8 @@
 package shalm
 
 import (
+	"context"
+
 	"github.com/blang/semver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -67,7 +69,7 @@ var _ = Describe("k8s_in_memory", func() {
 		defer dir.Remove()
 		dir.MkdirAll("chart2/templates", 0755)
 		dir.WriteFile("kubeconfig", []byte("hello"), 0644)
-		k8s := k8sImpl{K8sConfigs: K8sConfigs{kubeConfig: dir.Join("kubeconfig")}}
+		k8s := k8sImpl{K8sConfigs: K8sConfigs{kubeConfig: dir.Join("kubeconfig")}, ctx: context.Background()}
 		content := k8s.ConfigContent()
 		Expect(content).NotTo(BeNil())
 		Expect(*content).To(Equal("hello"))

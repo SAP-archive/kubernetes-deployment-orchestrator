@@ -2,6 +2,7 @@ package shalm
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
@@ -151,7 +152,7 @@ func (v *K8sConfigs) AddFlags(flagsSet *pflag.FlagSet) {
 // NewK8s create new instance to interact with kubernetes
 func NewK8s(configs ...K8sConfig) (K8s, error) {
 	var err error
-	result := &k8sImpl{root: true}
+	result := &k8sImpl{root: true, ctx: context.Background()}
 	for _, config := range configs {
 		if err = config(&result.K8sConfigs); err != nil {
 			return nil, err
@@ -184,13 +185,14 @@ func (k *k8sImpl) connect() (K8s, error) {
 type k8sImpl struct {
 	K8sConfigs
 	namespace        string
-	command          func(name string, arg ...string) *exec.Cmd
+	command          func(ctx context.Context, name string, arg ...string) *exec.Cmd
 	childrenProgress []int
 	app              string
 	version          semver.Version
 	root             bool
 	client           *k8sClient
 	host             string
+	ctx              context.Context
 }
 
 var (
@@ -245,9 +247,8 @@ func (k *k8sImpl) addProgressSubscription() ProgressSubscription {
 		k.Progress(sum / count)
 	}
 }
-
-func (k *k8sImpl) ForSubChart(namespace string, app string, version semver.Version) K8s {
-	result := &k8sImpl{namespace: namespace, app: app, version: version, client: k.client, host: k.host,
+func (k *k8sImpl) clone() *k8sImpl {
+	return &k8sImpl{namespace: k.namespace, app: k.app, version: k.version, client: k.client, host: k.host, ctx: k.ctx,
 		K8sConfigs: K8sConfigs{
 			progressSubscription: k.addProgressSubscription(),
 			kubeConfig:           k.kubeConfig,
@@ -255,7 +256,21 @@ func (k *k8sImpl) ForSubChart(namespace string, app string, version semver.Versi
 			include:              k.include,
 			exclude:              k.exclude,
 		}}
+}
+
+func (k *k8sImpl) ForSubChart(namespace string, app string, version semver.Version) K8s {
+	result := k.clone()
+	result.namespace = namespace
+	result.app = app
+	result.version = version
 	return result
+}
+
+func (k *k8sImpl) WithContext(ctx context.Context) K8s {
+	result := k.clone()
+	result.ctx = ctx
+	return result
+
 }
 
 // Delete -
@@ -395,14 +410,7 @@ func (k *k8sImpl) ConfigContent() *string {
 
 // ForConfig -
 func (k *k8sImpl) ForConfig(config string) (K8s, error) {
-	result := &k8sImpl{namespace: k.namespace, app: k.app, version: k.version,
-		K8sConfigs: K8sConfigs{
-			progressSubscription: k.addProgressSubscription(),
-			kubeConfig:           k.kubeConfig,
-			tool:                 k.tool,
-			include:              k.include,
-			exclude:              k.exclude,
-		}}
+	result := k.clone()
 	err := WithKubeConfigContent(config)(&result.K8sConfigs)
 	if err != nil {
 		return nil, err
@@ -450,9 +458,9 @@ func (k *k8sImpl) kubectl(command string, options *K8sOptions, flags ...string) 
 	}
 	c := k.command
 	if c == nil {
-		c = exec.Command
+		c = exec.CommandContext
 	}
-	cmd := c("kubectl", flags...)
+	cmd := c(k.ctx, "kubectl", flags...)
 	fmt.Println(cmd.String())
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -474,10 +482,10 @@ func (k *k8sImpl) kapp(command string, options *K8sOptions, flags ...string) *ex
 	}
 	c := k.command
 	if c == nil {
-		c = exec.Command
+		c = exec.CommandContext
 	}
 	flags = append(flags, "-a", k.app, "-y")
-	cmd := c("kapp", flags...)
+	cmd := c(k.ctx, "kapp", flags...)
 	fmt.Println(cmd.String())
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

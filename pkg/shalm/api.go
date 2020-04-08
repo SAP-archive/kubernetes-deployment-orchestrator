@@ -1,6 +1,7 @@
 package shalm
 
 import (
+	"context"
 	"io"
 	"time"
 
@@ -73,6 +74,7 @@ type K8s interface {
 	Delete(output ObjectStream, options *K8sOptions) error
 	ConfigContent() *string
 	ForConfig(config string) (K8s, error)
+	WithContext(ctx context.Context) K8s
 	Progress(progress int)
 	Tool() Tool
 	SetTool(tool Tool)

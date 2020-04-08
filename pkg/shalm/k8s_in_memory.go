@@ -1,6 +1,7 @@
 package shalm
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -30,6 +31,7 @@ func NewK8sInMemory(namespace string, objects ...Object) *K8sInMemory {
 
 var _ K8s = (*K8sInMemory)(nil)
 
+// Host -
 func (k K8sInMemory) Host() string {
 	return "memory.local"
 }
@@ -37,6 +39,11 @@ func (k K8sInMemory) Host() string {
 // ForSubChart -
 func (k K8sInMemory) ForSubChart(namespace string, app string, version semver.Version) K8s {
 	return &K8sInMemory{namespace: namespace, objects: k.objects}
+}
+
+// WithContext -
+func (k K8sInMemory) WithContext(ctx context.Context) K8s {
+	return &K8sInMemory{namespace: k.namespace, objects: k.objects}
 }
 
 // Inspect -

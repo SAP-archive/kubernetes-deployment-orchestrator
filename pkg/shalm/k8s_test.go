@@ -2,6 +2,7 @@ package shalm
 
 import (
 	"bytes"
+	"context"
 	"os/exec"
 	"regexp"
 
@@ -47,9 +48,9 @@ var _ = Describe("k8s", func() {
 	})
 
 	Context("kapp", func() {
-		k8s := k8sImpl{command: func(name string, arg ...string) *exec.Cmd {
+		k8s := k8sImpl{command: func(_ context.Context, name string, arg ...string) *exec.Cmd {
 			return exec.Command("echo", `{ "kind" : "Deployment" }`)
-		}, K8sConfigs: K8sConfigs{tool: ToolKapp}}
+		}, K8sConfigs: K8sConfigs{tool: ToolKapp}, ctx: context.Background()}
 		It("delete works", func() {
 			err := k8s.Delete(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
@@ -62,9 +63,10 @@ var _ = Describe("k8s", func() {
 	Context("kubectl", func() {
 
 		progress := 0
-		k8s := k8sImpl{command: func(name string, arg ...string) *exec.Cmd {
+		k8s := k8sImpl{command: func(_ context.Context, name string, arg ...string) *exec.Cmd {
 			return exec.Command("echo", `{ "kind" : "Deployment" }`)
 		}, app: "app", version: semver.Version{Major: 1, Minor: 2}, namespace: "namespace",
+			ctx: context.Background(),
 			K8sConfigs: K8sConfigs{
 				progressSubscription: func(p int) {
 					progress = p
@@ -106,7 +108,7 @@ var _ = Describe("k8s", func() {
 			defer dir.Remove()
 			dir.MkdirAll("chart2/templates", 0755)
 			dir.WriteFile("kubeconfig", []byte("hello"), 0644)
-			k8s := k8sImpl{K8sConfigs: K8sConfigs{kubeConfig: dir.Join("kubeconfig")}}
+			k8s := k8sImpl{K8sConfigs: K8sConfigs{kubeConfig: dir.Join("kubeconfig")}, ctx: context.Background()}
 			content := k8s.ConfigContent()
 			Expect(content).NotTo(BeNil())
 			Expect(*content).To(Equal("hello"))

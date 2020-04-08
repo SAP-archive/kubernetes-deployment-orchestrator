@@ -2,6 +2,7 @@
 package controllers
 
 import (
+	"context"
 	"sync"
 
 	"github.com/blang/semver"
@@ -187,6 +188,17 @@ type FakeK8s struct {
 	}
 	watchReturnsOnCall map[int]struct {
 		result1 shalm.ObjectStream
+	}
+	WithContextStub        func(context.Context) shalm.K8s
+	withContextMutex       sync.RWMutex
+	withContextArgsForCall []struct {
+		arg1 context.Context
+	}
+	withContextReturns struct {
+		result1 shalm.K8s
+	}
+	withContextReturnsOnCall map[int]struct {
+		result1 shalm.K8s
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
@@ -1083,6 +1095,66 @@ func (fake *FakeK8s) WatchReturnsOnCall(i int, result1 shalm.ObjectStream) {
 	}{result1}
 }
 
+func (fake *FakeK8s) WithContext(arg1 context.Context) shalm.K8s {
+	fake.withContextMutex.Lock()
+	ret, specificReturn := fake.withContextReturnsOnCall[len(fake.withContextArgsForCall)]
+	fake.withContextArgsForCall = append(fake.withContextArgsForCall, struct {
+		arg1 context.Context
+	}{arg1})
+	fake.recordInvocation("WithContext", []interface{}{arg1})
+	fake.withContextMutex.Unlock()
+	if fake.WithContextStub != nil {
+		return fake.WithContextStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.withContextReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeK8s) WithContextCallCount() int {
+	fake.withContextMutex.RLock()
+	defer fake.withContextMutex.RUnlock()
+	return len(fake.withContextArgsForCall)
+}
+
+func (fake *FakeK8s) WithContextCalls(stub func(context.Context) shalm.K8s) {
+	fake.withContextMutex.Lock()
+	defer fake.withContextMutex.Unlock()
+	fake.WithContextStub = stub
+}
+
+func (fake *FakeK8s) WithContextArgsForCall(i int) context.Context {
+	fake.withContextMutex.RLock()
+	defer fake.withContextMutex.RUnlock()
+	argsForCall := fake.withContextArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeK8s) WithContextReturns(result1 shalm.K8s) {
+	fake.withContextMutex.Lock()
+	defer fake.withContextMutex.Unlock()
+	fake.WithContextStub = nil
+	fake.withContextReturns = struct {
+		result1 shalm.K8s
+	}{result1}
+}
+
+func (fake *FakeK8s) WithContextReturnsOnCall(i int, result1 shalm.K8s) {
+	fake.withContextMutex.Lock()
+	defer fake.withContextMutex.Unlock()
+	fake.WithContextStub = nil
+	if fake.withContextReturnsOnCall == nil {
+		fake.withContextReturnsOnCall = make(map[int]struct {
+			result1 shalm.K8s
+		})
+	}
+	fake.withContextReturnsOnCall[i] = struct {
+		result1 shalm.K8s
+	}{result1}
+}
+
 func (fake *FakeK8s) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -1118,6 +1190,8 @@ func (fake *FakeK8s) Invocations() map[string][][]interface{} {
 	defer fake.waitMutex.RUnlock()
 	fake.watchMutex.RLock()
 	defer fake.watchMutex.RUnlock()
+	fake.withContextMutex.RLock()
+	defer fake.withContextMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
