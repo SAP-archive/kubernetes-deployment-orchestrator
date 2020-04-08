@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	"reflect"
+	"time"
 
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
@@ -120,7 +121,9 @@ func (r *ShalmChartReconciler) apply(spec *shalmv1a2.ChartSpec, progressCb shalm
 	if err != nil {
 		return err
 	}
-	return chart.Apply(thread, k8s)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	defer cancel()
+	return chart.Apply(thread, k8s.WithContext(ctx))
 }
 
 func (r *ShalmChartReconciler) delete(spec *shalmv1a2.ChartSpec, progressCb shalm.ProgressSubscription) error {
@@ -139,7 +142,9 @@ func (r *ShalmChartReconciler) delete(spec *shalmv1a2.ChartSpec, progressCb shal
 	if err != nil {
 		return err
 	}
-	return chart.Delete(thread, k8s)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Hour)
+	defer cancel()
+	return chart.Delete(thread, k8s.WithContext(ctx))
 }
 
 // SetupWithManager -

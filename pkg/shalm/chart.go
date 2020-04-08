@@ -247,11 +247,25 @@ func (c *chartImpl) applyLocal(thread *starlark.Thread, k K8sValue, k8sOptions *
 		return nil
 	}
 	k8sOptions.Namespaced = false
-	return k.Apply(concat(decode(c.template(thread, glob, true)), c.packedChart()), k8sOptions)
+	return k.Apply(concat(decode(c.template(thread, glob, true)), c.nameSpaceObject(), c.packedChartObject()), k8sOptions)
 }
 
-func (c *chartImpl) packedChart() ObjectStream {
+func (c *chartImpl) nameSpaceObject() ObjectStream {
 	return func(w ObjectWriter) error {
+		return nil
+		return w(&Object{
+			APIVersion: corev1.SchemeGroupVersion.String(),
+			Kind:       "Namespace",
+			MetaData: MetaData{
+				Name: c.namespace,
+			},
+		})
+	}
+}
+
+func (c *chartImpl) packedChartObject() ObjectStream {
+	return func(w ObjectWriter) error {
+		return nil
 		if c.skipChart {
 			return nil
 		}
@@ -274,7 +288,8 @@ func (c *chartImpl) packedChart() ObjectStream {
 			APIVersion: corev1.SchemeGroupVersion.String(),
 			Kind:       "Secret",
 			MetaData: MetaData{
-				Name: "wonderix.chart." + c.GetName(),
+				Name:      "wonderix.chart." + c.GetName(),
+				Namespace: c.namespace,
 			},
 			Additional: map[string]json.RawMessage{
 				"type": json.RawMessage([]byte(`"github.com/wonderix/shalm"`)),
@@ -333,7 +348,7 @@ func (c *chartImpl) deleteLocal(thread *starlark.Thread, k K8sValue, k8sOptions 
 		return nil
 	}
 	k8sOptions.Namespaced = false
-	err := k.Delete(concat(decode(c.template(thread, glob, false)), c.packedChart()), k8sOptions)
+	err := k.Delete(concat(decode(c.template(thread, glob, false)), c.packedChartObject()), k8sOptions)
 	if err != nil {
 		return err
 	}

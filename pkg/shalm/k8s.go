@@ -89,6 +89,7 @@ type K8sConfigs struct {
 	progress             int
 	include              *regexp.Regexp
 	exclude              *regexp.Regexp
+	verbose              int
 }
 
 // K8sConfig -
@@ -102,6 +103,11 @@ func WithTool(value Tool) K8sConfig {
 // WithProgressSubscription -
 func WithProgressSubscription(value ProgressSubscription) K8sConfig {
 	return func(options *K8sConfigs) error { options.progressSubscription = value; return nil }
+}
+
+// WithVerbose -
+func WithVerbose(value int) K8sConfig {
+	return func(options *K8sConfigs) error { options.verbose = value; return nil }
 }
 
 // WithKubeConfigContent -
@@ -147,6 +153,7 @@ func (v *K8sConfigs) AddFlags(flagsSet *pflag.FlagSet) {
 	flagsSet.VarP(&v.tool, "tool", "t", "Tool to do the installation. Possible values kubectl (default) and kapp")
 	flagsSet.VarP(&regexpVar{re: &v.exclude}, "exclude", "e", "Regular expression for exclusion of application or deletion of charts")
 	flagsSet.VarP(&regexpVar{re: &v.include}, "include", "i", "Regular expression for inclusion of application or deletion of charts")
+	flagsSet.IntVarP(&v.verbose, "verbose", "v", 0, "Set kubectl verbose level")
 }
 
 // NewK8s create new instance to interact with kubernetes
@@ -255,6 +262,7 @@ func (k *k8sImpl) clone() *k8sImpl {
 			tool:                 k.tool,
 			include:              k.include,
 			exclude:              k.exclude,
+			verbose:              k.verbose,
 		}}
 }
 
@@ -267,10 +275,8 @@ func (k *k8sImpl) ForSubChart(namespace string, app string, version semver.Versi
 }
 
 func (k *k8sImpl) WithContext(ctx context.Context) K8s {
-	result := k.clone()
-	result.ctx = ctx
-	return result
-
+	k.ctx = ctx
+	return k
 }
 
 // Delete -
@@ -455,6 +461,9 @@ func (k *k8sImpl) kubectl(command string, options *K8sOptions, flags ...string) 
 	}
 	if options.Timeout > 0 {
 		flags = append(flags, "--timeout", fmt.Sprintf("%.0fs", options.Timeout.Seconds()))
+	}
+	if k.verbose != 0 {
+		flags = append(flags, fmt.Sprintf("-v=%d", k.verbose))
 	}
 	c := k.command
 	if c == nil {
