@@ -126,6 +126,18 @@ Deletes one kubernetes object
 | `namespace`        | Override default namespace of chart                                                                                       |
 | `ignore_not_found` | Ignore not found                                                                                                          |
 
+#### `k8s.apply(stream_or_object,namespaced=false,timeout=0,namespace=None,ignore_not_found=False)`
+
+Deletes one kubernetes object
+
+| Parameter          | Description                                                                                                               |
+|--------------------|---------------------------------------------------------------------------------------------------------------------------|
+| `stream_or_object`  | Can be a stream returned from `chart.template` or and `object` returned from `k8s.get`                                         |
+| `timeout`          | Timeout passed to `kubectl apply`. A timeout of zero means wait forever.                                                  |
+| `namespaced`       | If true object in the current namespace are deleted. Otherwise object in cluster scope will be deleted. Default is `true` |
+| `namespace`        | Override default namespace of chart                                                                                       |
+| `ignore_not_found` | Ignore not found                                                                                                          |
+
 #### `k8s.get(kind,name,namespaced=false,timeout=0,namespace=None,ignore_not_found=False)`
 
 Get one kubernetes object. The value is returned as a `dict`.

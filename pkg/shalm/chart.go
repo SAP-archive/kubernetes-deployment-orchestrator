@@ -1,7 +1,6 @@
 package shalm
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/blang/semver"
 	"go.starlark.net/starlark"
-	corev1 "k8s.io/api/core/v1"
 )
 
 type chartImpl struct {
@@ -253,50 +251,50 @@ func (c *chartImpl) applyLocal(thread *starlark.Thread, k K8sValue, k8sOptions *
 func (c *chartImpl) nameSpaceObject() ObjectStream {
 	return func(w ObjectWriter) error {
 		return nil
-		return w(&Object{
-			APIVersion: corev1.SchemeGroupVersion.String(),
-			Kind:       "Namespace",
-			MetaData: MetaData{
-				Name: c.namespace,
-			},
-		})
+		// return w(&Object{
+		// 	APIVersion: corev1.SchemeGroupVersion.String(),
+		// 	Kind:       "Namespace",
+		// 	MetaData: MetaData{
+		// 		Name: c.namespace,
+		// 	},
+		// })
 	}
 }
 
 func (c *chartImpl) packedChartObject() ObjectStream {
 	return func(w ObjectWriter) error {
 		return nil
-		if c.skipChart {
-			return nil
-		}
-		values, err := json.Marshal(stringDictToGo(c.values))
-		if err != nil {
-			return err
-		}
-		// buffer := &bytes.Buffer{}
-		// if err := c.Package(buffer, false); err != nil {
+		// if c.skipChart {
+		// 	return nil
+		// }
+		// values, err := json.Marshal(stringDictToGo(c.values))
+		// if err != nil {
 		// 	return err
 		// }
-		data, err := json.Marshal(map[string][]byte{
-			"values": values,
-			// "chart":  buffer.Bytes(),
-		})
-		if err != nil {
-			return err
-		}
-		w(&Object{
-			APIVersion: corev1.SchemeGroupVersion.String(),
-			Kind:       "Secret",
-			MetaData: MetaData{
-				Name:      "wonderix.chart." + c.GetName(),
-				Namespace: c.namespace,
-			},
-			Additional: map[string]json.RawMessage{
-				"type": json.RawMessage([]byte(`"github.com/wonderix/shalm"`)),
-				"data": json.RawMessage(data),
-			},
-		})
-		return nil
+		// // buffer := &bytes.Buffer{}
+		// // if err := c.Package(buffer, false); err != nil {
+		// // 	return err
+		// // }
+		// data, err := json.Marshal(map[string][]byte{
+		// 	"values": values,
+		// 	// "chart":  buffer.Bytes(),
+		// })
+		// if err != nil {
+		// 	return err
+		// }
+		// w(&Object{
+		// 	APIVersion: corev1.SchemeGroupVersion.String(),
+		// 	Kind:       "Secret",
+		// 	MetaData: MetaData{
+		// 		Name:      "wonderix.chart." + c.GetName(),
+		// 		Namespace: c.namespace,
+		// 	},
+		// 	Additional: map[string]json.RawMessage{
+		// 		"type": json.RawMessage([]byte(`"github.com/wonderix/shalm"`)),
+		// 		"data": json.RawMessage(data),
+		// 	},
+		// })
+		// return nil
 	}
 }
 

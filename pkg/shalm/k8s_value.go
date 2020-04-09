@@ -1,6 +1,7 @@
 package shalm
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -110,6 +111,35 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 					return starlark.None, errors.New("no parameter name given")
 				}
 				return starlark.None, k.DeleteObject(kind, name, k8sOptions)
+			}), nil
+		}
+	case "apply":
+		{
+			return starlark.NewBuiltin("apply", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+				var value starlark.Value
+				parser := &kwargsParser{kwargs: kwargs}
+				k8sOptions := unpackK8sOptions(parser)
+				if err := starlark.UnpackArgs("apply", args, parser.Parse(), "value", &value); err != nil {
+					return nil, err
+				}
+				var os func(w ObjectWriter) error
+				s, ok := value.(*stream)
+				if ok {
+					os = decode(s.Stream)
+				} else {
+					os = func(w ObjectWriter) error {
+						var o Object
+						data, err := json.Marshal(toGo(value))
+						if err != nil {
+							return err
+						}
+						if err = json.Unmarshal(data, &o); err != nil {
+							return err
+						}
+						return w(&o)
+					}
+				}
+				return starlark.None, k.Apply(os, k8sOptions)
 			}), nil
 		}
 	case "get":

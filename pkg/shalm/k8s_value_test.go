@@ -2,6 +2,7 @@ package shalm
 
 import (
 	"encoding/json"
+	"io"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -112,6 +113,53 @@ var _ = Describe("K8sValue", func() {
 		val, found, err := dict.Get(starlark.String("key"))
 		Expect(found).To(BeTrue())
 		Expect(val).To(Equal(starlark.String("value")))
+	})
+
+	It("applies objects", func() {
+		var appliedObject Object
+		fake := &FakeK8s{
+			ApplyStub: func(s ObjectStream, options *K8sOptions) error {
+				return s(func(o *Object) error {
+					appliedObject = *o
+					return nil
+				})
+			},
+		}
+		k8s := &k8sValueImpl{fake}
+		thread := &starlark.Thread{}
+		watch, err := k8s.Attr("apply")
+		o := Object{MetaData: MetaData{
+			Name: "test",
+		}}
+		_, err = starlark.Call(thread, watch, starlark.Tuple{toStarlark(o)}, nil)
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(appliedObject.MetaData.Name).To(Equal(o.MetaData.Name))
+	})
+
+	It("applies stream", func() {
+		var appliedObject Object
+		fake := &FakeK8s{
+			ApplyStub: func(s ObjectStream, options *K8sOptions) error {
+				return s(func(o *Object) error {
+					appliedObject = *o
+					return nil
+				})
+			},
+		}
+		k8s := &k8sValueImpl{fake}
+		thread := &starlark.Thread{}
+		watch, err := k8s.Attr("apply")
+		o := Object{MetaData: MetaData{
+			Name: "test",
+		}}
+		_, err = starlark.Call(thread, watch, starlark.Tuple{&stream{Stream: func(w io.Writer) error {
+			_, err := w.Write([]byte("metadata:\n  name: test\n"))
+			return err
+		}}}, nil)
+
+		Expect(err).NotTo(HaveOccurred())
+		Expect(appliedObject.MetaData.Name).To(Equal(o.MetaData.Name))
 	})
 
 })
