@@ -51,6 +51,9 @@ var _ = Describe("ShalmChartReconciler", func() {
 		k8s.ForSubChartStub = func(s string, app string, version semver.Version) shalm.K8s {
 			return k8s
 		}
+		k8s.WithContextStub = func(ctx context.Context) shalm.K8s {
+			return k8s
+		}
 		chart := shalmv1a2.ShalmChart{
 			Spec: shalmv1a2.ChartSpec{
 				ChartTgz: chartTgz,
@@ -108,6 +111,9 @@ var _ = Describe("ShalmChartReconciler", func() {
 			},
 		}
 		k8s.ForSubChartStub = func(s string, app string, version semver.Version) shalm.K8s {
+			return k8s
+		}
+		k8s.WithContextStub = func(ctx context.Context) shalm.K8s {
 			return k8s
 		}
 		chart := shalmv1a2.ShalmChart{
