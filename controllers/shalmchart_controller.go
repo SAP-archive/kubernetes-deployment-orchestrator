@@ -27,7 +27,9 @@ import (
 	"go.starlark.net/starlark"
 
 	"github.com/go-logr/logr"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -40,11 +42,12 @@ var myFinalizerName = "controller.shalm.wonderix.github.com"
 // ShalmChartReconciler reconciles a ShalmChart object
 type ShalmChartReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
-	Repo   shalm.Repo
-	K8s    func(configs ...shalm.K8sConfig) (shalm.K8s, error)
-	Load   func(thread *starlark.Thread, module string) (dict starlark.StringDict, err error)
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Repo     shalm.Repo
+	K8s      func(configs ...shalm.K8sConfig) (shalm.K8s, error)
+	Load     func(thread *starlark.Thread, module string) (dict starlark.StringDict, err error)
+	Recorder record.EventRecorder
 }
 
 type shalmChartPredicate struct {
@@ -79,7 +82,11 @@ func (r *ShalmChartReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			shalmChart.Status.LastOp.Progress = progress
 			r.Status().Update(context.Background(), &shalmChart)
 		}); err != nil {
-			return result, errors.Wrapf(err, "error applying ShalmChart %s", req.NamespacedName.String())
+			err = errors.Wrapf(err, "error applying ShalmChart %s", req.NamespacedName.String())
+			r.Recorder.Event(&shalmChart, corev1.EventTypeWarning, "ApplyError", err.Error())
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "ApplyError", Progress: 0}
+			r.Status().Update(context.Background(), &shalmChart)
+			return result, err
 		}
 		return result, err
 	}
@@ -92,7 +99,11 @@ func (r *ShalmChartReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			shalmChart.Status.LastOp.Progress = progress
 			r.Status().Update(context.Background(), &shalmChart)
 		}); err != nil {
-			return result, errors.Wrapf(err, "error deleting ShalmChart %s", req.NamespacedName.String())
+			err = errors.Wrapf(err, "error deleting ShalmChart %s", req.NamespacedName.String())
+			r.Recorder.Event(&shalmChart, corev1.EventTypeWarning, "DeleteError", err.Error())
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "DeleteError", Progress: 0}
+			r.Status().Update(context.Background(), &shalmChart)
+			return result, err
 		}
 
 		shalmChart.ObjectMeta.Finalizers = removeString(shalmChart.ObjectMeta.Finalizers, myFinalizerName)

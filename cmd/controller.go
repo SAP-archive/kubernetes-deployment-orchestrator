@@ -59,7 +59,8 @@ func controller(stopCh <-chan struct{}) error {
 			configs = append([]shalm.K8sConfig{controllerK8sArgs.Merge()}, configs...)
 			return shalm.NewK8s(configs...)
 		},
-		Load: rootExecuteOptions.load,
+		Load:     rootExecuteOptions.load,
+		Recorder: mgr.GetEventRecorderFor("shalmchart-controller"),
 	}
 	err = reconciler.SetupWithManager(mgr, options)
 	if err != nil {
