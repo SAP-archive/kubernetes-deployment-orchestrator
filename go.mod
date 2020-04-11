@@ -19,6 +19,7 @@ require (
 	github.com/spf13/cobra v0.0.7
 	github.com/spf13/pflag v1.0.5
 	go.starlark.net v0.0.0-20191021185836-28350e608555
+	golang.org/x/tools/gopls v0.4.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.4
