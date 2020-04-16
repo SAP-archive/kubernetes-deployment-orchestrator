@@ -78,11 +78,11 @@ docker-context/kubectl: Makefile
 	chmod +x docker-context/kubectl
 
 docker-context/ytt: Makefile
-	curl -SsL https://github.com/k14s/ytt/releases/download/v0.26.0/ytt-linux-amd64 -o docker-context/ytt
+	curl -SsL https://github.com/k14s/ytt/releases/download/v0.27.1/ytt-linux-amd64 -o docker-context/ytt
 	chmod +x docker-context/ytt
 
 docker-context/kapp:  Makefile
-	curl -SsL https://github.com/k14s/kapp/releases/download/v0.23.0/kapp-linux-amd64 -o docker-context/kapp
+	curl -SsL https://github.com/k14s/kapp/releases/download/v0.24.0/kapp-linux-amd64 -o docker-context/kapp
 	chmod +x docker-context/kapp
 
 docker-prepare:: docker-context/shalm docker-context/kubectl docker-context/ytt docker-context/kapp
