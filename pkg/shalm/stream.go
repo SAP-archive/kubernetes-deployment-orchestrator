@@ -10,6 +10,9 @@ import (
 	"go.starlark.net/starlark"
 )
 
+// Stream -
+type Stream = func(io.Writer) error
+
 type stream struct {
 	Stream
 }

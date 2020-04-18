@@ -12,6 +12,16 @@ import (
 	"go.starlark.net/starlark"
 )
 
+// Chart -
+type Chart interface {
+	GetName() string
+	GetVersion() semver.Version
+	Apply(thread *starlark.Thread, k K8s) error
+	Delete(thread *starlark.Thread, k K8s) error
+	Template(thread *starlark.Thread) Stream
+	Package(writer io.Writer, helmFormat bool) error
+}
+
 type chartImpl struct {
 	ChartOptions
 	clazz    chartClass

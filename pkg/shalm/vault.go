@@ -9,6 +9,20 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// VaultBackend -
+type VaultBackend interface {
+	Name() string
+	Keys() map[string]string
+	Apply(map[string][]byte) (map[string][]byte, error)
+}
+
+// ComplexVaultBackend -
+type ComplexVaultBackend interface {
+	VaultBackend
+	Template() (map[string][]byte, error)
+	Delete() error
+}
+
 const stateInit = 0
 const stateLoaded = 1
 const stateReady = 2

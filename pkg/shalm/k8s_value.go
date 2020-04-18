@@ -9,6 +9,12 @@ import (
 	"go.starlark.net/starlark"
 )
 
+// K8sValue -
+type K8sValue interface {
+	starlark.Value
+	K8s
+}
+
 // NewK8sValue create new instance to interact with kubernetes
 func NewK8sValue(k K8s) K8sValue {
 	return &k8sValueImpl{k}

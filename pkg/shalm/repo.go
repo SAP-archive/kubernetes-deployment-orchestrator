@@ -24,6 +24,14 @@ import (
 	"go.starlark.net/starlark"
 )
 
+// Repo -
+type Repo interface {
+	// Get -
+	Get(thread *starlark.Thread, url string, options ...ChartOption) (ChartValue, error)
+	// GetFromSpec -
+	GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpec, options ...ChartOption) (ChartValue, error)
+}
+
 type repoImpl struct {
 	cacheDir    string
 	openUrl     OpenDirCache

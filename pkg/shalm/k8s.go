@@ -22,6 +22,42 @@ import (
 	"github.com/spf13/pflag"
 )
 
+//go:generate ./generate_fake.sh
+
+// K8sOptions common options for calls to k8s
+type K8sOptions struct {
+	Namespaced     bool
+	Namespace      string
+	Timeout        time.Duration
+	IgnoreNotFound bool
+}
+
+// K8sReader kubernetes reader API
+type K8sReader interface {
+	Host() string
+	Get(kind string, name string, options *K8sOptions) (*Object, error)
+	IsNotExist(err error) bool
+}
+
+// K8s kubernetes API
+type K8s interface {
+	K8sReader
+	ForSubChart(namespace string, app string, version semver.Version) K8s
+	Inspect() string
+	Watch(kind string, name string, options *K8sOptions) ObjectStream
+	RolloutStatus(kind string, name string, options *K8sOptions) error
+	Wait(kind string, name string, condition string, options *K8sOptions) error
+	DeleteObject(kind string, name string, options *K8sOptions) error
+	Apply(output ObjectStream, options *K8sOptions) error
+	Delete(output ObjectStream, options *K8sOptions) error
+	ConfigContent() *string
+	ForConfig(config string) (K8s, error)
+	WithContext(ctx context.Context) K8s
+	Progress(progress int)
+	Tool() Tool
+	SetTool(tool Tool)
+}
+
 // ProgressSubscription -
 type ProgressSubscription = func(progress int)
 
