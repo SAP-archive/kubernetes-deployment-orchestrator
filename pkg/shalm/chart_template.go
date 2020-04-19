@@ -64,7 +64,7 @@ func (c *chartImpl) template(thread *starlark.Thread, glob string, reconcile boo
 	if glob != "" {
 		kwargs = append(kwargs, starlark.Tuple{starlark.String("glob"), starlark.String(glob)})
 	}
-	return yamlConcat(c.vaultStream().Encode(), toStream(starlark.Call(thread, c.methods["template"], nil, kwargs)))
+	return yamlConcat(c.jewelStream().Encode(), toStream(starlark.Call(thread, c.methods["template"], nil, kwargs)))
 }
 
 func (c *chartImpl) helmTemplateFunction() starlark.Callable {
@@ -224,17 +224,11 @@ func (c *chartImpl) yttTemplateFunction() starlark.Callable {
 	})
 }
 
-func (c *chartImpl) vaultStream() ObjectStream {
-	streams := []ObjectStream{}
-	c.eachVault(func(v *vault) error {
-
-		object, err := v.object(c.namespace)
-		if err != nil {
-			streams = append(streams, ObjectErrorStream(err))
-		} else {
-			streams = append(streams, func(w ObjectWriter) error { return w(object) })
-		}
-		return nil
-	})
-	return concat(streams...)
+func (c *chartImpl) jewelStream() ObjectStream {
+	return func(w ObjectWriter) error {
+		vault := &vaultK8s{objectWriter: w, namespace: c.namespace}
+		return c.eachJewel(func(v *jewel) error {
+			return v.write(vault)
+		})
+	}
 }

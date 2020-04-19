@@ -10,36 +10,36 @@ import (
 	"go.starlark.net/starlark"
 )
 
-type myVaultBackend struct {
+type myJewelBackend struct {
 	prefix string
 }
 
-var _ shalm.VaultBackend = (*myVaultBackend)(nil)
+var _ shalm.JewelBackend = (*myJewelBackend)(nil)
 
-func (v *myVaultBackend) Name() string {
-	return "myvault"
+func (v *myJewelBackend) Name() string {
+	return "myjewel"
 }
 
-func (v *myVaultBackend) Keys() map[string]string {
+func (v *myJewelBackend) Keys() map[string]string {
 	return map[string]string{
 		"username": "username",
 	}
 }
 
-func (v *myVaultBackend) Apply(m map[string][]byte) (map[string][]byte, error) {
+func (v *myJewelBackend) Apply(m map[string][]byte) (map[string][]byte, error) {
 	return map[string][]byte{
 		"username": []byte(fmt.Sprintf("%s-%d", v.prefix, time.Now().Unix())),
 	}, nil
 }
 
-func makeMyVault(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-	c := &myVaultBackend{}
+func makeMyJewel(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	c := &myJewelBackend{}
 	var name string
-	err := starlark.UnpackArgs("myvault", args, kwargs, "name", &name, "prefix", &c.prefix)
+	err := starlark.UnpackArgs("myjewel", args, kwargs, "name", &name, "prefix", &c.prefix)
 	if err != nil {
 		return nil, err
 	}
-	return shalm.NewVault(c, name)
+	return shalm.NewJewel(c, name)
 }
 
 func myExtensions(thread *starlark.Thread, module string) (starlark.StringDict, error) {
@@ -48,9 +48,9 @@ func myExtensions(thread *starlark.Thread, module string) (starlark.StringDict, 
 		return starlark.StringDict{
 			"message": starlark.String("hello world"),
 		}, nil
-	case "@extension:myvault":
+	case "@extension:myjewel":
 		return starlark.StringDict{
-			"myvault": starlark.NewBuiltin("myvault", makeMyVault),
+			"myjewel": starlark.NewBuiltin("myjewel", makeMyJewel),
 		}, nil
 	}
 	return nil, fmt.Errorf("Unknown module '%s'", module)

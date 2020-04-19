@@ -22,11 +22,11 @@ type certificateBackend struct {
 	certificateKey string
 	validityPeriod period.Period
 	isCa           bool
-	signer         *vault
+	signer         *jewel
 	domains        *starlark.List
 }
 
-var _ VaultBackend = (*certificateBackend)(nil)
+var _ JewelBackend = (*certificateBackend)(nil)
 
 func (c *certificateBackend) Name() string {
 	return "certificate"
@@ -161,7 +161,7 @@ func makeCertificate(thread *starlark.Thread, fn *starlark.Builtin, args starlar
 	if c.validityPeriod, err = period.Parse(validity); err != nil {
 		return nil, err
 	}
-	return NewVault(c, name)
+	return NewJewel(c, name)
 }
 
 func listToStringArray(list *starlark.List) []string {

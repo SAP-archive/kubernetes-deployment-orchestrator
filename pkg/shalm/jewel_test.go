@@ -14,10 +14,10 @@ type testBackend struct {
 	prefix string
 }
 
-var _ VaultBackend = (*testBackend)(nil)
+var _ JewelBackend = (*testBackend)(nil)
 
 func (u *testBackend) Name() string {
-	return "vault"
+	return "jewel"
 }
 
 func (u *testBackend) Keys() map[string]string {
@@ -32,42 +32,42 @@ func (u *testBackend) Apply(m map[string][]byte) (map[string][]byte, error) {
 	}, nil
 }
 
-func makeMyVault(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+func makeMyJewel(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 	c := &testBackend{}
 	var name string
-	err := starlark.UnpackArgs("myvault", args, kwargs, "name", &name, "prefix", &c.prefix)
+	err := starlark.UnpackArgs("myjewel", args, kwargs, "name", &name, "prefix", &c.prefix)
 	if err != nil {
 		return nil, err
 	}
-	return NewVault(c, name)
+	return NewJewel(c, name)
 }
 
-var _ = Describe("generic vault", func() {
+var _ = Describe("generic jewel", func() {
 
-	Context("generic vault value", func() {
-		v, err := makeMyVault(nil, nil, starlark.Tuple{starlark.String("name"), starlark.String("prefix")}, nil)
-		vault := v.(*vault)
+	Context("generic jewel value", func() {
+		v, err := makeMyJewel(nil, nil, starlark.Tuple{starlark.String("name"), starlark.String("prefix")}, nil)
+		jewel := v.(*jewel)
 
 		It("behaves like starlark value", func() {
 			Expect(err).NotTo(HaveOccurred())
-			Expect(vault.String()).To(ContainSubstring("vault(name = name)"))
-			Expect(func() { vault.Hash() }).Should(Panic())
-			Expect(vault.Type()).To(Equal("vault"))
-			Expect(vault.Truth()).To(BeEquivalentTo(false))
+			Expect(jewel.String()).To(ContainSubstring("jewel(name = name)"))
+			Expect(func() { jewel.Hash() }).Should(Panic())
+			Expect(jewel.Type()).To(Equal("jewel"))
+			Expect(jewel.Truth()).To(BeEquivalentTo(false))
 
 			By("attribute name", func() {
-				value, err := vault.Attr("name")
+				value, err := jewel.Attr("name")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(value).To(Equal(starlark.String("name")))
-				Expect(vault.AttrNames()).To(ContainElement("name"))
+				Expect(jewel.AttrNames()).To(ContainElement("name"))
 
 			})
 
 			By("attribute field", func() {
-				value, err := vault.Attr("field")
+				value, err := jewel.Attr("field")
 				Expect(err).NotTo(HaveOccurred())
 				Expect(value.(starlark.String).GoString()).To(ContainSubstring("prefix"))
-				Expect(vault.AttrNames()).To(ContainElement("field"))
+				Expect(jewel.AttrNames()).To(ContainElement("field"))
 
 			})
 
@@ -82,7 +82,7 @@ var _ = Describe("generic vault", func() {
 					return true
 				},
 			}
-			err := vault.read(k8s)
+			err := jewel.read(&vaultK8s{k8s: k8s})
 			Expect(err).NotTo(HaveOccurred())
 
 		})

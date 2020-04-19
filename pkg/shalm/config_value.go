@@ -52,7 +52,7 @@ type configValueBackend struct {
 	options     []string
 }
 
-var _ VaultBackend = (*configValueBackend)(nil)
+var _ JewelBackend = (*configValueBackend)(nil)
 
 func (v *configValueBackend) Name() string {
 	return "config_value"
@@ -124,5 +124,5 @@ func makeConfigValue(thread *starlark.Thread, fn *starlark.Builtin, args starlar
 	if err = c.typ.set(typ); err != nil {
 		return starlark.None, err
 	}
-	return NewVault(c, c.name)
+	return NewJewel(c, c.name)
 }

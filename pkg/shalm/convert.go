@@ -126,7 +126,7 @@ func toGo(v starlark.Value) interface{} {
 		return stringDictToGo(v.values)
 	case *stream:
 		return nil
-	case *vault:
+	case *jewel:
 		return v.templateValues()
 	case *starlarkstruct.Struct:
 		d := starlark.StringDict{}

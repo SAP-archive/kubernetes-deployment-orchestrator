@@ -16,7 +16,7 @@ type userCredentialBackend struct {
 	password    string
 }
 
-var _ VaultBackend = (*userCredentialBackend)(nil)
+var _ JewelBackend = (*userCredentialBackend)(nil)
 
 func (u *userCredentialBackend) Name() string {
 	return "user_credential"
@@ -53,7 +53,7 @@ func makeUserCredential(thread *starlark.Thread, fn *starlark.Builtin, args star
 		return nil, err
 	}
 
-	return NewVault(u, name)
+	return NewJewel(u, name)
 }
 
 func createRandomString(length int) string {

@@ -245,8 +245,9 @@ func (c *chartImpl) applyLocalFunction() starlark.Callable {
 }
 
 func (c *chartImpl) applyLocal(thread *starlark.Thread, k K8sValue, k8sOptions *K8sOptions, glob string) error {
-	err := c.eachVault(func(v *vault) error {
-		return v.read(k)
+	vault := &vaultK8s{k8s: k, namespace: c.namespace}
+	err := c.eachJewel(func(v *jewel) error {
+		return v.read(vault)
 	})
 	if err != nil {
 		return err
@@ -360,7 +361,7 @@ func (c *chartImpl) deleteLocal(thread *starlark.Thread, k K8sValue, k8sOptions 
 	if err != nil {
 		return err
 	}
-	return c.eachVault(func(v *vault) error {
+	return c.eachJewel(func(v *jewel) error {
 		return v.delete()
 	})
 }
@@ -378,9 +379,9 @@ func (c *chartImpl) eachSubChart(block func(subChart *chartImpl) error) error {
 	return nil
 }
 
-func (c *chartImpl) eachVault(block func(x *vault) error) error {
+func (c *chartImpl) eachJewel(block func(x *jewel) error) error {
 	for _, val := range c.values {
-		v, ok := val.(*vault)
+		v, ok := val.(*jewel)
 		if ok {
 			err := block(v)
 			if err != nil {

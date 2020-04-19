@@ -114,16 +114,16 @@ def template(self,glob=''):
   return self.helm(glob=glob)  # Use helm templating (default)
 ```
 
-### Vaults
+### Jewels
 
-Shalm provides the concept of vaults to store things like
+Shalm provides the concept of jewels to store things like
 
 * certificates
 * user credentials
 
 with the help of secrets in kubernetes.
 
-It's also possible to extend shalm to provide other types of vaults:
+It's also possible to extend shalm to provide other types of jewels:
 
 * AWS users
 * GCP users

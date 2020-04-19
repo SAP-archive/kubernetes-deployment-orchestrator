@@ -1,9 +1,9 @@
 load("@extension:message","message")
-load("@extension:myvault","myvault")
+load("@extension:myjewel","myjewel")
 
 
 
 def init(self):
   # Prints "hello world"
   print(message)
-  self.vault = myvault("name","prefixxxx")
+  self.jewel = myjewel("name","prefixxxx")

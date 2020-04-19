@@ -12,7 +12,7 @@ var _ = Describe("certificates", func() {
 
 	Context("Self signed certifcate", func() {
 		sca, _ := makeCertificate(nil, nil, starlark.Tuple{starlark.String("name")}, []starlark.Tuple{{starlark.String("is_ca"), starlark.Bool(true)}})
-		ca := sca.(*vault)
+		ca := sca.(*jewel)
 
 		It("behaves like starlark value", func() {
 			Expect(ca.String()).To(ContainSubstring("name = name"))
@@ -55,7 +55,7 @@ var _ = Describe("certificates", func() {
 					return true
 				},
 			}
-			err := ca.read(k8s)
+			err := ca.read(&vaultK8s{k8s: k8s})
 			Expect(err).NotTo(HaveOccurred())
 
 		})
@@ -68,7 +68,7 @@ var _ = Describe("certificates", func() {
 						{starlark.String("domains"), domains},
 					})
 				Expect(err).NotTo(HaveOccurred())
-				certificate := scertificate.(*vault)
+				certificate := scertificate.(*jewel)
 				lca, err := certificate.Attr("ca")
 				Expect(err).NotTo(HaveOccurred())
 				gca, err := ca.Attr("certificate")

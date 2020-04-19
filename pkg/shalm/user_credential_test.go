@@ -30,8 +30,8 @@ var _ = Describe("userCredentials", func() {
 				},
 			}
 			u, _ := makeUserCredential(nil, nil, starlark.Tuple{starlark.String("test")}, nil)
-			userCred := u.(*vault)
-			err := userCred.read(&k8s)
+			userCred := u.(*jewel)
+			err := userCred.read(&vaultK8s{k8s: &k8s})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(attValue(userCred, "username")).To(Equal(string(user.Username)))
 			Expect(attValue(userCred, "password")).To(Equal(string(user.Password)))
@@ -48,8 +48,8 @@ var _ = Describe("userCredentials", func() {
 				},
 			}
 			u, _ := makeUserCredential(nil, nil, starlark.Tuple{starlark.String("test")}, nil)
-			userCred := u.(*vault)
-			err := userCred.read(&k8s)
+			userCred := u.(*jewel)
+			err := userCred.read(&vaultK8s{k8s: &k8s})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(attValue(userCred, "username")).To(HaveLen(16))
 			Expect(attValue(userCred, "password")).To(HaveLen(16))
@@ -59,7 +59,7 @@ var _ = Describe("userCredentials", func() {
 
 })
 
-func attValue(v *vault, name string) string {
+func attValue(v *jewel, name string) string {
 	val, e := v.Attr(name)
 	if e != nil {
 		panic(e)
