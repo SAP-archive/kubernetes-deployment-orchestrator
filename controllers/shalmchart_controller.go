@@ -79,7 +79,7 @@ func (r *ShalmChartReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			}
 		}
 		if err := r.apply(&shalmChart.Spec, func(progress int) {
-			shalmChart.Status.LastOp.Progress = progress
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "apply", Progress: progress}
 			r.Status().Update(context.Background(), &shalmChart)
 		}); err != nil {
 			err = errors.Wrapf(err, "error applying ShalmChart %s", req.NamespacedName.String())
@@ -96,7 +96,7 @@ func (r *ShalmChartReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			return result, errors.Wrapf(err, "error updating status of ShalmChart %s", req.NamespacedName.String())
 		}
 		if err := r.delete(&shalmChart.Spec, func(progress int) {
-			shalmChart.Status.LastOp.Progress = progress
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "delete", Progress: progress}
 			r.Status().Update(context.Background(), &shalmChart)
 		}); err != nil {
 			err = errors.Wrapf(err, "error deleting ShalmChart %s", req.NamespacedName.String())
