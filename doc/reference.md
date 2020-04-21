@@ -10,7 +10,7 @@ An new chart is created.
 If no namespace is given, the namespace is inherited from the parent chart.
 
 | Parameter   | Description                                                                                                                                                                                                                                  |
-|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `url`       | The chart is loaded from the given url. The url can be relative.  In this case the chart is loaded from a path relative to the current chart location.                                                                                       |
 | `namespace` | If no namespace is given, the namespace is inherited from the parent chart.                                                                                                                                                                  |
 | `suffix`    | This suffix is appended to each chart name. The suffix is inhertied from the parent if no value is given                                                                                                                                     |
@@ -22,7 +22,7 @@ If no namespace is given, the namespace is inherited from the parent chart.
 Applies the chart recursive to k8s. This method can be overwritten.
 
 | Parameter | Description |
-|-----------|-------------|
+| --------- | ----------- |
 | `8s`      | See below   |
 
 #### `chart.__apply(k8s, timeout=0, glob=pattern)`
@@ -30,7 +30,7 @@ Applies the chart recursive to k8s. This method can be overwritten.
 Applies the chart to k8s without recursion. This should only be used within `apply`
 
 | Parameter | Description                                                              |
-|-----------|--------------------------------------------------------------------------|
+| --------- | ------------------------------------------------------------------------ |
 | `k8s`     | See below                                                                |
 | `timeout` | Timeout passed to `kubectl apply`. A timeout of zero means wait forever. |
 | `glob`    | Pattern used to find the templates. Default is "*.yaml"                  |
@@ -40,7 +40,7 @@ Applies the chart to k8s without recursion. This should only be used within `app
 Deletes the chart recursive from k8s. This method can be overwritten.
 
 | Parameter | Description |
-|-----------|-------------|
+| --------- | ----------- |
 | `k8s`     | See below   |
 
 #### `chart.__delete(k8s, timeout=0, glob=pattern)`
@@ -48,7 +48,7 @@ Deletes the chart recursive from k8s. This method can be overwritten.
 Deletes the chart from k8s without recursion. This should only be used within `delete`
 
 | Parameter | Description                                                              |
-|-----------|--------------------------------------------------------------------------|
+| --------- | ------------------------------------------------------------------------ |
 | `k8s`     | See below                                                                |
 | `timeout` | Timeout passed to `kubectl apply`, A timeout of zero means wait forever. |
 | `glob`    | Pattern used to find the templates. Default is `"*.y*ml"`                |
@@ -64,7 +64,7 @@ It's possible to override this method.
 
 
 | Parameter | Description                                               |
-|-----------|-----------------------------------------------------------|
+| --------- | --------------------------------------------------------- |
 | `glob`    | Pattern used to find the templates. Default is `"*.y*ml"` |
 
 #### `chart.helm(dir,glob=pattern)`
@@ -72,7 +72,7 @@ It's possible to override this method.
 Renders helm templates and returns a `stream`.
 
 | Parameter | Description                                               |
-|-----------|-----------------------------------------------------------|
+| --------- | --------------------------------------------------------- |
 | `dir`     | Directory to search for templates                         |
 | `glob`    | Pattern used to find the templates. Default is `"*.y*ml"` |
 
@@ -81,7 +81,7 @@ Renders helm templates and returns a `stream`.
 Renders embedded ytt templates and returns a `stream`.
 
 | Parameter | Description                                               |
-|-----------|-----------------------------------------------------------|
+| --------- | --------------------------------------------------------- |
 | `dir`     | Directory to search for ytt templates                     |
 | `glob`    | Pattern used to find the templates. Default is `"*.y*ml"` |
 
@@ -90,7 +90,7 @@ Renders embedded ytt templates and returns a `stream`.
 Renders ytt templates using the `ytt` binary and returns a `stream`.
 
 | Parameter | Description                                                                                                |
-|-----------|------------------------------------------------------------------------------------------------------------|
+| --------- | ---------------------------------------------------------------------------------------------------------- |
 | `files`   | These files are passed as `-f` option to `ytt`. You can also pass `stream`s returned from `helm` or `eytt` |
 
 
@@ -99,13 +99,13 @@ Renders ytt templates using the `ytt` binary and returns a `stream`.
 Load values from yaml file inside chart. The loaded values will override the existing values in self.
 
 | Parameter | Description       |
-|-----------|-------------------|
+| --------- | ----------------- |
 | `name`    | Name of yaml file |
 
 #### Attributes
 
 | Name        | Description                                           |
-|-------------|-------------------------------------------------------|
+| ----------- | ----------------------------------------------------- |
 | `name`      | Name of the chart. Defaults to `self.__class__.name`  |
 | `namespace` | Default namespace of the chart given via command line |
 | `__class__` | Class of the chart. See `chart_class` for details     |
@@ -118,7 +118,7 @@ Load values from yaml file inside chart. The loaded values will override the exi
 Deletes one kubernetes object
 
 | Parameter          | Description                                                                                                               |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
 | `kind`             | k8s kind                                                                                                                  |
 | `name`             | name of k8s object                                                                                                        |
 | `timeout`          | Timeout passed to `kubectl apply`. A timeout of zero means wait forever.                                                  |
@@ -131,8 +131,8 @@ Deletes one kubernetes object
 Deletes one kubernetes object
 
 | Parameter          | Description                                                                                                               |
-|--------------------|---------------------------------------------------------------------------------------------------------------------------|
-| `stream_or_object`  | Can be a stream returned from `chart.template` or and `object` returned from `k8s.get`                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `stream_or_object` | Can be a stream returned from `chart.template` or and `object` returned from `k8s.get`                                    |
 | `timeout`          | Timeout passed to `kubectl apply`. A timeout of zero means wait forever.                                                  |
 | `namespaced`       | If true object in the current namespace are deleted. Otherwise object in cluster scope will be deleted. Default is `true` |
 | `namespace`        | Override default namespace of chart                                                                                       |
@@ -143,7 +143,7 @@ Deletes one kubernetes object
 Get one kubernetes object. The value is returned as a `dict`.
 
 | Parameter          | Description                                                                                                             |
-|--------------------|-------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `kind`             | k8s kind                                                                                                                |
 | `name`             | name of k8s object                                                                                                      |
 | `timeout`          | Timeout passed to `kubectl get`. A timeout of zero means wait forever.                                                  |
@@ -156,7 +156,7 @@ Get one kubernetes object. The value is returned as a `dict`.
 Watch one kubernetes object. The value is returned as a `iterator`.
 
 | Parameter          | Description                                                                                                             |
-|--------------------|-------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `kind`             | k8s kind                                                                                                                |
 | `name`             | name of k8s object                                                                                                      |
 | `timeout`          | Timeout passed to `kubectl watch`. A timeout of zero means wait forever.                                                |
@@ -169,7 +169,7 @@ Watch one kubernetes object. The value is returned as a `iterator`.
 Wait for rollout status of one kubernetes object
 
 | Parameter          | Description                                                              |
-|--------------------|--------------------------------------------------------------------------|
+| ------------------ | ------------------------------------------------------------------------ |
 | `kind`             | k8s kind                                                                 |
 | `name`             | name of k8s object                                                       |
 | `timeout`          | Timeout passed to `kubectl apply`. A timeout of zero means wait forever. |
@@ -181,7 +181,7 @@ Wait for rollout status of one kubernetes object
 Wait for condition of one kubernetes object
 
 | Parameter          | Description                                                              |
-|--------------------|--------------------------------------------------------------------------|
+| ------------------ | ------------------------------------------------------------------------ |
 | `kind`             | k8s kind                                                                 |
 | `name`             | name of k8s object                                                       |
 | `condition`        | condition                                                                |
@@ -194,7 +194,7 @@ Wait for condition of one kubernetes object
 Create a new k8s object for a different k8s cluster
 
 | Parameter             | Description            |
-|-----------------------|------------------------|
+| --------------------- | ---------------------- |
 | `kube_config_content` | Content of kube config |
 
 #### `k8s.progress(value)`
@@ -202,15 +202,15 @@ Create a new k8s object for a different k8s cluster
 Report progress of installation
 
 | Parameter | Description               |
-|-----------|---------------------------|
+| --------- | ------------------------- |
 | `value`   | A value between 0 and 100 |
 
 #### Attributes
 
-| Name        | Description                                           |
-|-------------|-------------------------------------------------------|
-| `host`      | Name of the host where the kubernetes API server is running |
-| `tool`      | Tool which is used for deployment. Possible values `kapp` or `kubectl`. This value can also be modified |
+| Name   | Description                                                                                             |
+| ------ | ------------------------------------------------------------------------------------------------------- |
+| `host` | Name of the host where the kubernetes API server is running                                             |
+| `tool` | Tool which is used for deployment. Possible values `kapp` or `kubectl`. This value can also be modified |
 
 
 ### user_credential
@@ -220,7 +220,7 @@ Report progress of installation
 Creates a new user credential. All user credentials assigned to a root attribute inside a chart are automatically applied to kubernetes.
 
 | Parameter      | Description                                                                                |
-|----------------|--------------------------------------------------------------------------------------------|
+| -------------- | ------------------------------------------------------------------------------------------ |
 | `name`         | The name of the kubernetes secret used to hold the information                             |
 | `username`     | Username. If it's empty it's either read from the secret or created with a random content. |
 | `password`     | Password. If it's empty it's either read from the secret or created with a random content. |
@@ -230,7 +230,7 @@ Creates a new user credential. All user credentials assigned to a root attribute
 ##### Attributes
 
 | Name       | Description                                                                                                                          |
-|------------|--------------------------------------------------------------------------------------------------------------------------------------|
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `username` | Returns the content of the username attribute. It is only valid after calling `chart.__apply(k8s)` or it was set in the constructor. |
 | `password` | Returns the content of the password attribute. It is only valid after calling `chart.__apply(k8s)` or it was set in the constructor. |
 
@@ -241,7 +241,7 @@ Creates a new user credential. All user credentials assigned to a root attribute
 Creates a new certificate. All certificates assigned to a root attribute inside a chart are automatically applied to kubernetes.
 
 | Parameter         | Description                                                    |
-|-------------------|----------------------------------------------------------------|
+| ----------------- | -------------------------------------------------------------- |
 | `name`            | The name of the kubernetes secret used to hold the information |
 | `ca_key`          | The key which is used to store the CA into the secret          |
 | `private_key_key` | The key which is used to store the private key into the secret |
@@ -258,17 +258,17 @@ Creates a new certificate. All certificates assigned to a root attribute inside 
 Creates a config value. The user is asked for the value. 
 
 | Parameter     | Description                                                                                       |
-|---------------|---------------------------------------------------------------------------------------------------|
+| ------------- | ------------------------------------------------------------------------------------------------- |
 | `name`        | The name of the kubernetes secret used to hold the information. Also the name of the config value |
 | `type`        | Can be `string`,`password`,`bool`,`selection`. Default if `string`                                |
 | `default`     | Default value                                                                                     |
-| `description` | A description                                                                                      |
+| `description` | A description                                                                                     |
 | `options`     | Options. Only valid for type `selection`                                                          |
 
 ##### Attributes
 
 | Name    | Description                 |
-|---------|-----------------------------|
+| ------- | --------------------------- |
 | `value` | The value given by the user |
 
 ### struct
@@ -291,7 +291,7 @@ self.config=str(self.eytt("template-dir"))
 #### Attributes
 
 | Name          | Description |
-|---------------|-------------|
+| ------------- | ----------- |
 | `api_version` | API version |
 | `name`        | Name        |
 | `version`     | Version     |
@@ -304,6 +304,21 @@ self.config=str(self.eytt("template-dir"))
 ### utility variables
 
 | Name           | Description        |
-|----------------|--------------------|
+| -------------- | ------------------ |
 | `version`      | shalm version      |
 | `kube_version` | Kubernetes version |
+
+
+## Libraries
+
+The following libraries are available through the [`load` statement](https://github.com/google/starlark-go/blob/master/doc/spec.md#load-statements)
+
+| Name          | Description |
+| ------------- | ----------- |
+| `@ytt:base64` |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
+| `@ytt:json`   |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
+| `@ytt:md5`    |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
+| `@ytt:regexp` |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
+| `@ytt:sha256` |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
+| `@ytt:url`    |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
+| `@ytt:yaml`   |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
