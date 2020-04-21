@@ -8,6 +8,8 @@ import (
 
 	"go.starlark.net/starlark"
 
+	"github.com/k14s/ytt/pkg/yttlibrary"
+	"github.com/k14s/ytt/pkg/yttlibrary/overlay"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/wonderix/shalm/pkg/shalm"
@@ -51,20 +53,53 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-var rootExecuteOptions ExecuteOptions
+var rootExecuteOptions = ExecuteOptions{load: defaultLoad}
 
 // ExecuteOptions -
 type ExecuteOptions struct {
 	load func(thread *starlark.Thread, module string) (dict starlark.StringDict, err error)
 }
 
+func defaultLoad(thread *starlark.Thread, module string) (starlark.StringDict, error) {
+	switch module {
+	case "@ytt:base64":
+		return yttlibrary.Base64API, nil
+	case "@ytt:json":
+		return yttlibrary.JSONAPI, nil
+	case "@ytt:md5":
+		return yttlibrary.MD5API, nil
+	case "@ytt:regexp":
+		return yttlibrary.RegexpAPI, nil
+	case "@ytt:sha256":
+		return yttlibrary.SHA256API, nil
+	case "@ytt:url":
+		return yttlibrary.URLAPI, nil
+	case "@ytt:yaml":
+		return yttlibrary.YAMLAPI, nil
+	case "@ytt:overlay":
+		return overlay.API, nil
+	case "@ytt:struct":
+		return yttlibrary.StructAPI, nil
+	case "@ytt:module":
+		return yttlibrary.ModuleAPI, nil
+	}
+	return nil, fmt.Errorf("Unknown module '%s'", module)
+}
+
 // ExecuteOption -
 type ExecuteOption func(e *ExecuteOptions)
 
 // WithModules add new modules to shalm, which can be loaded using load inside starlark scripts
-func WithModules(load func(thread *starlark.Thread, module string) (dict starlark.StringDict, err error)) ExecuteOption {
+func WithModules(load func(thread *starlark.Thread, module string) (starlark.StringDict, error)) ExecuteOption {
 	return func(e *ExecuteOptions) {
-		e.load = load
+		oldLoad := e.load
+		e.load = func(thread *starlark.Thread, module string) (starlark.StringDict, error) {
+			dict, err := load(thread, module)
+			if err != nil {
+				return oldLoad(thread, module)
+			}
+			return dict, nil
+		}
 	}
 }
 
