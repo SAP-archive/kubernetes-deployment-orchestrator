@@ -139,7 +139,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			_, err := reconciler.Reconcile(ctrl.Request{})
 			Expect(err).To(HaveOccurred())
 			Expect(chart.Status.LastOp.Progress).To(Equal(0))
-			Expect(chart.Status.LastOp.Type).To(Equal("ApplyError"))
+			Expect(chart.Status.LastOp.Type).To(Equal(applyErrorStatus))
 			event := <-recorder.Events
 			Expect(event).To(ContainSubstring("Apply error"))
 		})
@@ -180,7 +180,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			_, err := reconciler.Reconcile(ctrl.Request{})
 			Expect(err).To(HaveOccurred())
 			Expect(chart.Status.LastOp.Progress).To(Equal(0))
-			Expect(chart.Status.LastOp.Type).To(Equal("DeleteError"))
+			Expect(chart.Status.LastOp.Type).To(Equal(deleteErrorStatus))
 			event := <-recorder.Events
 			Expect(event).To(ContainSubstring("delete error"))
 		})

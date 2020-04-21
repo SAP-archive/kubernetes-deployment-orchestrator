@@ -37,7 +37,13 @@ import (
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
 )
 
-var myFinalizerName = "controller.shalm.wonderix.github.com"
+var (
+	myFinalizerName   = "controller.shalm.wonderix.github.com"
+	applyStatus       = "apply"
+	applyErrorStatus  = "apply-error"
+	deleteStatus      = "delete"
+	deleteErrorStatus = "delete-error"
+)
 
 // ShalmChartReconciler reconciles a ShalmChart object
 type ShalmChartReconciler struct {
@@ -73,35 +79,35 @@ func (r *ShalmChartReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 			if err := r.Update(context.Background(), &shalmChart); err != nil {
 				return result, errors.Wrapf(err, "error updating ShalmChart %s", req.NamespacedName.String())
 			}
-			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "apply", Progress: 0}
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: applyStatus, Progress: 0}
 			if err := r.Status().Update(context.Background(), &shalmChart); err != nil {
 				return result, errors.Wrapf(err, "error updating status of ShalmChart %s", req.NamespacedName.String())
 			}
 		}
 		if err := r.apply(&shalmChart.Spec, func(progress int) {
-			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "apply", Progress: progress}
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: applyStatus, Progress: progress}
 			r.Status().Update(context.Background(), &shalmChart)
 		}); err != nil {
 			err = errors.Wrapf(err, "error applying ShalmChart %s", req.NamespacedName.String())
 			r.Recorder.Event(&shalmChart, corev1.EventTypeWarning, "ApplyError", err.Error())
-			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "ApplyError", Progress: 0}
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: applyErrorStatus, Progress: 0}
 			r.Status().Update(context.Background(), &shalmChart)
 			return result, err
 		}
 		return result, err
 	}
 	if len(shalmChart.ObjectMeta.Finalizers) == 1 && containsString(shalmChart.ObjectMeta.Finalizers, myFinalizerName) {
-		shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "delete", Progress: 0}
+		shalmChart.Status.LastOp = shalmv1a2.Operation{Type: deleteStatus, Progress: 0}
 		if err := r.Status().Update(context.Background(), &shalmChart); err != nil {
 			return result, errors.Wrapf(err, "error updating status of ShalmChart %s", req.NamespacedName.String())
 		}
 		if err := r.delete(&shalmChart.Spec, func(progress int) {
-			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "delete", Progress: progress}
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: deleteStatus, Progress: progress}
 			r.Status().Update(context.Background(), &shalmChart)
 		}); err != nil {
 			err = errors.Wrapf(err, "error deleting ShalmChart %s", req.NamespacedName.String())
 			r.Recorder.Event(&shalmChart, corev1.EventTypeWarning, "DeleteError", err.Error())
-			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: "DeleteError", Progress: 0}
+			shalmChart.Status.LastOp = shalmv1a2.Operation{Type: deleteErrorStatus, Progress: 0}
 			r.Status().Update(context.Background(), &shalmChart)
 			return result, err
 		}
