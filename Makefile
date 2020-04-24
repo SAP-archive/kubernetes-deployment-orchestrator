@@ -119,7 +119,7 @@ bin/shalm: $(GO_FILES)  go.sum
 
 docker-context/shalm:  bin/linux/shalm
 	mkdir -p docker-context/
-	cp bin/linux/shalm docker-context/shalm . 
+	cp bin/linux/shalm docker-context/shalm
 
 
 define BOZO
@@ -134,13 +134,15 @@ $(foreach i,linux darwin windows,$(eval $(call BOZO,$(i))))
 
 binaries: $(foreach i,linux darwin windows,bin/shalm-binary-$(i).tgz)
 
-formula: bin/shalm-binary-darwin.tgz bin/shalm-binary-linux.tgz
-	sed  \
+formula: homebrew-tap/shalm.rb
+
+homebrew-tap/shalm.rb: bin/shalm-binary-darwin.tgz bin/shalm-binary-linux.tgz
+	@mkdir -p homebrew-tap
+	@sed  \
 	-e "s/{{sha256-darwin}}/$$(shasum -b -a 256 bin/shalm-binary-darwin.tgz  | awk '{print $$1}')/g" \
 	-e "s/{{sha256-linux}}/$$(shasum -b -a 256 bin/shalm-binary-linux.tgz  | awk '{print $$1}')/g" \
 	-e "s/{{version}}/$(VERSION)/g" homebrew-formula.rb \
-	> bin/shalm.rb
-	cat bin/shalm.rb
+	> homebrew-tap/shalm.rb
 
 # find or download controller-gen
 # download controller-gen if necessary

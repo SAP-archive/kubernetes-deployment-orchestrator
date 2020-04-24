@@ -10,15 +10,25 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     steps:
-    - name: Set up Go 1.13
+    - name: set up Go 1.13
       uses: actions/setup-go@v1
       with:
         go-version: 1.13
       id: go
-    - uses: actions/checkout@v1
+    - name: git checkout shalm
+      uses: actions/checkout@v2
+    - name: bump homebrew-tap
+      run: |
+        git clone "https://$GITHUB_ACTOR:${{ secrets.PUSH_TOKEN }}@github.com/wonderix/homebrew-tap.git" homebrew-tap
+        make formula
+        cd homebrew-tap
+        git config --local user.email "wonderix@googlemail.com"
+        git config --local user.name "GitHub Action"
+        git commit -a -m "Bump to newest shalm release"
+        git push
     - name: make docker-prepare
       run: make docker-prepare
-    - name: Publish to Registry
+    - name: docker push
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
         name: wonderix/shalm
@@ -27,13 +37,11 @@ jobs:
         tag_names: true
         context: docker-context
         dockerfile: Dockerfile
-    - name: Make chart
+    - name: make chart
       run: make chart
-    - name: Make binaries
+    - name: make binaries
       run: make binaries
-    - name: Make formula
-      run: make formula
-    - name: Upload binaries to release
+    - name: upload binaries to release
       uses: svenstaro/upload-release-action@v1-release
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
