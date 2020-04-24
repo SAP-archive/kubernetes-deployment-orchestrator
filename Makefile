@@ -53,7 +53,7 @@ test-e2e : test-watch test-certificate test-controller
 
 test-controller: docker-build bin/shalm 
 	bin/shalm apply charts/shalm --set local=True
-	bin/shalm apply --proxy local charts/example/simple/hello
+	bin/shalm apply --proxy local charts/example/simple/hello  --tool kapp
 	while [ "$$(kubectl get shalmchart hello -o 'jsonpath={.status.lastOp.progress}')" != "100" ] ; do sleep 5 ; done
 	kubectl get secret secret
 	bin/shalm delete --proxy local charts/example/simple/hello
@@ -117,22 +117,29 @@ VERSION_FLAGS := "-X github.com/wonderix/shalm/pkg/shalm.version=${VERSION} -X g
 bin/shalm: $(GO_FILES)  go.sum
 	CGO_ENABLED=0 GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o bin/shalm . 
 
-docker-context/shalm:  $(GO_FILES)  go.sum
+docker-context/shalm:  bin/linux/shalm
 	mkdir -p docker-context/
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o docker-context/shalm . 
+	cp bin/linux/shalm docker-context/shalm . 
 
-binaries: $(foreach i,linux darwin windows,bin/shalm-binary-$(i).tgz)
 
 define BOZO
-bin/shalm-binary-$(1).tgz: $(GO_FILES)  go.sum
-	mkdir -p bin
-	( cd bin && CGO_ENABLED=0 GOOS=$(1) GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o shalm .. &&  tar czf shalm-binary-$(1).tgz shalm )
+bin/$(1)/shalm: $(GO_FILES)  go.sum
+	mkdir -p bin/$(1)
+	CGO_ENABLED=0 GOOS=$(1) GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o bin/$(1)/shalm .
+bin/shalm-binary-$(1).tgz: bin/$(1)/shalm
+	cd bin/$(1) &&  tar czf ../shalm-binary-$(1).tgz shalm
 endef
 
 $(foreach i,linux darwin windows,$(eval $(call BOZO,$(i))))
 
-formula: bin/shalm-binary-darwin.tgz
-	sed  -e "s/{{sha256}}/$$(shasum -b -a 256 bin/shalm-binary-darwin.tgz  | awk '{print $$1}')/g" -e "s/{{version}}/$(VERSION)/g" homebrew-formula.rb > bin/shalm.rb
+binaries: $(foreach i,linux darwin windows,bin/shalm-binary-$(i).tgz)
+
+formula: bin/shalm-binary-darwin.tgz bin/shalm-binary-linux.tgz
+	sed  \
+	-e "s/{{sha256-darwin}}/$$(shasum -b -a 256 bin/shalm-binary-darwin.tgz  | awk '{print $$1}')/g" \
+	-e "s/{{sha256-linux}}/$$(shasum -b -a 256 bin/shalm-binary-linux.tgz  | awk '{print $$1}')/g" \
+	-e "s/{{version}}/$(VERSION)/g" homebrew-formula.rb \
+	> bin/shalm.rb
 	cat bin/shalm.rb
 
 # find or download controller-gen
