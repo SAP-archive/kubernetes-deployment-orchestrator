@@ -121,14 +121,19 @@ docker-context/shalm:  $(GO_FILES)  go.sum
 	mkdir -p docker-context/
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o docker-context/shalm . 
 
-binaries:
-	mkdir -p bin
-	cd bin; \
-	for GOOS in linux darwin windows; do \
-	  CGO_ENABLED=0 GOOS=$$GOOS GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o shalm ..; \
-		tar czf shalm-binary-$$GOOS.tgz shalm; \
-	done
+binaries: $(foreach i,linux darwin windows,bin/shalm-binary-$(i).tgz)
 
+define BOZO
+bin/shalm-binary-$(1).tgz: $(GO_FILES)  go.sum
+	mkdir -p bin
+	( cd bin && CGO_ENABLED=0 GOOS=$(1) GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o shalm .. &&  tar czf shalm-binary-$(1).tgz shalm )
+endef
+
+$(foreach i,linux darwin windows,$(eval $(call BOZO,$(i))))
+
+formula: bin/shalm-binary-darwin.tgz
+	sed  -e "s/{{sha256}}/$$(shasum -b -a 256 bin/shalm-binary-darwin.tgz  | awk '{print $$1}')/g" -e "s/{{version}}/$(VERSION)/g" homebrew-formula.rb > bin/shalm.rb
+	cat bin/shalm.rb
 
 # find or download controller-gen
 # download controller-gen if necessary
