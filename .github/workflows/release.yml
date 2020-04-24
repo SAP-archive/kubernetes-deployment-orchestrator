@@ -31,8 +31,8 @@ jobs:
       run: make chart
     - name: Make binaries
       run: make binaries
-    - name: Make formular
-      run: make formular
+    - name: Make formula
+      run: make formula
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v1-release
       with:

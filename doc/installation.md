@@ -6,6 +6,14 @@
 * Install `ytt` e.g. from `https://github.com/k14s/ytt/releases`
 * Install `kapp` e.g. from `https://github.com/k14s/kapp/releases`
 
+## Installing on MacOS
+
+
+```bash
+brew tap wonderix/tap
+brew install shalm
+```
+
 ## Install binary
 
 * Download `shalm` (e.g. for mac os)
