@@ -25,7 +25,7 @@ jobs:
     - name: make docker-prepare
       run: make docker-prepare
 
-    - name: Publish to Registry
+    - name: docker push
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
         name: wonderix/shalm

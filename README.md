@@ -3,6 +3,8 @@
 
 This project brings the starlark scripting language to helm charts.
 
+![build and tests](https://github.com/wonderix/shalm/workflows/build%20and%20tests/badge.svg)
+
 ## Features
 
 * Define APIs for helm charts
