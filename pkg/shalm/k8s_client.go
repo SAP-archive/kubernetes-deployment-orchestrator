@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -35,13 +36,20 @@ var errUnknownResource = errors.New("Unknown resource")
 var kindToGroupVersionKind = map[string]schema.GroupVersionKind{}
 
 func init() {
+	kinds := []schema.GroupVersionKind{}
 	for k := range scheme.Scheme.AllKnownTypes() {
+		kinds = append(kinds, k)
+	}
+	sort.Slice(kinds, func(i, j int) bool { return kinds[i].Version > kinds[j].Version })
+	for _, k := range kinds {
 		groupVersion := schema.GroupVersionKind{Version: k.Version, Group: k.Group, Kind: strings.ToLower(k.Kind) + "s"}
 		if len(groupVersion.Group) == 0 {
 			groupVersion.Group = "api"
 		}
 		kindToGroupVersionKind[strings.ToLower(k.Kind)] = groupVersion
+		kindToGroupVersionKind[strings.ToLower(k.Kind)+"."+groupVersion.Group] = groupVersion
 		kindToGroupVersionKind[groupVersion.Kind] = groupVersion
+		kindToGroupVersionKind[groupVersion.Kind+"."+groupVersion.Group] = groupVersion
 	}
 }
 

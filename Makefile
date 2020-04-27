@@ -53,7 +53,7 @@ test-e2e : test-watch test-certificate test-controller
 
 test-controller: docker-build bin/shalm 
 	bin/shalm apply charts/shalm --set local=True
-	bin/shalm apply --proxy local charts/example/simple/hello  --tool kapp
+	bin/shalm apply --proxy local charts/example/simple/hello
 	while [ "$$(kubectl get shalmchart hello -o 'jsonpath={.status.lastOp.progress}')" != "100" ] ; do sleep 5 ; done
 	kubectl get secret secret
 	bin/shalm delete --proxy local charts/example/simple/hello
