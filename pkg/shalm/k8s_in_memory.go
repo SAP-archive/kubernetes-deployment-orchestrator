@@ -24,7 +24,7 @@ func (e notFoundError) Error() string {
 func NewK8sInMemory(namespace string, objects ...Object) *K8sInMemory {
 	result := &K8sInMemory{namespace: namespace, objects: map[string]Object{}}
 	for _, obj := range objects {
-		result.objects[result.key(obj.Kind, obj.MetaData.Name)] = obj
+		result.objects[result.key(obj.Kind, obj.MetaData.Name, obj.MetaData.Namespace, nil)] = obj
 	}
 	return result
 }
@@ -62,7 +62,7 @@ func (k K8sInMemory) SetTool(tool Tool) {
 
 // Watch -
 func (k K8sInMemory) Watch(kind string, name string, options *K8sOptions) ObjectStream {
-	obj, err := k.GetObject(kind, name)
+	obj, err := k.GetObject(kind, name, options)
 	if err != nil {
 		return ObjectErrorStream(err)
 	}
@@ -73,7 +73,7 @@ func (k K8sInMemory) Watch(kind string, name string, options *K8sOptions) Object
 
 // RolloutStatus -
 func (k K8sInMemory) RolloutStatus(kind string, name string, options *K8sOptions) error {
-	_, err := k.GetObject(kind, name)
+	_, err := k.GetObject(kind, name, options)
 	if err != nil {
 		return err
 	}
@@ -87,14 +87,14 @@ func (k K8sInMemory) Wait(kind string, name string, condition string, options *K
 
 // DeleteObject -
 func (k K8sInMemory) DeleteObject(kind string, name string, options *K8sOptions) error {
-	delete(k.objects, k.key(kind, name))
+	delete(k.objects, k.key(kind, name, "", options))
 	return nil
 }
 
 // Apply -
 func (k K8sInMemory) Apply(output ObjectStream, options *K8sOptions) error {
 	return output(func(obj *Object) error {
-		k.objects[k.key(obj.Kind, obj.MetaData.Name)] = *obj
+		k.objects[k.key(obj.Kind, obj.MetaData.Name, obj.MetaData.Namespace, options)] = *obj
 		return nil
 	})
 }
@@ -102,14 +102,14 @@ func (k K8sInMemory) Apply(output ObjectStream, options *K8sOptions) error {
 // Delete -
 func (k K8sInMemory) Delete(output ObjectStream, options *K8sOptions) error {
 	return output(func(obj *Object) error {
-		delete(k.objects, k.key(obj.Kind, obj.MetaData.Name))
+		delete(k.objects, k.key(obj.Kind, obj.MetaData.Name, obj.MetaData.Namespace, options))
 		return nil
 	})
 }
 
 // Get -
 func (k K8sInMemory) Get(kind string, name string, options *K8sOptions) (*Object, error) {
-	return k.GetObject(kind, name)
+	return k.GetObject(kind, name, options)
 }
 
 // IsNotExist -
@@ -128,23 +128,29 @@ func (k K8sInMemory) ForConfig(config string) (K8s, error) {
 	return k, nil
 }
 
-func (k K8sInMemory) key(kind, name string) string {
+func (k K8sInMemory) key(kind, name, namespace string, options *K8sOptions) string {
 	kind = strings.ToLower(kind)
 	if isNameSpaced(kind) {
+		if len(namespace) != 0 {
+			return fmt.Sprintf("%s/%s/%s", namespace, kind, name)
+		}
+		if options != nil && options.Namespace != "" {
+			return fmt.Sprintf("%s/%s/%s", options.Namespace, kind, name)
+		}
 		return fmt.Sprintf("%s/%s/%s", k.namespace, kind, name)
 	}
 	return fmt.Sprintf("%s/%s", kind, name)
 }
 
 // GetObject -
-func (k K8sInMemory) GetObject(kind string, name string) (*Object, error) {
-	obj, ok := k.objects[k.key(kind, name)]
+func (k K8sInMemory) GetObject(kind string, name string, options *K8sOptions) (*Object, error) {
+	obj, ok := k.objects[k.key(kind, name, "", options)]
 	if !ok {
 		keys := []string{}
 		for k := range k.objects {
 			keys = append(keys, k)
 		}
-		return nil, notFoundError(fmt.Sprintf("NotFound: %s %s ", k.key(kind, name), strings.Join(keys, ", ")))
+		return nil, notFoundError(fmt.Sprintf("NotFound: %s %s ", k.key(kind, name, "", options), strings.Join(keys, ", ")))
 	}
 	return &obj, nil
 }
