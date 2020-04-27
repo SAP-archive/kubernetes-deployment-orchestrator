@@ -23,7 +23,7 @@ var _ = Describe("k8s_in_memory", func() {
 			return writer(&Object{Kind: "Secret", MetaData: MetaData{Name: "test"}})
 		}, &K8sOptions{})
 		Expect(err).NotTo(HaveOccurred())
-		obj, err := k8s.GetObject("secret", "test")
+		obj, err := k8s.GetObject("secret", "test", nil)
 		Expect(err).NotTo(HaveOccurred())
 		Expect(obj.Kind).To(Equal("Secret"))
 	})
@@ -33,7 +33,7 @@ var _ = Describe("k8s_in_memory", func() {
 			return writer(&Object{Kind: "Secret", MetaData: MetaData{Name: "test"}})
 		}, &K8sOptions{})
 		Expect(err).NotTo(HaveOccurred())
-		_, err = k8s.GetObject("secret", "test")
+		_, err = k8s.GetObject("secret", "test", nil)
 		Expect(k8s.IsNotExist(err)).To(BeTrue())
 	})
 	It("delete object works", func() {

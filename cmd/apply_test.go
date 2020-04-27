@@ -59,10 +59,10 @@ var _ = Describe("Apply Chart", func() {
 		err := apply(path.Join(example, "cf"), k, shalm.WithNamespace("mynamespace"))
 		Expect(err).ToNot(HaveOccurred())
 		uaa := k.ForSubChart("uaa", "uaa", semver.Version{}).(*shalm.K8sInMemory)
-		_, err = uaa.GetObject("secret", "uaa-secret")
+		_, err = uaa.GetObject("secret", "uaa-secret", nil)
 		Expect(err).ToNot(HaveOccurred())
 		my := k.ForSubChart("mynamespace", "uaa", semver.Version{}).(*shalm.K8sInMemory)
-		_, err = my.GetObject("statefulset", "mariadb-master")
+		_, err = my.GetObject("statefulset", "mariadb-master", nil)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
