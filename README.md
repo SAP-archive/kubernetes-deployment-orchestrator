@@ -26,6 +26,10 @@ This project brings the starlark scripting language to helm charts.
 
 Installing shalm can be done in [various ways](doc/installation.md)
 
+## Architecture
+
+![](doc/Layer.png)
+
 ## Usage
 
 How to start shalm from the command line is described [here](doc/command_line.md)
