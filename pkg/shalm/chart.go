@@ -22,6 +22,12 @@ type Chart interface {
 	Package(writer io.Writer, helmFormat bool) error
 }
 
+// ChartValue -
+type ChartValue interface {
+	starlark.HasSetField
+	Chart
+}
+
 type chartImpl struct {
 	ChartOptions
 	clazz    chartClass
@@ -33,7 +39,8 @@ type chartImpl struct {
 }
 
 var (
-	_ ChartValue = (*chartImpl)(nil)
+	_ ChartValue         = (*chartImpl)(nil)
+	_ starlark.HasSetKey = (*chartImpl)(nil)
 )
 
 func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOption) (*chartImpl, error) {
@@ -198,6 +205,19 @@ func (c *chartImpl) AttrNames() []string {
 // SetField -
 func (c *chartImpl) SetField(name string, val starlark.Value) error {
 	c.values[name] = UnwrapDict(val)
+	return nil
+}
+
+func (c *chartImpl) Get(name starlark.Value) (starlark.Value, bool, error) {
+	value, found := c.values[name.(starlark.String).GoString()]
+	if !found {
+		return starlark.None, found, nil
+	}
+	return WrapDict(value), true, nil
+}
+
+func (c *chartImpl) SetKey(name, value starlark.Value) error {
+	c.values[name.(starlark.String).GoString()] = UnwrapDict(value)
 	return nil
 }
 

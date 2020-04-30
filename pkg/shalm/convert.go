@@ -84,6 +84,20 @@ func toStarlark(vi interface{}) starlark.Value {
 	panic(fmt.Errorf("cannot convert %v to starlark", vi))
 }
 
+func toGoMap(v starlark.IterableMapping) map[string]interface{} {
+	d := make(map[string]interface{})
+	for _, t := range v.Items() {
+		key, ok := t.Index(0).(starlark.String)
+		if ok {
+			value := toGo(t.Index(1))
+			if value != nil {
+				d[key.GoString()] = value
+			}
+		}
+	}
+	return d
+}
+
 func toGo(v starlark.Value) interface{} {
 	if v == nil {
 		return nil
@@ -109,19 +123,7 @@ func toGo(v starlark.Value) interface{} {
 	case starlark.Callable:
 		return nil
 	case starlark.IterableMapping:
-		d := make(map[string]interface{})
-
-		for _, t := range v.Items() {
-			key, ok := t.Index(0).(starlark.String)
-			if ok {
-				value := toGo(t.Index(1))
-				if value != nil {
-					d[key.GoString()] = value
-				}
-			}
-		}
-		return d
-
+		return toGoMap(v)
 	case *chartImpl:
 		return stringDictToGo(v.values)
 	case *stream:

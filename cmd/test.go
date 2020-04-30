@@ -65,7 +65,7 @@ func test(files []string, k shalm.K8s) error {
 		}
 		predeclared := starlark.StringDict{
 			"env":    starlark.NewBuiltin("env", env),
-			"chart":  starlark.NewBuiltin("chart", shalm.NewChartFunction(repo, path.Dir(file), shalm.WithNamespace(namespace))),
+			"chart":  starlark.NewBuiltin("chart", shalm.NewChartFunction(repo, path.Dir(file), nil, shalm.WithNamespace(namespace))),
 			"k8s":    shalm.NewK8sValue(k8s),
 			"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
 			"assert": &starlarkstruct.Module{

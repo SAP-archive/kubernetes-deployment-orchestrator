@@ -57,6 +57,32 @@ var _ = Describe("Chart", func() {
 			Expect(attr.(starlark.String).GoString()).To(Equal("30s"))
 		})
 
+		It("passes values from values.yaml to subchart", func() {
+			thread := &starlark.Thread{Name: "main"}
+			dir := NewTestDir()
+			defer dir.Remove()
+			repo, _ := NewRepo()
+			dir.WriteFile("values.yaml", []byte("subchart: \n  timeout: \"30s\"\n"), 0644)
+			dir.WriteFile("Chart.star", []byte(`
+def init(self):
+	self.subchart.key2 = "test"
+	self.subchart = chart("subchart")
+`), 0644)
+			dir.MkdirAll("subchart", 0755)
+			dir.WriteFile("subchart/values.yaml", []byte("delay: \"30s\"\n"), 0644)
+			c, err := newChart(thread, repo, dir.Root())
+			Expect(err).NotTo(HaveOccurred())
+			attr, err := c.Attr("subchart")
+			Expect(err).NotTo(HaveOccurred())
+			subchart := attr.(ChartValue)
+			attr, err = subchart.Attr("timeout")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(attr.(starlark.String).GoString()).To(Equal("30s"))
+			attr, err = subchart.Attr("key2")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(attr.(starlark.String).GoString()).To(Equal("test"))
+		})
+
 	})
 	Context("Chart.start", func() {
 		var dir TestDir
@@ -394,6 +420,19 @@ def init(self):
 		Expect(value.(starlark.Callable).Name()).To(ContainSubstring("apply at"))
 		value, err = c.Attr("unknown")
 		Expect(err).To(HaveOccurred())
+
+		value, found, err := c.Get(starlark.String("replicas"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(found).To(BeTrue())
+		Expect(value).To(Equal(starlark.String("1")))
+
+		err = c.SetKey(starlark.String("timeout"), starlark.String("60s"))
+		Expect(err).NotTo(HaveOccurred())
+
+		value, found, err = c.Get(starlark.String("timeout"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(found).To(BeTrue())
+		Expect(value).To(Equal(starlark.String("60s")))
 	})
 
 	It("applies a credentials ", func() {

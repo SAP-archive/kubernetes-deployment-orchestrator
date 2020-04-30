@@ -7,12 +7,6 @@ import (
 	"go.starlark.net/starlark"
 )
 
-// ChartValue -
-type ChartValue interface {
-	starlark.HasSetField
-	Chart
-}
-
 type configType int
 
 const (
