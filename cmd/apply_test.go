@@ -31,7 +31,7 @@ var _ = Describe("Apply Chart", func() {
 				return i.Encode()(&writer)
 			},
 		}
-		k.ForSubChartStub = func(s string, app string, version semver.Version) shalm.K8s {
+		k.ForSubChartStub = func(s string, app string, version semver.Version, children int) shalm.K8s {
 			return k
 		}
 
@@ -42,11 +42,11 @@ var _ = Describe("Apply Chart", func() {
 		Expect(k.RolloutStatusCallCount()).To(Equal(1))
 		Expect(k.ApplyCallCount()).To(Equal(3))
 		Expect(k.ForSubChartCallCount()).To(Equal(3))
-		namespace, _, _ := k.ForSubChartArgsForCall(0)
+		namespace, _, _, _ := k.ForSubChartArgsForCall(0)
 		Expect(namespace).To(Equal("mynamespace"))
-		namespace, _, _ = k.ForSubChartArgsForCall(1)
+		namespace, _, _, _ = k.ForSubChartArgsForCall(1)
 		Expect(namespace).To(Equal("mynamespace"))
-		namespace, _, _ = k.ForSubChartArgsForCall(2)
+		namespace, _, _, _ = k.ForSubChartArgsForCall(2)
 		Expect(namespace).To(Equal("uaa"))
 		kind, name, _ := k.RolloutStatusArgsForCall(0)
 		Expect(name).To(Equal("mariadb-master"))
@@ -58,10 +58,10 @@ var _ = Describe("Apply Chart", func() {
 
 		err := apply(path.Join(example, "cf"), k, shalm.WithNamespace("mynamespace"))
 		Expect(err).ToNot(HaveOccurred())
-		uaa := k.ForSubChart("uaa", "uaa", semver.Version{}).(*shalm.K8sInMemory)
+		uaa := k.ForSubChart("uaa", "uaa", semver.Version{}, 0).(*shalm.K8sInMemory)
 		_, err = uaa.GetObject("secret", "uaa-secret", nil)
 		Expect(err).ToNot(HaveOccurred())
-		my := k.ForSubChart("mynamespace", "uaa", semver.Version{}).(*shalm.K8sInMemory)
+		my := k.ForSubChart("mynamespace", "uaa", semver.Version{}, 0).(*shalm.K8sInMemory)
 		_, err = my.GetObject("statefulset", "mariadb-master", nil)
 		Expect(err).ToNot(HaveOccurred())
 	})

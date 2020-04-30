@@ -73,7 +73,7 @@ var _ = Describe("k8s", func() {
 				},
 				kubeConfig: "/tmp/test",
 			}}
-		k2 := k8s.ForSubChart("ns", "app", semver.Version{})
+		k2 := k8s.ForSubChart("ns", "app", semver.Version{}, 0)
 
 		It("kubeconfig is copied", func() {
 			Expect(k8s.kubeConfig).To(Equal(k2.(*k8sImpl).kubeConfig))
@@ -114,10 +114,9 @@ var _ = Describe("k8s", func() {
 			Expect(*content).To(Equal("hello"))
 		})
 		It("progress subscription works", func() {
-			progress = 0
 			err := k2.Apply(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(progress).To(Equal(50))
+			Expect(progress).To(Equal(100))
 		})
 		It("Adds labels", func() {
 			obj := k8s.objMapper()(&Object{})
@@ -126,19 +125,19 @@ var _ = Describe("k8s", func() {
 			Expect(obj.MetaData.Namespace).To(Equal("namespace"))
 		})
 		It("Exclusion works", func() {
-			kex := k8s.ForSubChart("ns", "app", semver.Version{}).(*k8sImpl)
+			kex := k8s.ForSubChart("ns", "app", semver.Version{}, 0).(*k8sImpl)
 			kex.exclude = regexp.MustCompile("app")
 			err := kex.Apply(func(writer ObjectWriter) error { return errors.New("test") }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("Inclusion works for mismatches", func() {
-			kex := k8s.ForSubChart("ns", "app", semver.Version{}).(*k8sImpl)
+			kex := k8s.ForSubChart("ns", "app", semver.Version{}, 0).(*k8sImpl)
 			kex.include = regexp.MustCompile("b.*")
 			err := kex.Apply(func(writer ObjectWriter) error { return errors.New("test") }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("Inclusion works", func() {
-			kex := k8s.ForSubChart("ns", "app", semver.Version{}).(*k8sImpl)
+			kex := k8s.ForSubChart("ns", "app", semver.Version{}, 0).(*k8sImpl)
 			kex.include = regexp.MustCompile("a*")
 			err := kex.Apply(func(writer ObjectWriter) error { return errors.New("test") }, &K8sOptions{})
 			Expect(err).To(MatchError("test"))

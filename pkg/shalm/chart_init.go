@@ -159,7 +159,9 @@ func (c *chartImpl) wrapNamespace(callable starlark.Callable, namespace string) 
 		if !ok {
 			return nil, fmt.Errorf("Invalid first argument to %s", callable.Name())
 		}
-		subK8s := k.ForSubChart(namespace, c.GetName(), c.GetVersion())
+		children := 0
+		c.eachSubChart(func(subChart *chartImpl) error { children++; return nil })
+		subK8s := k.ForSubChart(namespace, c.GetName(), c.GetVersion(), children)
 		args[0] = &k8sValueImpl{subK8s}
 		value, err := starlark.Call(thread, callable, args, kwargs)
 		return value, err

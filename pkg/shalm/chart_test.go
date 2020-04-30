@@ -141,7 +141,7 @@ def delete(self,k8s):
 			attr, err := c.Attr("apply")
 			Expect(err).NotTo(HaveOccurred())
 			k := &FakeK8s{}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			_, err = starlark.Call(thread, attr.(starlark.Callable), starlark.Tuple{NewK8sValue(k)}, nil)
@@ -152,7 +152,7 @@ def delete(self,k8s):
 			attr, err := c.Attr("delete")
 			Expect(err).NotTo(HaveOccurred())
 			k := &FakeK8s{}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			_, err = starlark.Call(thread, attr.(starlark.Callable), starlark.Tuple{NewK8sValue(k)}, nil)
@@ -200,7 +200,7 @@ def template(self,glob=''):
 					return i.Encode()(&writer)
 				},
 			}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			err := c.Apply(thread, k)
@@ -244,7 +244,7 @@ def template(self,glob=''):
 					return i.Encode()(&writer)
 				},
 			}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			err = c.Apply(thread, k)
@@ -282,7 +282,7 @@ def init(self):
 					return i.Encode()(&writer)
 				},
 			}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			err := c.Apply(thread, k)
@@ -328,7 +328,7 @@ def init(self):
 					return i.Encode()(&writer)
 				},
 			}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			err := c.Apply(thread, k)
@@ -345,7 +345,7 @@ def init(self):
 					return nil
 				},
 			}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			err := c.Delete(thread, k)
@@ -387,7 +387,7 @@ def init(self):
 					return nil
 				},
 			}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			err = c.Delete(thread, k)
@@ -455,7 +455,7 @@ def init(self):
 				return true
 			},
 		}
-		k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+		k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 			return k
 		}
 		err = c.Apply(thread, k)

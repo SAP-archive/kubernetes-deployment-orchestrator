@@ -21,7 +21,7 @@ var _ = Describe("Delete Chart", func() {
 				return nil
 			},
 		}
-		k.ForSubChartStub = func(s string, app string, version semver.Version) shalm.K8s {
+		k.ForSubChartStub = func(s string, app string, version semver.Version, children int) shalm.K8s {
 			return k
 		}
 

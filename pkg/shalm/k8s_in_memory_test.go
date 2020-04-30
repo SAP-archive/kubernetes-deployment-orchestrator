@@ -55,7 +55,7 @@ var _ = Describe("k8s_in_memory", func() {
 		Expect(obj.Kind).To(Equal("Secret"))
 	})
 	It("for namespace works", func() {
-		k2 := k8s.ForSubChart("ns", "app", semver.Version{})
+		k2 := k8s.ForSubChart("ns", "app", semver.Version{}, 0)
 		Expect(k2.(*K8sInMemory).namespace).To(Equal("ns"))
 	})
 	It("get works", func() {

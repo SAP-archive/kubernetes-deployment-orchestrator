@@ -67,7 +67,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 					return cb.Encode()(buffer)
 				},
 			}
-			k8s.ForSubChartStub = func(s string, app string, version semver.Version) shalm.K8s {
+			k8s.ForSubChartStub = func(s string, app string, version semver.Version, children int) shalm.K8s {
 				return k8s
 			}
 			k8s.WithContextStub = func(ctx context.Context) shalm.K8s {

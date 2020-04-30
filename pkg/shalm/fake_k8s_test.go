@@ -69,12 +69,13 @@ type FakeK8s struct {
 		result1 K8s
 		result2 error
 	}
-	ForSubChartStub        func(string, string, semver.Version) K8s
+	ForSubChartStub        func(string, string, semver.Version, int) K8s
 	forSubChartMutex       sync.RWMutex
 	forSubChartArgsForCall []struct {
 		arg1 string
 		arg2 string
 		arg3 semver.Version
+		arg4 int
 	}
 	forSubChartReturns struct {
 		result1 K8s
@@ -502,18 +503,19 @@ func (fake *FakeK8s) ForConfigReturnsOnCall(i int, result1 K8s, result2 error) {
 	}{result1, result2}
 }
 
-func (fake *FakeK8s) ForSubChart(arg1 string, arg2 string, arg3 semver.Version) K8s {
+func (fake *FakeK8s) ForSubChart(arg1 string, arg2 string, arg3 semver.Version, arg4 int) K8s {
 	fake.forSubChartMutex.Lock()
 	ret, specificReturn := fake.forSubChartReturnsOnCall[len(fake.forSubChartArgsForCall)]
 	fake.forSubChartArgsForCall = append(fake.forSubChartArgsForCall, struct {
 		arg1 string
 		arg2 string
 		arg3 semver.Version
-	}{arg1, arg2, arg3})
-	fake.recordInvocation("ForSubChart", []interface{}{arg1, arg2, arg3})
+		arg4 int
+	}{arg1, arg2, arg3, arg4})
+	fake.recordInvocation("ForSubChart", []interface{}{arg1, arg2, arg3, arg4})
 	fake.forSubChartMutex.Unlock()
 	if fake.ForSubChartStub != nil {
-		return fake.ForSubChartStub(arg1, arg2, arg3)
+		return fake.ForSubChartStub(arg1, arg2, arg3, arg4)
 	}
 	if specificReturn {
 		return ret.result1
@@ -528,17 +530,17 @@ func (fake *FakeK8s) ForSubChartCallCount() int {
 	return len(fake.forSubChartArgsForCall)
 }
 
-func (fake *FakeK8s) ForSubChartCalls(stub func(string, string, semver.Version) K8s) {
+func (fake *FakeK8s) ForSubChartCalls(stub func(string, string, semver.Version, int) K8s) {
 	fake.forSubChartMutex.Lock()
 	defer fake.forSubChartMutex.Unlock()
 	fake.ForSubChartStub = stub
 }
 
-func (fake *FakeK8s) ForSubChartArgsForCall(i int) (string, string, semver.Version) {
+func (fake *FakeK8s) ForSubChartArgsForCall(i int) (string, string, semver.Version, int) {
 	fake.forSubChartMutex.RLock()
 	defer fake.forSubChartMutex.RUnlock()
 	argsForCall := fake.forSubChartArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
 func (fake *FakeK8s) ForSubChartReturns(result1 K8s) {

@@ -42,7 +42,7 @@ type K8sReader interface {
 // K8s kubernetes API
 type K8s interface {
 	K8sReader
-	ForSubChart(namespace string, app string, version semver.Version) K8s
+	ForSubChart(namespace string, app string, version semver.Version, children int) K8s
 	Inspect() string
 	Watch(kind string, name string, options *K8sOptions) ObjectStream
 	RolloutStatus(kind string, name string, options *K8sOptions) error
@@ -195,7 +195,7 @@ func (v *K8sConfigs) AddFlags(flagsSet *pflag.FlagSet) {
 // NewK8s create new instance to interact with kubernetes
 func NewK8s(configs ...K8sConfig) (K8s, error) {
 	var err error
-	result := &k8sImpl{root: true, ctx: context.Background()}
+	result := &k8sImpl{ctx: context.Background()}
 	for _, config := range configs {
 		if err = config(&result.K8sConfigs); err != nil {
 			return nil, err
@@ -230,9 +230,9 @@ type k8sImpl struct {
 	namespace        string
 	command          func(ctx context.Context, name string, arg ...string) *exec.Cmd
 	childrenProgress []int
+	children         int
 	app              string
 	version          semver.Version
-	root             bool
 	client           *k8sClient
 	host             string
 	ctx              context.Context
@@ -283,11 +283,7 @@ func (k *k8sImpl) addProgressSubscription() ProgressSubscription {
 		for _, p := range k.childrenProgress {
 			sum += p
 		}
-		count := len(k.childrenProgress)
-		if !k.root {
-			count++
-		}
-		k.Progress(sum / count)
+		k.Progress(sum / (k.children + 1))
 	}
 }
 func (k *k8sImpl) clone() *k8sImpl {
@@ -302,7 +298,7 @@ func (k *k8sImpl) clone() *k8sImpl {
 		}}
 }
 
-func (k *k8sImpl) ForSubChart(namespace string, app string, version semver.Version) K8s {
+func (k *k8sImpl) ForSubChart(namespace string, app string, version semver.Version, children int) K8s {
 	result := k.clone()
 	result.namespace = namespace
 	result.app = app

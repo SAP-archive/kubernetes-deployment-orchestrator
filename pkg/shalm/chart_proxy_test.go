@@ -46,7 +46,7 @@ var _ = Describe("Chart Proxy", func() {
 					return &result
 				},
 			}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			k.ForConfigStub = func(config string) (K8s, error) {
@@ -59,7 +59,7 @@ var _ = Describe("Chart Proxy", func() {
 		})
 		It("deletes a ShalmChart from k8s", func() {
 			k := &FakeK8s{}
-			k.ForSubChartStub = func(s string, app string, version semver.Version) K8s {
+			k.ForSubChartStub = func(s string, app string, version semver.Version, children int) K8s {
 				return k
 			}
 			err := chart.Delete(thread, k)

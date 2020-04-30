@@ -37,7 +37,7 @@ func (k K8sInMemory) Host() string {
 }
 
 // ForSubChart -
-func (k K8sInMemory) ForSubChart(namespace string, app string, version semver.Version) K8s {
+func (k K8sInMemory) ForSubChart(namespace string, app string, version semver.Version, children int) K8s {
 	return &K8sInMemory{namespace: namespace, objects: k.objects}
 }
 
