@@ -48,7 +48,7 @@ type capabilities struct {
 }
 
 func (c *chartImpl) Template(thread *starlark.Thread) Stream {
-	streams := []Stream{c.template(thread, "", false)}
+	streams := []Stream{}
 	err := c.eachSubChart(func(subChart *chartImpl) error {
 		streams = append(streams, subChart.template(thread, "", false))
 		return nil
@@ -56,6 +56,7 @@ func (c *chartImpl) Template(thread *starlark.Thread) Stream {
 	if err != nil {
 		return ErrorStream(err)
 	}
+	streams = append(streams, c.template(thread, "", false))
 	return yamlConcat(streams...)
 }
 
