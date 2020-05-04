@@ -402,7 +402,7 @@ func (k *k8sImpl) Get(kind string, name string, options *K8sOptions) (*Object, e
 
 // List -
 func (k *k8sImpl) List(kind string, options *K8sOptions) (*Object, error) {
-	cmd := k.kubectl("list", options, kind, "-o", "json")
+	cmd := k.kubectl("get", options, kind, "-o", "json")
 	buffer := &bytes.Buffer{}
 	cmd.Stdout = buffer
 	if err := run(cmd); err != nil {
