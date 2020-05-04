@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
+	"github.com/pkg/errors"
 )
 
 // K8sInMemory in memory implementation of K8s
@@ -110,6 +111,11 @@ func (k K8sInMemory) Delete(output ObjectStream, options *K8sOptions) error {
 // Get -
 func (k K8sInMemory) Get(kind string, name string, options *K8sOptions) (*Object, error) {
 	return k.GetObject(kind, name, options)
+}
+
+// List -
+func (k K8sInMemory) List(kind string, options *K8sOptions) (*Object, error) {
+	return nil, errors.New("Not implemented")
 }
 
 // IsNotExist -

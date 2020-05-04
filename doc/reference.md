@@ -151,6 +151,19 @@ Get one kubernetes object. The value is returned as a `dict`.
 | `namespace`        | Override default namespace of chart                                                                                     |
 | `ignore_not_found` | Ignore not found                                                                                                        |
 
+#### `k8s.list(kind,namespaced=false,timeout=0,namespace=None,ignore_not_found=False)`
+
+Get list of kubernetes object. The value is returned as a `dict`.
+
+| Parameter          | Description                                                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `kind`             | k8s kind                                                                                                                |
+  |
+| `timeout`          | Timeout passed to `kubectl get`. A timeout of zero means wait forever.                                                  |
+| `namespaced`       | If true object in the current namespace are listed. Otherwise object in cluster scope will be listed. Default is `true` |
+| `namespace`        | Override default namespace of chart                                                                                     |
+| `ignore_not_found` | Ignore not found                                                                                                        |
+
 #### `k8s.watch(kind,name,namespaced=false,timeout=0,namespace=None,ignore_not_found=False)`
 
 Watch one kubernetes object. The value is returned as a `iterator`.

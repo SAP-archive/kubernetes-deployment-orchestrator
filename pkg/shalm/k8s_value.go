@@ -169,6 +169,26 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 				return WrapDict(toStarlark(obj)), nil
 			}), nil
 		}
+	case "list":
+		{
+			return starlark.NewBuiltin("list", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
+				var kind string
+				parser := &kwargsParser{kwargs: kwargs}
+				k8sOptions := unpackK8sOptions(parser)
+				if err := starlark.UnpackArgs("list", args, parser.Parse(),
+					"kind", &kind); err != nil {
+					return nil, err
+				}
+				if name == "" {
+					return starlark.None, errors.New("no parameter name given")
+				}
+				obj, err := k.List(kind, k8sOptions)
+				if err != nil {
+					return starlark.None, err
+				}
+				return WrapDict(toStarlark(obj)), nil
+			}), nil
+		}
 	case "watch":
 		{
 			return starlark.NewBuiltin("watch", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {

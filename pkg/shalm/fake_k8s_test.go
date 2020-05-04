@@ -129,6 +129,20 @@ type FakeK8s struct {
 	isNotExistReturnsOnCall map[int]struct {
 		result1 bool
 	}
+	ListStub        func(string, *K8sOptions) (*Object, error)
+	listMutex       sync.RWMutex
+	listArgsForCall []struct {
+		arg1 string
+		arg2 *K8sOptions
+	}
+	listReturns struct {
+		result1 *Object
+		result2 error
+	}
+	listReturnsOnCall map[int]struct {
+		result1 *Object
+		result2 error
+	}
 	ProgressStub        func(int)
 	progressMutex       sync.RWMutex
 	progressArgsForCall []struct {
@@ -795,6 +809,70 @@ func (fake *FakeK8s) IsNotExistReturnsOnCall(i int, result1 bool) {
 	}{result1}
 }
 
+func (fake *FakeK8s) List(arg1 string, arg2 *K8sOptions) (*Object, error) {
+	fake.listMutex.Lock()
+	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
+	fake.listArgsForCall = append(fake.listArgsForCall, struct {
+		arg1 string
+		arg2 *K8sOptions
+	}{arg1, arg2})
+	fake.recordInvocation("List", []interface{}{arg1, arg2})
+	fake.listMutex.Unlock()
+	if fake.ListStub != nil {
+		return fake.ListStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.listReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeK8s) ListCallCount() int {
+	fake.listMutex.RLock()
+	defer fake.listMutex.RUnlock()
+	return len(fake.listArgsForCall)
+}
+
+func (fake *FakeK8s) ListCalls(stub func(string, *K8sOptions) (*Object, error)) {
+	fake.listMutex.Lock()
+	defer fake.listMutex.Unlock()
+	fake.ListStub = stub
+}
+
+func (fake *FakeK8s) ListArgsForCall(i int) (string, *K8sOptions) {
+	fake.listMutex.RLock()
+	defer fake.listMutex.RUnlock()
+	argsForCall := fake.listArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeK8s) ListReturns(result1 *Object, result2 error) {
+	fake.listMutex.Lock()
+	defer fake.listMutex.Unlock()
+	fake.ListStub = nil
+	fake.listReturns = struct {
+		result1 *Object
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeK8s) ListReturnsOnCall(i int, result1 *Object, result2 error) {
+	fake.listMutex.Lock()
+	defer fake.listMutex.Unlock()
+	fake.ListStub = nil
+	if fake.listReturnsOnCall == nil {
+		fake.listReturnsOnCall = make(map[int]struct {
+			result1 *Object
+			result2 error
+		})
+	}
+	fake.listReturnsOnCall[i] = struct {
+		result1 *Object
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeK8s) Progress(arg1 int) {
 	fake.progressMutex.Lock()
 	fake.progressArgsForCall = append(fake.progressArgsForCall, struct {
@@ -1179,6 +1257,8 @@ func (fake *FakeK8s) Invocations() map[string][][]interface{} {
 	defer fake.inspectMutex.RUnlock()
 	fake.isNotExistMutex.RLock()
 	defer fake.isNotExistMutex.RUnlock()
+	fake.listMutex.RLock()
+	defer fake.listMutex.RUnlock()
 	fake.progressMutex.RLock()
 	defer fake.progressMutex.RUnlock()
 	fake.rolloutStatusMutex.RLock()

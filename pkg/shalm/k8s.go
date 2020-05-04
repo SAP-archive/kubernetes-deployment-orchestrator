@@ -36,6 +36,7 @@ type K8sOptions struct {
 type K8sReader interface {
 	Host() string
 	Get(kind string, name string, options *K8sOptions) (*Object, error)
+	List(kind string, options *K8sOptions) (*Object, error)
 	IsNotExist(err error) bool
 }
 
@@ -399,6 +400,21 @@ func (k *k8sImpl) Get(kind string, name string, options *K8sOptions) (*Object, e
 	return &result, err
 }
 
+// List -
+func (k *k8sImpl) List(kind string, options *K8sOptions) (*Object, error) {
+	cmd := k.kubectl("list", options, kind, "-o", "json")
+	buffer := &bytes.Buffer{}
+	cmd.Stdout = buffer
+	if err := run(cmd); err != nil {
+		return nil, err
+	}
+	decoder := json.NewDecoder(buffer)
+	var result Object
+	err := decoder.Decode(&result)
+	return &result, err
+}
+
+// Watch -
 func (k *k8sImpl) Watch(kind string, name string, options *K8sOptions) ObjectStream {
 	return func(writer ObjectWriter) error {
 		cmd := k.kubectl("get", options, kind, name, "-o", "json", "--watch")
