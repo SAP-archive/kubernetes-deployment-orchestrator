@@ -43,9 +43,6 @@ func init() {
 	sort.Slice(kinds, func(i, j int) bool { return kinds[i].Version > kinds[j].Version })
 	for _, k := range kinds {
 		groupVersion := schema.GroupVersionKind{Version: k.Version, Group: k.Group, Kind: strings.ToLower(k.Kind) + "s"}
-		if len(groupVersion.Group) == 0 {
-			groupVersion.Group = "api"
-		}
 		kindToGroupVersionKind[strings.ToLower(k.Kind)] = groupVersion
 		kindToGroupVersionKind[strings.ToLower(k.Kind)+"."+groupVersion.Group] = groupVersion
 		kindToGroupVersionKind[groupVersion.Kind] = groupVersion
@@ -106,10 +103,18 @@ func (r request) Do() result {
 	if !ok {
 		return result{err: errUnknownResource}
 	}
-	if r.namespace != nil {
-		r.request.AbsPath(gv.Group, gv.Version, "namespaces", *r.namespace, gv.Kind, r.name)
+
+	prefix := ""
+	if len(gv.Group) == 0 {
+		prefix = "api"
 	} else {
-		r.request.AbsPath(gv.Group, gv.Version, gv.Kind, r.name)
+		prefix = "apis"
+	}
+
+	if r.namespace != nil {
+		r.request.AbsPath(prefix, gv.Group, gv.Version, "namespaces", *r.namespace, gv.Kind, r.name)
+	} else {
+		r.request.AbsPath(prefix, gv.Group, gv.Version, gv.Kind, r.name)
 	}
 	return result{Result: r.request.Do()}
 }
