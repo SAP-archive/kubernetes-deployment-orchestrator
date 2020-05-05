@@ -10,4 +10,5 @@ def apply(self,k8s):
             break
         else:
             print("Waiting for nginx to come up")
+    x = k8s.get("deployment",'nginx')
 
