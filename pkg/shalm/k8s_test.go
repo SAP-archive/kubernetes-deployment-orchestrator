@@ -48,9 +48,11 @@ var _ = Describe("k8s", func() {
 	})
 
 	Context("kapp", func() {
+		var cmdArgs []string
 		k8s := k8sImpl{command: func(_ context.Context, name string, arg ...string) *exec.Cmd {
+			cmdArgs = arg
 			return exec.Command("echo", `{ "kind" : "Deployment" }`)
-		}, K8sConfigs: K8sConfigs{tool: ToolKapp}, ctx: context.Background()}
+		}, K8sConfigs: K8sConfigs{tool: ToolKapp, kubeConfig: "test"}, ctx: context.Background()}
 		It("delete works", func() {
 			err := k8s.Delete(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
@@ -58,6 +60,11 @@ var _ = Describe("k8s", func() {
 		It("apply works", func() {
 			err := k8s.Apply(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
+		})
+		It("namespace is set to default if kubeconfig is given", func() {
+			err := k8s.Apply(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(cmdArgs).To(ContainElements("-n", "default"))
 		})
 	})
 	Context("kubectl", func() {

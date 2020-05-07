@@ -128,6 +128,7 @@ type ChartStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
+// +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.status.lastOp.type`
 // +kubebuilder:printcolumn:name="Progress",type=integer,JSONPath=`.status.lastOp.progress`
 
 // ShalmChart is the Schema for the shalmcharts API

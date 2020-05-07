@@ -42,7 +42,7 @@ var _ = Describe("k8s client", func() {
 		obj, err := client.Get().
 			Namespace(&namespace).
 			Resource("deployments").
-			Name("metrics-server").
+			Name("coredns").
 			Do().
 			Get()
 

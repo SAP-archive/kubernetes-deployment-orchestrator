@@ -533,6 +533,8 @@ func (k *k8sImpl) kapp(command string, options *K8sOptions, flags ...string) *ex
 	namespace := k.ns(options)
 	if namespace != nil {
 		flags = append(flags, "-n", *namespace)
+	} else if len(k.kubeConfig) != 0 {
+		flags = append(flags, "-n", "default")
 	}
 	if options.Timeout > 0 {
 		flags = append(flags, "--wait-timeout", fmt.Sprintf("%.0fs", options.Timeout.Seconds()))
