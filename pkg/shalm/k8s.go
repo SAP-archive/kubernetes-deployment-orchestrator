@@ -158,6 +158,7 @@ func WithKubeConfigContent(value string) K8sConfig {
 // Progress -
 func (v *K8sConfigs) Progress(progress int) {
 	if v.progressSubscription != nil {
+
 		progress = progress / 5 * 5
 		if progress == v.progress {
 			return
@@ -196,7 +197,7 @@ func (v *K8sConfigs) AddFlags(flagsSet *pflag.FlagSet) {
 // NewK8s create new instance to interact with kubernetes
 func NewK8s(configs ...K8sConfig) (K8s, error) {
 	var err error
-	result := &k8sImpl{ctx: context.Background()}
+	result := &k8sImpl{ctx: context.Background(), app: "root"}
 	for _, config := range configs {
 		if err = config(&result.K8sConfigs); err != nil {
 			return nil, err
@@ -230,6 +231,7 @@ type k8sImpl struct {
 	K8sConfigs
 	namespace        string
 	command          func(ctx context.Context, name string, arg ...string) *exec.Cmd
+	localProgress    int
 	childrenProgress []int
 	children         int
 	app              string
@@ -254,22 +256,35 @@ func (k *k8sImpl) Host() string {
 	return k.host
 }
 
+func (k *k8sImpl) progressCb(matched int, count int) {
+	if count == 0 || matched > count {
+		return
+	}
+	k.localProgress = matched * 90 / count
+	k.reportProgress()
+}
+
 // Apply -
 func (k *k8sImpl) Apply(output ObjectStream, options *K8sOptions) (err error) {
 	if k.excluded() {
 		return nil
 	}
 	if k.tool == ToolKapp {
-		writer, stream := prepareKapp(output, false, k.objMapper(), k.Progress)
+		writer, stream := prepareKapp(output, false, k.objMapper(), k.progressCb)
 		err = runWithStdin(k.kapp("deploy", options, "-f", "-"), stream, writer)
 	} else {
-		writer, stream := prepareKubectl(output, false, k.objMapper(), k.Progress)
+		writer, stream := prepareKubectl(output, false, k.objMapper(), k.progressCb)
 		err = runWithStdin(k.kubectl("apply", options, "-f", "-"), stream, writer)
 	}
-	if err == nil {
-		k.Progress(100)
-	}
 	return err
+}
+
+func (k *k8sImpl) reportProgress() {
+	sum := k.localProgress
+	for _, p := range k.childrenProgress {
+		sum += p
+	}
+	k.Progress(sum / (k.children + 1))
 }
 
 func (k *k8sImpl) addProgressSubscription() ProgressSubscription {
@@ -280,11 +295,7 @@ func (k *k8sImpl) addProgressSubscription() ProgressSubscription {
 	k.childrenProgress = append(k.childrenProgress, 0)
 	return func(progress int) {
 		k.childrenProgress[index] = progress
-		sum := 0
-		for _, p := range k.childrenProgress {
-			sum += p
-		}
-		k.Progress(sum / (k.children + 1))
+		k.reportProgress()
 	}
 }
 func (k *k8sImpl) clone() *k8sImpl {
@@ -304,6 +315,7 @@ func (k *k8sImpl) ForSubChart(namespace string, app string, version semver.Versi
 	result.namespace = namespace
 	result.app = app
 	result.version = version
+	result.children = children
 	return result
 }
 
@@ -318,17 +330,14 @@ func (k *k8sImpl) Delete(output ObjectStream, options *K8sOptions) (err error) {
 		return nil
 	}
 	if k.tool == ToolKapp {
-		writer, _ := prepareKapp(output, false, k.objMapper(), k.Progress)
+		writer, _ := prepareKapp(output, false, k.objMapper(), k.progressCb)
 		err = runWithStdin(k.kapp("delete", options), func(w io.Writer) error { return nil }, writer)
 	} else {
-		writer, stream := prepareKubectl(output, true, k.objMapper(), k.Progress)
+		writer, stream := prepareKubectl(output, true, k.objMapper(), k.progressCb)
 		err = runWithStdin(k.kubectl("delete", options, "--ignore-not-found", "-f", "-"), stream, writer)
 	}
 	if err != nil && k.IsNotExist(err) {
 		err = nil
-	}
-	if err == nil {
-		k.Progress(100)
 	}
 	return err
 }
@@ -600,13 +609,13 @@ func prepare(in ObjectStream, reverse bool, mapper func(obj *Object) *Object) St
 
 var kubectlRegexp = regexp.MustCompile(`(configured|unchanged|created|deleted)$`)
 
-func prepareKubectl(in ObjectStream, reverse bool, mapper func(obj *Object) *Object, progress func(progress int)) (io.Writer, Stream) {
+func prepareKubectl(in ObjectStream, reverse bool, mapper func(obj *Object) *Object, progress func(matched int, count int)) (io.Writer, Stream) {
 	count := 0
 	matched := 0
 	writer := &lineWriter{line: func(line string) {
 		if kubectlRegexp.MatchString(line) {
 			matched++
-			progress(matched * 90 / count)
+			progress(matched, count)
 		}
 
 	}}
@@ -619,7 +628,7 @@ func prepareKubectl(in ObjectStream, reverse bool, mapper func(obj *Object) *Obj
 
 var kappRegexp = regexp.MustCompile(`waiting.*\[(\d+)/(\d+)\s+done\]`)
 
-func prepareKapp(in ObjectStream, reverse bool, mapper func(obj *Object) *Object, progress func(progress int)) (io.Writer, Stream) {
+func prepareKapp(in ObjectStream, reverse bool, mapper func(obj *Object) *Object, progress func(matched int, count int)) (io.Writer, Stream) {
 	writer := &lineWriter{line: func(line string) {
 		match := kappRegexp.FindStringSubmatch(line)
 		if len(match) == 3 {
@@ -631,7 +640,7 @@ func prepareKapp(in ObjectStream, reverse bool, mapper func(obj *Object) *Object
 			if err != nil {
 				return
 			}
-			progress(matched * 90 / count)
+			progress(matched, count)
 		}
 	}}
 	return writer, prepare(in, reverse, mapper)

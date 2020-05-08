@@ -121,9 +121,9 @@ var _ = Describe("k8s", func() {
 			Expect(*content).To(Equal("hello"))
 		})
 		It("progress subscription works", func() {
-			err := k2.Apply(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
+			err := k2.Apply(func(writer ObjectWriter) error { k2.(*k8sImpl).progressCb(1, 1); return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(progress).To(Equal(100))
+			Expect(progress).To(Equal(90))
 		})
 		It("Adds labels", func() {
 			obj := k8s.objMapper()(&Object{})
