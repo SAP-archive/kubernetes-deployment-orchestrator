@@ -417,7 +417,7 @@ def init(self):
 		Expect(value.(starlark.String).GoString()).To(Equal("default"))
 		value, err = c.Attr("apply")
 		Expect(err).NotTo(HaveOccurred())
-		Expect(value.(starlark.Callable).Name()).To(ContainSubstring("apply at"))
+		Expect(value.(starlark.Callable).Name()).To(ContainSubstring("wrap_namespace at "))
 		value, err = c.Attr("unknown")
 		Expect(err).To(HaveOccurred())
 

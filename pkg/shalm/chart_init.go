@@ -87,51 +87,53 @@ func (c *chartImpl) init(thread *starlark.Thread, repo Repo, hasChartYaml bool, 
 	c.methods["load_yaml"] = c.loadYamlFunction()
 
 	file := c.path("Chart.star")
-	if _, err := os.Stat(file); os.IsNotExist(err) {
+	if _, err := os.Stat(file); err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
 		if !hasChartYaml {
 			return fmt.Errorf("Neither Chart.star nor Chart.yaml nor values.yaml exists in %s", c.dir)
 		}
-		return nil
-	}
+	} else {
 
-	internal := starlark.StringDict{
-		"version":         starlark.String(version),
-		"kube_version":    starlark.String(kubeVersion),
-		"chart":           c.builtin("chart", NewChartFunction(repo, c.dir, c.subChartValues, c.ChartOptions.Merge())),
-		"user_credential": c.builtin("user_credential", makeUserCredential),
-		"config_value":    c.builtin("config_value", makeConfigValue),
-		"certificate":     c.builtin("certificate", makeCertificate),
-		"struct":          starlark.NewBuiltin("struct", starlarkstruct.Make),
-	}
-	globals, err := starlark.ExecFile(thread, file, nil, internal)
-	if err != nil {
-		return err
-	}
-
-	for k, v := range globals {
-		if k == "init" {
-			c.initFunc = v.(*starlark.Function)
+		internal := starlark.StringDict{
+			"version":         starlark.String(version),
+			"kube_version":    starlark.String(kubeVersion),
+			"chart":           c.builtin("chart", NewChartFunction(repo, c.dir, c.subChartValues, c.ChartOptions.Merge())),
+			"user_credential": c.builtin("user_credential", makeUserCredential),
+			"config_value":    c.builtin("config_value", makeConfigValue),
+			"certificate":     c.builtin("certificate", makeCertificate),
+			"struct":          starlark.NewBuiltin("struct", starlarkstruct.Make),
 		}
-		f, ok := v.(starlark.Callable)
-		if ok {
-			c.methods[k] = c.builtin("bind_"+f.Name(), func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-				allArgs := make([]starlark.Value, args.Len()+1)
-				allArgs[0] = c
-				for i := 0; i < args.Len(); i++ {
-					allArgs[i+1] = args.Index(i)
-				}
-				return starlark.Call(thread, f, allArgs, kwargs)
-			})
-		}
-	}
-
-	if c.initFunc != nil {
-		_, err := starlark.Call(thread, c.initFunc, append([]starlark.Value{c}, args...), kwargs)
+		globals, err := starlark.ExecFile(thread, file, nil, internal)
 		if err != nil {
 			return err
 		}
-	}
 
+		for k, v := range globals {
+			if k == "init" {
+				c.initFunc = v.(*starlark.Function)
+			}
+			f, ok := v.(starlark.Callable)
+			if ok {
+				c.methods[k] = c.builtin("bind_"+f.Name(), func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+					allArgs := make([]starlark.Value, args.Len()+1)
+					allArgs[0] = c
+					for i := 0; i < args.Len(); i++ {
+						allArgs[i+1] = args.Index(i)
+					}
+					return starlark.Call(thread, f, allArgs, kwargs)
+				})
+			}
+		}
+
+		if c.initFunc != nil {
+			_, err := starlark.Call(thread, c.initFunc, append([]starlark.Value{c}, args...), kwargs)
+			if err != nil {
+				return err
+			}
+		}
+	}
 	c.methods["apply"] = c.wrapNamespace(c.methods["apply"], c.namespace)
 	c.methods["delete"] = c.wrapNamespace(c.methods["delete"], c.namespace)
 
