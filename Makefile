@@ -77,15 +77,11 @@ docker-context/kubectl: Makefile
 	curl -SsL https://storage.googleapis.com/kubernetes-release/release/$(KUBERNETES_VERSION)/bin/linux/amd64/kubectl -o docker-context/kubectl
 	chmod +x docker-context/kubectl
 
-docker-context/ytt: Makefile
-	curl -SsL https://github.com/k14s/ytt/releases/download/v0.27.1/ytt-linux-amd64 -o docker-context/ytt
-	chmod +x docker-context/ytt
-
 docker-context/kapp:  Makefile
 	curl -SsL https://github.com/k14s/kapp/releases/download/v0.26.0/kapp-linux-amd64 -o docker-context/kapp
 	chmod +x docker-context/kapp
 
-docker-prepare:: docker-context/shalm docker-context/kubectl docker-context/ytt docker-context/kapp
+docker-prepare:: docker-context/shalm docker-context/kubectl docker-context/kapp
 
 # Build the docker image
 docker-build:  docker-prepare
@@ -114,7 +110,7 @@ shalm:: bin/shalm
 
 VERSION_FLAGS := "-X github.com/wonderix/shalm/pkg/shalm.version=${VERSION} -X github.com/wonderix/shalm/pkg/shalm.kubeVersion=${KUBERNETES_VERSION}"
 
-bin/shalm: $(GO_FILES)  go.sum
+bin/shalm: $(GO_FILES)  go.sum go.mod Makefile
 	CGO_ENABLED=0 GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o bin/shalm . 
 
 docker-context/shalm:  bin/linux/shalm
@@ -123,7 +119,7 @@ docker-context/shalm:  bin/linux/shalm
 
 
 define BOZO
-bin/$(1)/shalm: $(GO_FILES)  go.sum
+bin/$(1)/shalm: $(GO_FILES)  go.sum go.mod Makefile
 	mkdir -p bin/$(1)
 	CGO_ENABLED=0 GOOS=$(1) GOARCH=amd64 GO111MODULE=on go build -ldflags ${VERSION_FLAGS} -o bin/$(1)/shalm .
 bin/shalm-binary-$(1).tgz: bin/$(1)/shalm

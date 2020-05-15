@@ -1,3 +1,5 @@
+#@ load("@shalm:self","self")
+#@ print(self)
 apiVersion: v1
 kind: ConfigMap
 metadata:

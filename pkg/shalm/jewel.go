@@ -65,8 +65,11 @@ func (v *vaultK8s) Read(name string) (map[string][]byte, error) {
 		return nil, err
 	}
 	var data map[string][]byte
-	if err := json.Unmarshal(obj.Additional["data"], &data); err != nil {
-		return nil, err
+	loadedData, ok := obj.Additional["data"]
+	if ok {
+		if err := json.Unmarshal(loadedData, &data); err != nil {
+			return nil, err
+		}
 	}
 	return data, nil
 }
@@ -120,7 +123,7 @@ func (c *jewel) read(v Vault) error {
 		if !v.IsNotExist(err) {
 			return err
 		}
-	} else {
+	} else if data != nil {
 		c.data = data
 		c.state = stateLoaded
 	}
@@ -128,6 +131,10 @@ func (c *jewel) read(v Vault) error {
 }
 
 func (c *jewel) write(v Vault) error {
+	err := c.ensure()
+	if err != nil {
+		return err
+	}
 	return v.Write(c.name, c.data)
 }
 
@@ -169,9 +176,8 @@ func (c *jewel) templateValues() map[string]string {
 func dataValue(data []byte) string {
 	if data != nil {
 		return string(data)
-	} else {
-		return ""
 	}
+	return ""
 }
 
 // Type -

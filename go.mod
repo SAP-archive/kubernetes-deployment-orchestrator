@@ -16,10 +16,10 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/procfs v0.0.11 // indirect
 	github.com/rickb777/date v1.12.4
-	github.com/spf13/cobra v0.0.7
+	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.starlark.net v0.0.0-20191021185836-28350e608555
-	golang.org/x/tools/gopls v0.4.0 // indirect
+	golang.org/x/tools v0.0.0-20200407041343-bf15fae40dea // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.4
@@ -30,3 +30,5 @@ require (
 )
 
 replace go.starlark.net => github.com/k14s/starlark-go v0.0.0-20200402152745-409c85f3828d // ytt branch
+
+replace github.com/k14s/ytt => github.com/wonderix/ytt v0.26.1-0.20200515085628-468877b0dfe2

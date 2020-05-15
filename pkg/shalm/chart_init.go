@@ -82,7 +82,6 @@ func (c *chartImpl) init(thread *starlark.Thread, repo Repo, hasChartYaml bool, 
 	c.methods["__apply"] = c.applyLocalFunction()
 	c.methods["__delete"] = c.deleteLocalFunction()
 	c.methods["helm"] = c.helmTemplateFunction()
-	c.methods["eytt"] = c.yttEmbeddedTemplateFunction()
 	c.methods["ytt"] = c.yttTemplateFunction()
 	c.methods["load_yaml"] = c.loadYamlFunction()
 
@@ -104,6 +103,7 @@ func (c *chartImpl) init(thread *starlark.Thread, repo Repo, hasChartYaml bool, 
 			"config_value":    c.builtin("config_value", makeConfigValue),
 			"certificate":     c.builtin("certificate", makeCertificate),
 			"struct":          starlark.NewBuiltin("struct", starlarkstruct.Make),
+			"inject":          starlark.NewBuiltin("inject", makeInjectedFiles(c.dir)),
 		}
 		globals, err := starlark.ExecFile(thread, file, nil, internal)
 		if err != nil {

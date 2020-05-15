@@ -182,7 +182,7 @@ def delete(self,k8s):
 def init(self):
 	self.timeout = "60s"
 def template(self,glob=''):
-	return self.eytt("ytt")
+	return self.ytt(inject("ytt/test.yml",self=self))
 `),
 				0644)
 			dir.WriteFile("ytt/test.yml", []byte("#@ if True:\ntest: #@ self.timeout\n#@ end\n"), 0644)
@@ -193,7 +193,7 @@ def template(self,glob=''):
 		AfterEach(func() {
 			dir.Remove()
 		})
-		It("applies embedded ytt", func() {
+		It("applies ytt", func() {
 			writer := bytes.Buffer{}
 			k := &FakeK8s{
 				ApplyStub: func(i ObjectStream, options *K8sOptions) error {
@@ -512,13 +512,9 @@ def init(self):
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("templates correct", func() {
-			_, err := os.Stat("/usr/local/bin/ytt")
-			if err != nil {
-				Skip("ytt is not installed")
-			}
 			s := c.Template(thread)
 			out := &bytes.Buffer{}
-			err = s(out)
+			err := s(out)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(out.String()).To(ContainSubstring("config: example.com"))
 		})

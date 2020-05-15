@@ -58,7 +58,7 @@ Deletes the chart from k8s without recursion. This should only be used within `d
 Renders helm templates and returns a `stream`. The default implementation of this methods renders
 
 * all templates in directory `templates` using `helm`
-* all templates in directory `ytt-templates` using `eytt`
+* all templates in directory `ytt-templates` using `ytt`
 
 It's possible to override this method.
 
@@ -76,14 +76,6 @@ Renders helm templates and returns a `stream`.
 | `dir`     | Directory to search for templates                         |
 | `glob`    | Pattern used to find the templates. Default is `"*.y*ml"` |
 
-#### `chart.eytt(dir,glob=pattern)`
-
-Renders embedded ytt templates and returns a `stream`.
-
-| Parameter | Description                                               |
-| --------- | --------------------------------------------------------- |
-| `dir`     | Directory to search for ytt templates                     |
-| `glob`    | Pattern used to find the templates. Default is `"*.y*ml"` |
 
 #### `chart.ytt(*files)`
 
@@ -91,7 +83,13 @@ Renders ytt templates using the `ytt` binary and returns a `stream`.
 
 | Parameter | Description                                                                                                |
 | --------- | ---------------------------------------------------------------------------------------------------------- |
-| `files`   | These files are passed as `-f` option to `ytt`. You can also pass `stream`s returned from `helm` or `eytt` |
+| `files`   | These files are passed as `-f` option to `ytt`. You can also pass `stream`s returned from `helm` |
+
+To access `self`, you need to load the corresponding shalm module
+
+```
+#@ load("@shalm:self","self")
+```
 
 
 #### `chart.load_yaml(name)`
@@ -294,11 +292,11 @@ The `chart_class` represents the values read from the `Chart.yaml` file
 
 ### stream
 
-The `stream` class represents the values returned from `template`, `helm`, `ytt` or `eytt` methods. Streams have not methods.
+The `stream` class represents the values returned from `template`, `helm`, or `ytt` methods. Streams have not methods.
 They can be passed to other templating functions. You can use `str` to convert them to strings
 
 ```python
-self.config=str(self.eytt("template-dir"))
+self.config=str(self.ytt("template-file"))
 ```
 
 #### Attributes

@@ -6,14 +6,17 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
-	"strings"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 	"github.com/wonderix/shalm/pkg/shalm/renderer"
 
+	cmdcore "github.com/k14s/ytt/pkg/cmd/core"
+	"github.com/k14s/ytt/pkg/files"
 	"go.starlark.net/starlark"
+
+	"github.com/k14s/ytt/pkg/cmd/template"
 )
 
 type release struct {
@@ -46,6 +49,8 @@ type kubeVersions struct {
 type capabilities struct {
 	KubeVersion kubeVersions
 }
+
+type moduleLoader = func(thread *starlark.Thread, module string) (starlark.StringDict, error)
 
 func (c *chartImpl) Template(thread *starlark.Thread) Stream {
 	streams := []Stream{}
@@ -86,7 +91,17 @@ func (c *chartImpl) templateFunction() starlark.Callable {
 		if err := starlark.UnpackArgs("template", args, kwargs, "glob?", &glob); err != nil {
 			return nil, err
 		}
-		return &stream{Stream: yamlConcat(c.helmTemplate(thread, "templates", glob), c.yttEmbeddedTemplate(thread, "ytt-templates", glob))}, nil
+		s := c.helmTemplate(thread, "templates", glob)
+		yttTemplateDir := path.Join(c.dir, "ytt-templates")
+		if _, err := os.Stat(yttTemplateDir); err == nil {
+			s = yamlConcat(s, c.yttTemplate(thread, starlark.Tuple{
+				&injectedFiles{
+					dir:    c.dir,
+					files:  []string{"ytt-templates"},
+					kwargs: starlark.StringDict{"self": c},
+				}}))
+		}
+		return &stream{Stream: s}, nil
 	})
 }
 
@@ -149,79 +164,119 @@ func (c *chartImpl) helmTemplate(thread *starlark.Thread, dir string, glob strin
 	}
 }
 
-func (c *chartImpl) yttEmbeddedTemplateFunction() starlark.Callable {
-	return c.builtin("ytt", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var glob string
-		var dir string
-		if err := starlark.UnpackArgs("ytt", args, kwargs, "dir", &dir, "glob?", &glob); err != nil {
-			return nil, err
+func (c *chartImpl) yttTemplate(thread *starlark.Thread, fileTuple starlark.Tuple) Stream {
+	return func(writer io.Writer) error {
+		context := injectedContext{}
+		o := &template.TemplateOptions{Extender: func(l moduleLoader) moduleLoader {
+			return func(thread *starlark.Thread, module string) (starlark.StringDict, error) {
+				if module == "@shalm:context" {
+					return context.module(), nil
+				}
+				return l(thread, module)
+
+			}
+		}}
+		filesToProcess := []*files.File{}
+		var tempFiles []string
+		defer func() {
+			for _, f := range tempFiles {
+				_ = os.Remove(f)
+			}
+		}()
+		for _, arg := range fileTuple {
+			switch arg := arg.(type) {
+			case *stream:
+				f, err := ioutil.TempFile("", "shalm*.yml")
+				tempFiles = append(tempFiles, f.Name())
+				if err != nil {
+					return errors.Wrapf(err, "Error saving stream to file in ytt")
+				}
+				err = arg.Stream(f)
+				if err != nil {
+					return errors.Wrapf(err, "Error saving stream to file in ytt")
+				}
+				f.Close()
+				fs, err := files.NewFileFromSource(files.NewLocalSource(f.Name(), ""))
+				if err != nil {
+					return err
+				}
+				filesToProcess = append(filesToProcess, fs)
+			case *injectedFiles:
+				prefix := context.add(arg.kwargs)
+				for _, file := range arg.files {
+					fn := path.Join(arg.dir, file)
+					stat, err := os.Stat(fn)
+					if err != nil {
+						return err
+					}
+					if stat.IsDir() {
+						err = filepath.Walk(fn, func(file string, info os.FileInfo, err error) error {
+							if err != nil {
+								return err
+							}
+							if !info.IsDir() {
+								filesToProcess = append(filesToProcess, files.MustNewFileFromSource(&chartSource{path: file, prefix: prefix}))
+							}
+							return nil
+						})
+					} else {
+						filesToProcess = append(filesToProcess, files.MustNewFileFromSource(&chartSource{path: fn, prefix: prefix}))
+					}
+				}
+			case starlark.String:
+				fs, err := files.NewSortedFilesFromPaths([]string{path.Join(c.dir, arg.GoString())}, files.SymlinkAllowOpts{})
+				if err != nil {
+					return err
+				}
+				filesToProcess = append(filesToProcess, fs...)
+			default:
+				return fmt.Errorf("Invalid type passed to ytt")
+			}
+
 		}
-		s := c.yttEmbeddedTemplate(thread, dir, glob)
-		return &stream{Stream: s}, nil
-	})
+		out := o.RunWithFiles(template.TemplateInput{Files: files.NewSortedFiles(filesToProcess)}, cmdcore.NewPlainUI(o.Debug))
+
+		if out.Err != nil {
+			return out.Err
+		}
+
+		body, err := out.DocSet.AsBytes()
+		if err != nil {
+			return err
+		}
+		_, err = writer.Write(body)
+		return err
+	}
 }
 
-func (c *chartImpl) yttEmbeddedTemplate(thread *starlark.Thread, dir string, glob string) Stream {
+type chartSource struct {
+	path   string
+	prefix string
+}
 
-	return func(writer io.Writer) error {
+func (s *chartSource) Description() string { return fmt.Sprintf("file '%s'", s.path) }
 
-		if strings.HasPrefix(dir, ".") {
-			return fmt.Errorf("Invalid template directory '%s'", dir)
-		}
+func (s *chartSource) RelativePath() (string, error) {
+	return s.path, nil
+}
 
-		return renderer.DirRender(glob,
-			renderer.DirSpec{
-				Dir:          path.Join(c.dir, dir),
-				FileRenderer: renderer.YttFileRenderer(c),
-			})(writer)
-
+func (s *chartSource) Bytes() ([]byte, error) {
+	buffer := &bytes.Buffer{}
+	buffer.WriteString("#@ ")
+	buffer.WriteString(s.prefix)
+	buffer.WriteString("\n")
+	f, err := os.Open(s.path)
+	if err != nil {
+		return nil, err
 	}
+	defer f.Close()
+	_, err = io.Copy(buffer, f)
+	return buffer.Bytes(), err
 }
 
 func (c *chartImpl) yttTemplateFunction() starlark.Callable {
 	return c.builtin("ytt", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		s := func(writer io.Writer) error {
-			flags := []string{}
-			var tempFiles []string
-			defer func() {
-				for _, f := range tempFiles {
-					_ = os.Remove(f)
-				}
-			}()
-			for _, arg := range args {
-				switch arg := arg.(type) {
-				case *stream:
-					f, err := ioutil.TempFile("", "shalm*.yml")
-					tempFiles = append(tempFiles, f.Name())
-					flags = append(flags, "-f", f.Name())
-					if err != nil {
-						return errors.Wrapf(err, "Error saving stream to file in ytt")
-					}
-					err = arg.Stream(f)
-					if err != nil {
-						return errors.Wrapf(err, "Error saving stream to file in ytt")
-					}
-					f.Close()
-				case starlark.String:
-					fmt.Printf("%v\n", arg)
-					flags = append(flags, "-f", path.Join(c.dir, arg.GoString()))
-				default:
-					return fmt.Errorf("Invalid type passed to ytt")
-				}
-
-			}
-			cmd := exec.Command("ytt", flags...)
-			fmt.Println(cmd.String())
-			cmd.Stdout = writer
-			buffer := bytes.Buffer{}
-			cmd.Stderr = &buffer
-			err := cmd.Run()
-			if err != nil {
-				return errors.Wrap(err, string(buffer.Bytes()))
-			}
-			return nil
-		}
-		return &stream{Stream: s}, nil
+		return &stream{Stream: c.yttTemplate(thread, args)}, nil
 	})
 }
 

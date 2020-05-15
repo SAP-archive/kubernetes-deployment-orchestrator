@@ -12,23 +12,6 @@ Just follow the rules of helm to write charts. Additionally, you can put a `Char
 └── templates/
 ```
 
-### Using embedded ytt yaml templates
-
-You can use ytt yaml templates to render kubernetes artifacts. You simply put them in the any folder inside a chart.
-There is currently no support for `data`, `star` or `text` files. The only value supplied to the templates is `self`,
-which is the current chart. You can access all values and methods within your chart. To use this feature, you need to override the template method
-
-```yaml
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: #@ self.namespace
-```
-
-```python
-def template(self,glob=''):
-  return self.eytt("ytt",glob=glob)  # Use ytt templating with templates in directory 'ytt'
-```
 
 ### Using full featured ytt yaml templates
 
@@ -174,12 +157,13 @@ def init(self):
   self.cert = certificate("server",signer=self.ca,domains=["example.com"],validity="P1Y")
 
 def template(self,glob=""):
-  return self.eytt("eytt") # use embedded ytt for templating
+  return self.ytt("ytt/configmap.yml") # use ytt for templating
 ```
 
-Put this template info `eytt/configmap.yml`
+Put this template info `ytt/configmap.yml`
 
 ```yaml
+#@ load("@shalm:self","self")
 apiVersion: v1
 kind: ConfigMap
 metadata:

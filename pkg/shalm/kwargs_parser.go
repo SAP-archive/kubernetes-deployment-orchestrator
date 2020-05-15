@@ -54,3 +54,16 @@ func kwargsToStarlark(kwargs map[string]interface{}) []starlark.Tuple {
 	}
 	return result
 }
+
+func kwargsToStringDict(kwargs []starlark.Tuple) starlark.StringDict {
+	result := starlark.StringDict{}
+	for _, arg := range kwargs {
+		if arg.Len() == 2 {
+			key, keyOK := arg.Index(0).(starlark.String)
+			if keyOK {
+				result[key.GoString()] = arg.Index(1)
+			}
+		}
+	}
+	return result
+}
