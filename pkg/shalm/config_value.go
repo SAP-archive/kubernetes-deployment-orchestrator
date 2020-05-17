@@ -2,6 +2,8 @@ package shalm
 
 import (
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/manifoldco/promptui"
 	"go.starlark.net/starlark"
@@ -16,8 +18,11 @@ const (
 	configTypeSelection
 )
 
+var configValueStdin io.ReadCloser = os.Stdin
+var configValueStdout io.WriteCloser = os.Stdout
+
 func (p configType) String() string {
-	return [...]string{"string", "password", "selection"}[p]
+	return [...]string{"string", "bool", "password", "selection"}[p]
 }
 
 func (p *configType) set(val string) error {
@@ -64,6 +69,8 @@ func (v *configValueBackend) read() (string, error) {
 		p := promptui.Prompt{
 			Label:   v.name,
 			Default: v.dflt,
+			Stdin:   configValueStdin,
+			Stdout:  configValueStdout,
 		}
 		return p.Run()
 	case configTypePassword:
@@ -71,19 +78,25 @@ func (v *configValueBackend) read() (string, error) {
 			Label:   v.name,
 			Default: v.dflt,
 			Mask:    '*',
+			Stdin:   configValueStdin,
+			Stdout:  configValueStdout,
 		}
 		return p.Run()
 	case configTypeBool:
 		sel := promptui.Select{
-			Label: v.name,
-			Items: []string{"yes", "no"},
+			Label:  v.name,
+			Items:  []string{"yes", "no"},
+			Stdin:  configValueStdin,
+			Stdout: configValueStdout,
 		}
 		_, s, err := sel.Run()
 		return s, err
 	case configTypeSelection:
 		sel := promptui.Select{
-			Label: v.name,
-			Items: v.options,
+			Label:  v.name,
+			Items:  v.options,
+			Stdin:  configValueStdin,
+			Stdout: configValueStdout,
 		}
 		_, s, err := sel.Run()
 		return s, err

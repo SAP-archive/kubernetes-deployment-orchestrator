@@ -179,9 +179,6 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 					"kind", &kind); err != nil {
 					return nil, err
 				}
-				if name == "" {
-					return starlark.None, errors.New("no parameter name given")
-				}
 				obj, err := k.List(kind, k8sOptions)
 				if err != nil {
 					return starlark.None, err

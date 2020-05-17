@@ -433,6 +433,8 @@ def init(self):
 		Expect(err).NotTo(HaveOccurred())
 		Expect(found).To(BeTrue())
 		Expect(value).To(Equal(starlark.String("60s")))
+
+		Expect(c.AttrNames()).To(ContainElement("template"))
 	})
 
 	It("applies a credentials ", func() {

@@ -58,6 +58,14 @@ var _ = Describe("K8sValue", func() {
 			GetStub: func(kind string, name string, k8s *K8sOptions) (*Object, error) {
 				return &Object{}, nil
 			},
+			ListStub: func(kind string, k8s *K8sOptions) (*Object, error) {
+				return &Object{}, nil
+			},
+			WatchStub: func(kind string, name string, k8s *K8sOptions) ObjectStream {
+				return func(w ObjectWriter) error {
+					return nil
+				}
+			},
 		}
 		k8s := &k8sValueImpl{fake}
 		thread := &starlark.Thread{}
@@ -73,6 +81,23 @@ var _ = Describe("K8sValue", func() {
 			_, err = starlark.Call(thread, value, starlark.Tuple{starlark.String("kind"), starlark.String("object"), starlark.String("condition")},
 				[]starlark.Tuple{{starlark.String("timeout"), starlark.MakeInt(10)},
 					{starlark.String("namespaced"), starlark.Bool(true)}})
+			Expect(err).NotTo(HaveOccurred())
+		}
+		{
+			value, err := k8s.Attr("list")
+			_, err = starlark.Call(thread, value, starlark.Tuple{starlark.String("kind")}, []starlark.Tuple{{starlark.String("timeout"), starlark.MakeInt(10)},
+				{starlark.String("namespaced"), starlark.Bool(true)}})
+			Expect(err).NotTo(HaveOccurred())
+		}
+		{
+			value, err := k8s.Attr("watch")
+			_, err = starlark.Call(thread, value, starlark.Tuple{starlark.String("kind"), starlark.String("object")}, []starlark.Tuple{{starlark.String("timeout"), starlark.MakeInt(10)},
+				{starlark.String("namespaced"), starlark.Bool(true)}})
+			Expect(err).NotTo(HaveOccurred())
+		}
+		{
+			value, err := k8s.Attr("progress")
+			_, err = starlark.Call(thread, value, starlark.Tuple{starlark.MakeInt(0)}, nil)
 			Expect(err).NotTo(HaveOccurred())
 		}
 		Expect(fake.RolloutStatusCallCount()).To(Equal(1))
