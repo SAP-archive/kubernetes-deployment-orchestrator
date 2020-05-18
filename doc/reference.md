@@ -85,11 +85,7 @@ Renders ytt templates using the `ytt` binary and returns a `stream`.
 | --------- | ---------------------------------------------------------------------------------------------------------- |
 | `files`   | These files are passed as `-f` option to `ytt`. You can also pass `stream`s returned from `helm` |
 
-To access `self`, you need to load the corresponding shalm module
-
-```
-#@ load("@shalm:self","self")
-```
+To access `self`, you need to use [`inject`](#inject) to inject this variable into your ytt files.
 
 
 #### `chart.load_yaml(name)`
@@ -298,6 +294,20 @@ They can be passed to other templating functions. You can use `str` to convert t
 ```python
 self.config=str(self.ytt("template-file"))
 ```
+
+### inject
+
+This method can be used to pass additional parameters to ytt.
+
+```python
+inject(file1,file2,key1=value1,key2=value2)
+```
+
+| Name    | Description                 |
+| ------- | --------------------------- |
+| `file1...filen` | List of files or directories which should be used for injection |
+| `key1=value1` | Values, which should be injected into the files |
+
 
 #### Attributes
 
