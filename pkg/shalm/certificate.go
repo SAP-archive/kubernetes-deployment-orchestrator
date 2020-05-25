@@ -54,6 +54,7 @@ func (c *certificateBackend) createCA() (map[string][]byte, error) {
 	domains := listToStringArray(c.domains)
 	ca := &x509.Certificate{
 		SerialNumber:          big.NewInt(1653),
+		Issuer:                pkix.Name{CommonName: "shalm"},
 		NotBefore:             time.Now(),
 		IsCA:                  true,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
