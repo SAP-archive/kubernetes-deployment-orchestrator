@@ -53,7 +53,7 @@ var _ = Describe("generic jewel", func() {
 			Expect(jewel.String()).To(ContainSubstring("jewel(name = name)"))
 			Expect(func() { jewel.Hash() }).Should(Panic())
 			Expect(jewel.Type()).To(Equal("jewel"))
-			Expect(jewel.Truth()).To(BeEquivalentTo(false))
+			Expect(jewel.Truth()).To(BeEquivalentTo(true))
 
 			By("attribute name", func() {
 				value, err := jewel.Attr("name")

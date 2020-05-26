@@ -14,7 +14,7 @@ var _ = Describe("chartClass", func() {
 		Expect(cc.String()).To(ContainSubstring("xxx"))
 		Expect(cc.Type()).To(Equal("chart_class"))
 		Expect(func() { cc.Hash() }).Should(Panic())
-		Expect(cc.Truth()).To(BeEquivalentTo(false))
+		Expect(cc.Truth()).To(BeEquivalentTo(true))
 		Expect(cc.AttrNames()).To(ConsistOf("api_version", "name", "version", "description", "keywords", "home", "sources", "icon"))
 		for _, attribute := range cc.AttrNames() {
 			_, err := cc.Attr(attribute)

@@ -65,7 +65,7 @@ func (k *k8sValueImpl) Type() string { return "k8s" }
 func (k *k8sValueImpl) Freeze() {}
 
 // Truth -
-func (k *k8sValueImpl) Truth() starlark.Bool { return false }
+func (k *k8sValueImpl) Truth() starlark.Bool { return true }
 
 // Hash -
 func (k *k8sValueImpl) Hash() (uint32, error) { panic("implement me") }

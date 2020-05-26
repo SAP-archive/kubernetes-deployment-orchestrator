@@ -34,7 +34,7 @@ func (cc *chartClass) Type() string { return "chart_class" }
 func (cc *chartClass) Freeze() {}
 
 // Truth -
-func (cc *chartClass) Truth() starlark.Bool { return false }
+func (cc *chartClass) Truth() starlark.Bool { return true }
 
 // Hash -
 func (cc *chartClass) Hash() (uint32, error) { panic("implement me") }

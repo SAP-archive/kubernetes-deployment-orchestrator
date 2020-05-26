@@ -90,7 +90,7 @@ func (c *stream) Type() string { return "stream" }
 func (c *stream) Freeze() {}
 
 // Truth -
-func (c *stream) Truth() starlark.Bool { return false }
+func (c *stream) Truth() starlark.Bool { return true }
 
 // Hash -
 func (c *stream) Hash() (uint32, error) { panic("implement me") }

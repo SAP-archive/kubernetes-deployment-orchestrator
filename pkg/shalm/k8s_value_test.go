@@ -31,7 +31,7 @@ var _ = Describe("K8sValue", func() {
 		Expect(k8s.String()).To(ContainSubstring("kubeconfig = "))
 		Expect(k8s.Type()).To(Equal("k8s"))
 		Expect(func() { k8s.Hash() }).Should(Panic())
-		Expect(k8s.Truth()).To(BeEquivalentTo(false))
+		Expect(k8s.Truth()).To(BeEquivalentTo(true))
 		for _, method := range []string{"rollout_status", "delete", "get"} {
 			value, err := k8s.Attr(method)
 			Expect(err).NotTo(HaveOccurred())

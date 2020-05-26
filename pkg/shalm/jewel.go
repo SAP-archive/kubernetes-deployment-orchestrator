@@ -187,7 +187,7 @@ func (c *jewel) Type() string { return c.backend.Name() }
 func (c *jewel) Freeze() {}
 
 // Truth -
-func (c *jewel) Truth() starlark.Bool { return false }
+func (c *jewel) Truth() starlark.Bool { return true }
 
 // Hash -
 func (c *jewel) Hash() (uint32, error) { panic("implement me") }

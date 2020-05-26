@@ -18,7 +18,7 @@ var _ = Describe("certificates", func() {
 			Expect(ca.String()).To(ContainSubstring("name = name"))
 			Expect(func() { ca.Hash() }).Should(Panic())
 			Expect(ca.Type()).To(Equal("certificate"))
-			Expect(ca.Truth()).To(BeEquivalentTo(false))
+			Expect(ca.Truth()).To(BeEquivalentTo(true))
 
 			By("attribute name", func() {
 				value, err := ca.Attr("name")
