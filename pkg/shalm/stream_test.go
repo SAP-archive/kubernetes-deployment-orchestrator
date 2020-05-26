@@ -16,7 +16,7 @@ var _ = Describe("Stream", func() {
 			Expect(s.String()).To(ContainSubstring("test"))
 			Expect(s.Type()).To(Equal("stream"))
 			Expect(func() { s.Hash() }).Should(Panic())
-			Expect(s.Truth()).To(BeEquivalentTo(false))
+			Expect(s.Truth()).To(BeEquivalentTo(true))
 			_, err := s.Attr("test")
 			Expect(err).To(HaveOccurred())
 			Expect(s.AttrNames()).To(BeEmpty())

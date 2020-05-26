@@ -27,7 +27,7 @@ var _ = Describe("config value", func() {
 				Expect(cv.String()).To(ContainSubstring("name = name"))
 				Expect(func() { cv.Hash() }).Should(Panic())
 				Expect(cv.Type()).To(Equal("config_value"))
-				Expect(cv.Truth()).To(BeEquivalentTo(false))
+				Expect(cv.Truth()).To(BeEquivalentTo(true))
 
 				By("attribute name", func() {
 					value, err := cv.Attr("name")
