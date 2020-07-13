@@ -31,4 +31,4 @@ require (
 
 replace go.starlark.net => github.com/k14s/starlark-go v0.0.0-20200402152745-409c85f3828d // ytt branch
 
-replace github.com/k14s/ytt => github.com/wonderix/ytt v0.26.1-0.20200515085628-468877b0dfe2
+replace github.com/k14s/ytt => github.com/wonderix/ytt  v0.26.1-0.20200713050030-d986378ccb4d

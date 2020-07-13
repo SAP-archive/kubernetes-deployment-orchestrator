@@ -234,6 +234,12 @@ func (c *chartImpl) yttTemplate(thread *starlark.Thread, fileTuple starlark.Tupl
 			}
 
 		}
+		filesToProcess = files.NewSortedFiles(filesToProcess)
+		fmt.Printf("ytt ")
+		for _, f := range filesToProcess {
+			fmt.Printf("-f %s ", f.RelativePath())
+		}
+		fmt.Println("")
 		out := o.RunWithFiles(template.TemplateInput{Files: files.NewSortedFiles(filesToProcess)}, cmdcore.NewPlainUI(o.Debug))
 
 		if out.Err != nil {
