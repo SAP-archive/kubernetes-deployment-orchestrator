@@ -10,6 +10,7 @@ import (
 
 	runtime2 "k8s.io/apimachinery/pkg/runtime"
 
+	"github.com/blang/semver"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
@@ -87,5 +88,27 @@ var _ = Describe("Repo", func() {
 			Expect(chart.(*chartImpl).values["name"]).To(Equal(starlark.String("test")))
 		})
 
+	})
+	Context("name and version", func() {
+		It("guesses github releases correct", func() {
+			options := chartOptions(guessIDAndVersion("https://github.com/wonderix/shalm/releases/download/v0.6.1/shalm-0.6.1-dirty.tgz", nil))
+			Expect(options.id).To(Equal("github.com/wonderix/shalm"))
+			Expect(options.version).To(Equal(&semver.Version{Major: 0, Minor: 6, Patch: 1}))
+		})
+		It("guesses github archives correct", func() {
+			options := chartOptions(guessIDAndVersion("https://github.com/wonderix/shalm/archive/0.6.1.zip", nil))
+			Expect(options.id).To(Equal("github.com/wonderix/shalm"))
+			Expect(options.version).To(Equal(&semver.Version{Major: 0, Minor: 6, Patch: 1}))
+		})
+		It("guesses github enterprise archives correct", func() {
+			options := chartOptions(guessIDAndVersion("https://github.tools.sap/api/v3/repos/cki/cf-for-k8s-scp/zipball/v0.6.1", nil))
+			Expect(options.id).To(Equal("github.tools.sap/cki/cf-for-k8s-scp"))
+			Expect(options.version).To(Equal(&semver.Version{Major: 0, Minor: 6, Patch: 1}))
+		})
+		It("other url matches", func() {
+			options := chartOptions(guessIDAndVersion("https://test.com/test/v0.6.1", nil))
+			Expect(options.id).To(Equal("test.com/test"))
+			Expect(options.version).To(Equal(&semver.Version{Major: 0, Minor: 6, Patch: 1}))
+		})
 	})
 })

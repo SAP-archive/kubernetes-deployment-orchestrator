@@ -9,11 +9,12 @@ import (
 	"go.starlark.net/starlark"
 )
 
-var nameRegexp = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9\\-\\.]*$")
+var nameRegexp = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9\\-\\./]*$")
 
 type chartClass struct {
 	APIVersion  string   `json:"apiVersion,omitempty"`
 	Name        string   `json:"name,omitempty"`
+	ID          string   `json:"id,omitempty"`
 	Version     string   `json:"version,omitempty"`
 	Description string   `json:"description,omitempty"`
 	Keywords    []string `json:"keywords,omitempty"`

@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/blang/semver"
 	"github.com/spf13/pflag"
 	"go.starlark.net/starlark"
 	"sigs.k8s.io/yaml"
@@ -188,6 +189,8 @@ type ChartOptions struct {
 	values    valuesFile
 	skipChart bool
 	readOnly  bool
+	id        string
+	version   *semver.Version
 }
 
 // ChartOption -
@@ -196,6 +199,16 @@ type ChartOption func(options *ChartOptions)
 // WithNamespace -
 func WithNamespace(namespace string) ChartOption {
 	return func(options *ChartOptions) { options.namespace = namespace }
+}
+
+// WithID -
+func WithID(value string) ChartOption {
+	return func(options *ChartOptions) { options.id = value }
+}
+
+// WithVersion -
+func WithVersion(value semver.Version) ChartOption {
+	return func(options *ChartOptions) { options.version = &value }
 }
 
 // WithSuffix -

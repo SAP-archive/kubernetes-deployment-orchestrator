@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"path"
 
 	"go.starlark.net/starlark"
 
@@ -31,7 +32,7 @@ func pkg(url string) error {
 	if err != nil {
 		return err
 	}
-	out, err := os.Create(c.GetName() + "-" + c.GetVersion().String() + ".tgz")
+	out, err := os.Create(path.Base(c.GetName()) + "-" + c.GetVersion().String() + ".tgz")
 	if err != nil {
 		return err
 	}

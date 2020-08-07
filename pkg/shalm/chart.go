@@ -18,6 +18,7 @@ import (
 
 // Chart -
 type Chart interface {
+	GetID() string
 	GetName() string
 	GetVersion() semver.Version
 	GetNamespace() string
@@ -76,6 +77,12 @@ func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOptio
 	if err := c.init(thread, repo, hasChartYaml, co.args, co.kwargs); err != nil {
 		return nil, err
 	}
+	if len(co.id) != 0 {
+		c.clazz.ID = co.id
+	}
+	if co.version != nil {
+		c.clazz.Version = co.version.String()
+	}
 	c.mergeValues(co.values)
 	return c, nil
 
@@ -83,6 +90,13 @@ func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOptio
 
 func (c *chartImpl) builtin(name string, fn func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error)) starlark.Callable {
 	return starlark.NewBuiltin(name+" at "+path.Join(c.dir, "Chart.star"), fn)
+}
+
+func (c *chartImpl) GetID() string {
+	if len(c.clazz.ID) == 0 {
+		return c.clazz.Name
+	}
+	return c.clazz.ID
 }
 
 func (c *chartImpl) GetName() string {
@@ -315,8 +329,8 @@ func (c *chartImpl) packedChartObject() ObjectStream {
 			return err
 		}
 		data, err := json.Marshal(map[string]string{
-			"name":    c.clazz.Name,
-			"version": c.clazz.Version,
+			"id":      c.GetID(),
+			"version": c.GetVersion().String(),
 			"chart":   base64.StdEncoding.EncodeToString(buffer.Bytes()),
 		})
 		if err != nil {
@@ -330,6 +344,7 @@ func (c *chartImpl) packedChartObject() ObjectStream {
 				Namespace: c.namespace,
 				Labels: map[string]string{
 					"shalm.wonderix.github.com/chart": "true",
+					"shalm.wonderix.github.com/id":    c.GetID(),
 				},
 			},
 			Additional: map[string]json.RawMessage{

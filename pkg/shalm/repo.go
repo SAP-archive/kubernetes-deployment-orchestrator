@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
 	"go.starlark.net/starlark"
@@ -207,9 +208,39 @@ func (r *repoImpl) newChartFromURL(thread *starlark.Thread, url string, opts ...
 	if err != nil {
 		return nil, err
 	}
-	return newChart(thread, r, dir, opts...)
+	return newChart(thread, r, dir, guessIDAndVersion(url, opts)...)
 }
 
+func extractIDAndVersion(opts []ChartOption, name, version string) []ChartOption {
+	vers, err := semver.ParseTolerant(version)
+	if err == nil {
+		return append(opts, WithID(name), WithVersion(vers))
+	}
+	return append(opts, WithID(name))
+
+}
+
+var githubRelease = regexp.MustCompile("https://(github[^/]*/[^/]*/[^/]*)/releases/download/([^/]*)/([^/-]*)")
+var githubArchive = regexp.MustCompile("https://(github[^/]*/[^/]*/[^/]*)/archive/(.*).zip")
+var githubEnterpriseArchive = regexp.MustCompile("https://(github[^/]*)/api/v3/repos/([^/]*/[^/]*)/zipball/(.*)")
+var otherURL = regexp.MustCompile("(https|http)://(.*)/(v{0,1}\\d+\\.\\d+\\.\\d+)")
+
+func guessIDAndVersion(url string, opts []ChartOption) []ChartOption {
+	var match []string
+	if match = githubRelease.FindStringSubmatch(url); match != nil {
+		return extractIDAndVersion(opts, match[1], match[2])
+	}
+	if match = githubArchive.FindStringSubmatch(url); match != nil {
+		return extractIDAndVersion(opts, match[1], match[2])
+	}
+	if match = githubEnterpriseArchive.FindStringSubmatch(url); match != nil {
+		return extractIDAndVersion(opts, match[1]+"/"+match[2], match[3])
+	}
+	if match = otherURL.FindStringSubmatch(url); match != nil {
+		return extractIDAndVersion(opts, match[2], match[3])
+	}
+	return opts
+}
 func loadArchive(name string, targetDir func() (string, error), etagOld string) (string, error) {
 	stat, err := os.Stat(name)
 	if err != nil {
