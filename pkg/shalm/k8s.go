@@ -20,6 +20,7 @@ import (
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 //go:generate ./generate_fake.sh
@@ -30,13 +31,20 @@ type K8sOptions struct {
 	Namespace      string
 	Timeout        time.Duration
 	IgnoreNotFound bool
+	Quiet          bool
+}
+
+// ListOptions -
+type ListOptions struct {
+	LabelSelector labels.Selector
+	AllNamespaces bool
 }
 
 // K8sReader kubernetes reader API
 type K8sReader interface {
 	Host() string
 	Get(kind string, name string, options *K8sOptions) (*Object, error)
-	List(kind string, options *K8sOptions) (*Object, error)
+	List(kind string, options *K8sOptions, listOptions *ListOptions) (*Object, error)
 	IsNotExist(err error) bool
 }
 
@@ -410,8 +418,19 @@ func (k *k8sImpl) Get(kind string, name string, options *K8sOptions) (*Object, e
 }
 
 // List -
-func (k *k8sImpl) List(kind string, options *K8sOptions) (*Object, error) {
-	cmd := k.kubectl("get", options, kind, "-o", "json")
+func (k *k8sImpl) List(kind string, options *K8sOptions, listOptions *ListOptions) (*Object, error) {
+	flags := []string{kind, "-o", "json"}
+	if listOptions.AllNamespaces {
+		options.Namespaced = false
+		flags = append(flags, "-A")
+	}
+	requirements, selectable := listOptions.LabelSelector.Requirements()
+	if selectable {
+		for _, req := range requirements {
+			flags = append(flags, "-l", req.Key()+string(req.Operator())+req.Values().List()[0])
+		}
+	}
+	cmd := k.kubectl("get", options, flags...)
 	buffer := &bytes.Buffer{}
 	cmd.Stdout = buffer
 	if err := run(cmd); err != nil {
@@ -527,7 +546,9 @@ func (k *k8sImpl) kubectl(command string, options *K8sOptions, flags ...string) 
 		c = exec.CommandContext
 	}
 	cmd := c(k.ctx, "kubectl", flags...)
-	fmt.Println(cmd.String())
+	if !options.Quiet {
+		fmt.Println(cmd.String())
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	return cmd

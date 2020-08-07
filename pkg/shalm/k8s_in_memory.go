@@ -114,7 +114,7 @@ func (k K8sInMemory) Get(kind string, name string, options *K8sOptions) (*Object
 }
 
 // List -
-func (k K8sInMemory) List(kind string, options *K8sOptions) (*Object, error) {
+func (k K8sInMemory) List(kind string, options *K8sOptions, listOptions *ListOptions) (*Object, error) {
 	return nil, errors.New("Not implemented")
 }
 

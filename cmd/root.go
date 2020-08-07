@@ -31,6 +31,7 @@ func init() {
 	rootCmd.AddCommand(controllerCmd)
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(testCmd)
+	rootCmd.AddCommand(listCmd)
 	rootCmd.PersistentFlags().StringVar(&repoConfigFile, "config", repoConfigFileDefault, "shalm configuration file (e.g. credentials)")
 }
 

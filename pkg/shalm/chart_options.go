@@ -228,7 +228,7 @@ func WithSkipChart(value bool) ChartOption {
 	return func(options *ChartOptions) { options.skipChart = value }
 }
 
-// WithWritable -
+// WithReadOnly -
 func WithReadOnly(value bool) ChartOption {
 	return func(options *ChartOptions) { options.readOnly = value }
 }

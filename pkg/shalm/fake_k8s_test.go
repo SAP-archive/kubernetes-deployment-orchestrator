@@ -129,11 +129,12 @@ type FakeK8s struct {
 	isNotExistReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	ListStub        func(string, *K8sOptions) (*Object, error)
+	ListStub        func(string, *K8sOptions, *ListOptions) (*Object, error)
 	listMutex       sync.RWMutex
 	listArgsForCall []struct {
 		arg1 string
 		arg2 *K8sOptions
+		arg3 *ListOptions
 	}
 	listReturns struct {
 		result1 *Object
@@ -809,17 +810,18 @@ func (fake *FakeK8s) IsNotExistReturnsOnCall(i int, result1 bool) {
 	}{result1}
 }
 
-func (fake *FakeK8s) List(arg1 string, arg2 *K8sOptions) (*Object, error) {
+func (fake *FakeK8s) List(arg1 string, arg2 *K8sOptions, arg3 *ListOptions) (*Object, error) {
 	fake.listMutex.Lock()
 	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
 	fake.listArgsForCall = append(fake.listArgsForCall, struct {
 		arg1 string
 		arg2 *K8sOptions
-	}{arg1, arg2})
-	fake.recordInvocation("List", []interface{}{arg1, arg2})
+		arg3 *ListOptions
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("List", []interface{}{arg1, arg2, arg3})
 	fake.listMutex.Unlock()
 	if fake.ListStub != nil {
-		return fake.ListStub(arg1, arg2)
+		return fake.ListStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -834,17 +836,17 @@ func (fake *FakeK8s) ListCallCount() int {
 	return len(fake.listArgsForCall)
 }
 
-func (fake *FakeK8s) ListCalls(stub func(string, *K8sOptions) (*Object, error)) {
+func (fake *FakeK8s) ListCalls(stub func(string, *K8sOptions, *ListOptions) (*Object, error)) {
 	fake.listMutex.Lock()
 	defer fake.listMutex.Unlock()
 	fake.ListStub = stub
 }
 
-func (fake *FakeK8s) ListArgsForCall(i int) (string, *K8sOptions) {
+func (fake *FakeK8s) ListArgsForCall(i int) (string, *K8sOptions, *ListOptions) {
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
 	argsForCall := fake.listArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeK8s) ListReturns(result1 *Object, result2 error) {

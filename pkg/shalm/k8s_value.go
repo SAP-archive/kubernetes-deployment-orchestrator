@@ -179,7 +179,7 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 					"kind", &kind); err != nil {
 					return nil, err
 				}
-				obj, err := k.List(kind, k8sOptions)
+				obj, err := k.List(kind, k8sOptions, &ListOptions{})
 				if err != nil {
 					return starlark.None, err
 				}

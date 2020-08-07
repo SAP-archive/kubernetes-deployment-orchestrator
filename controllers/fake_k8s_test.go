@@ -130,11 +130,12 @@ type FakeK8s struct {
 	isNotExistReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	ListStub        func(string, *shalm.K8sOptions) (*shalm.Object, error)
+	ListStub        func(string, *shalm.K8sOptions, *shalm.ListOptions) (*shalm.Object, error)
 	listMutex       sync.RWMutex
 	listArgsForCall []struct {
 		arg1 string
 		arg2 *shalm.K8sOptions
+		arg3 *shalm.ListOptions
 	}
 	listReturns struct {
 		result1 *shalm.Object
@@ -810,17 +811,18 @@ func (fake *FakeK8s) IsNotExistReturnsOnCall(i int, result1 bool) {
 	}{result1}
 }
 
-func (fake *FakeK8s) List(arg1 string, arg2 *shalm.K8sOptions) (*shalm.Object, error) {
+func (fake *FakeK8s) List(arg1 string, arg2 *shalm.K8sOptions, arg3 *shalm.ListOptions) (*shalm.Object, error) {
 	fake.listMutex.Lock()
 	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
 	fake.listArgsForCall = append(fake.listArgsForCall, struct {
 		arg1 string
 		arg2 *shalm.K8sOptions
-	}{arg1, arg2})
-	fake.recordInvocation("List", []interface{}{arg1, arg2})
+		arg3 *shalm.ListOptions
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("List", []interface{}{arg1, arg2, arg3})
 	fake.listMutex.Unlock()
 	if fake.ListStub != nil {
-		return fake.ListStub(arg1, arg2)
+		return fake.ListStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -835,17 +837,17 @@ func (fake *FakeK8s) ListCallCount() int {
 	return len(fake.listArgsForCall)
 }
 
-func (fake *FakeK8s) ListCalls(stub func(string, *shalm.K8sOptions) (*shalm.Object, error)) {
+func (fake *FakeK8s) ListCalls(stub func(string, *shalm.K8sOptions, *shalm.ListOptions) (*shalm.Object, error)) {
 	fake.listMutex.Lock()
 	defer fake.listMutex.Unlock()
 	fake.ListStub = stub
 }
 
-func (fake *FakeK8s) ListArgsForCall(i int) (string, *shalm.K8sOptions) {
+func (fake *FakeK8s) ListArgsForCall(i int) (string, *shalm.K8sOptions, *shalm.ListOptions) {
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
 	argsForCall := fake.listArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
 func (fake *FakeK8s) ListReturns(result1 *shalm.Object, result2 error) {

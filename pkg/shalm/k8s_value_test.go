@@ -58,7 +58,7 @@ var _ = Describe("K8sValue", func() {
 			GetStub: func(kind string, name string, k8s *K8sOptions) (*Object, error) {
 				return &Object{}, nil
 			},
-			ListStub: func(kind string, k8s *K8sOptions) (*Object, error) {
+			ListStub: func(kind string, k8s *K8sOptions, listOptions *ListOptions) (*Object, error) {
 				return &Object{}, nil
 			},
 			WatchStub: func(kind string, name string, k8s *K8sOptions) ObjectStream {

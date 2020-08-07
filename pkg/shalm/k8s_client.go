@@ -55,14 +55,13 @@ func configKube(kubeConfig string) (*rest.Config, error) {
 		host := os.Getenv("KUBERNETES_SERVICE_HOST")
 		if len(host) != 0 {
 			return rest.InClusterConfig()
+		}
+		env, ok := os.LookupEnv("KUBECONFIG")
+		if ok {
+			kubeConfig = env
 		} else {
-			env, ok := os.LookupEnv("KUBECONFIG")
-			if ok {
-				kubeConfig = env
-			} else {
-				path := filepath.Join(homeDir(), ".kube", "config")
-				kubeConfig = path
-			}
+			path := filepath.Join(homeDir(), ".kube", "config")
+			kubeConfig = path
 		}
 	}
 	return clientcmd.BuildConfigFromFlags("", kubeConfig)

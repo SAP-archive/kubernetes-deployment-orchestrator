@@ -8,6 +8,7 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -22,7 +23,15 @@ import (
 	"github.com/pkg/errors"
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
 	"go.starlark.net/starlark"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/selection"
 )
+
+// RepoListOptions -
+type RepoListOptions struct {
+	AllNamespaces bool
+	Namespace     string
+}
 
 // Repo -
 type Repo interface {
@@ -30,11 +39,13 @@ type Repo interface {
 	Get(thread *starlark.Thread, url string, options ...ChartOption) (ChartValue, error)
 	// GetFromSpec -
 	GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpec, options ...ChartOption) (ChartValue, error)
+	// List -
+	List(thread *starlark.Thread, k8s K8s, listOptions *RepoListOptions) ([]Chart, error)
 }
 
 type repoImpl struct {
 	cacheDir    string
-	openUrl     OpenDirCache
+	openURL     OpenDirCache
 	openArchive OpenDirCache
 }
 
@@ -63,7 +74,7 @@ func NewRepo(config ...RepoConfig) (Repo, error) {
 	dirCache := NewDirCache(path.Join(homedir, ".shalm", "cache-etag"))
 	r := &repoImpl{
 		cacheDir:    path.Join(homedir, ".shalm", "cache"),
-		openUrl:     dirCache.WrapDir(loadURL(httpClient, configs.Credentials)),
+		openURL:     dirCache.WrapDir(loadURL(httpClient, configs.Credentials)),
 		openArchive: dirCache.WrapDir(loadArchive),
 	}
 	return r, nil
@@ -134,6 +145,56 @@ func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpe
 	return c, nil
 }
 
+func newChartFromConfigMap(thread *starlark.Thread, r *repoImpl, o Object) (Chart, error) {
+	dataJSON, ok := o.Additional["data"]
+	if !ok {
+		return nil, fmt.Errorf("Invalid config map")
+	}
+	var data map[string]string
+	if err := json.Unmarshal(dataJSON, &data); err != nil {
+		return nil, err
+	}
+	tgz, err := base64.StdEncoding.DecodeString(data["chart"])
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(dataJSON, &data); err != nil {
+		return nil, err
+	}
+	return newChartFromReader(thread, r, r.cacheDirForChart(tgz), bytes.NewReader(tgz), chartDirExpr)
+}
+
+func (r *repoImpl) List(thread *starlark.Thread, k8s K8s, repoListOptions *RepoListOptions) ([]Chart, error) {
+	requirement, err := labels.NewRequirement("shalm.wonderix.github.com/chart", selection.Equals, []string{"true"})
+	if err != nil {
+		return nil, err
+	}
+	listOptions := &ListOptions{
+		LabelSelector: labels.NewSelector().Add(*requirement),
+		AllNamespaces: repoListOptions.AllNamespaces,
+	}
+	k8sOptions := &K8sOptions{Quiet: true, Namespace: repoListOptions.Namespace, Namespaced: !repoListOptions.AllNamespaces}
+	obj, err := k8s.List("configmaps", k8sOptions, listOptions)
+	if err != nil {
+		return nil, err
+	}
+	itemsJSON := obj.Additional["items"]
+	var items []Object
+	err = json.Unmarshal(itemsJSON, &items)
+	if err != nil {
+		return nil, err
+	}
+	charts := make([]Chart, 0)
+	for _, o := range items {
+		chart, err := newChartFromConfigMap(thread, r, o)
+		if err != nil {
+			return nil, err
+		}
+		charts = append(charts, chart)
+	}
+	return charts, nil
+}
+
 func newChartFromReader(thread *starlark.Thread, repo Repo, dir string, reader io.Reader, prefix *regexp.Regexp, opts ...ChartOption) (*chartImpl, error) {
 	if err := extract(reader, dir, prefix); err != nil {
 		return nil, err
@@ -142,7 +203,7 @@ func newChartFromReader(thread *starlark.Thread, repo Repo, dir string, reader i
 }
 
 func (r *repoImpl) newChartFromURL(thread *starlark.Thread, url string, opts ...ChartOption) (*chartImpl, error) {
-	dir, err := r.openUrl(url)
+	dir, err := r.openURL(url)
 	if err != nil {
 		return nil, err
 	}

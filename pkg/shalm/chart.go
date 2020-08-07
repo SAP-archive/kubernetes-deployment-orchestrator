@@ -1,6 +1,9 @@
 package shalm
 
 import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -10,12 +13,14 @@ import (
 
 	"github.com/blang/semver"
 	"go.starlark.net/starlark"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // Chart -
 type Chart interface {
 	GetName() string
 	GetVersion() semver.Version
+	GetNamespace() string
 	Apply(thread *starlark.Thread, k K8s) error
 	Delete(thread *starlark.Thread, k K8s) error
 	Template(thread *starlark.Thread) Stream
@@ -89,6 +94,10 @@ func (c *chartImpl) GetName() string {
 
 func (c *chartImpl) GetVersion() semver.Version {
 	return c.clazz.GetVersion()
+}
+
+func (c *chartImpl) GetNamespace() string {
+	return c.namespace
 }
 
 func (c *chartImpl) GetVersionString() string {
@@ -294,38 +303,40 @@ func (c *chartImpl) nameSpaceObject() ObjectStream {
 
 func (c *chartImpl) packedChartObject() ObjectStream {
 	return func(w ObjectWriter) error {
-		return nil
-		// if c.skipChart {
-		// 	return nil
-		// }
+		if c.skipChart {
+			return nil
+		}
 		// values, err := json.Marshal(stringDictToGo(c.values))
 		// if err != nil {
 		// 	return err
 		// }
-		// // buffer := &bytes.Buffer{}
-		// // if err := c.Package(buffer, false); err != nil {
-		// // 	return err
-		// // }
-		// data, err := json.Marshal(map[string][]byte{
-		// 	"values": values,
-		// 	// "chart":  buffer.Bytes(),
-		// })
-		// if err != nil {
-		// 	return err
-		// }
-		// w(&Object{
-		// 	APIVersion: corev1.SchemeGroupVersion.String(),
-		// 	Kind:       "Secret",
-		// 	MetaData: MetaData{
-		// 		Name:      "wonderix.chart." + c.GetName(),
-		// 		Namespace: c.namespace,
-		// 	},
-		// 	Additional: map[string]json.RawMessage{
-		// 		"type": json.RawMessage([]byte(`"github.com/wonderix/shalm"`)),
-		// 		"data": json.RawMessage(data),
-		// 	},
-		// })
-		// return nil
+		buffer := &bytes.Buffer{}
+		if err := c.Package(buffer, false); err != nil {
+			return err
+		}
+		data, err := json.Marshal(map[string]string{
+			"name":    c.clazz.Name,
+			"version": c.clazz.Version,
+			"chart":   base64.StdEncoding.EncodeToString(buffer.Bytes()),
+		})
+		if err != nil {
+			return err
+		}
+		w(&Object{
+			APIVersion: corev1.SchemeGroupVersion.String(),
+			Kind:       "ConfigMap",
+			MetaData: MetaData{
+				Name:      "shalm." + c.GetName(),
+				Namespace: c.namespace,
+				Labels: map[string]string{
+					"shalm.wonderix.github.com/chart": "true",
+				},
+			},
+			Additional: map[string]json.RawMessage{
+				"data": data,
+			},
+		})
+		return nil
 	}
 }
 
