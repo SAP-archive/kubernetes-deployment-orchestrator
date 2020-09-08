@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 	corev1 "k8s.io/api/core/v1"
 )
 

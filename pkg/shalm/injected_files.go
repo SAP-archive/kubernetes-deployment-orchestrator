@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
-	"go.starlark.net/starlark"
 )
 
 type injectedFiles struct {

@@ -10,12 +10,12 @@ import (
 
 	"github.com/fatih/color"
 
-	"go.starlark.net/starlarkstruct"
-	"go.starlark.net/syntax"
+	"github.com/k14s/starlark-go/starlarkstruct"
+	"github.com/k14s/starlark-go/syntax"
 
+	"github.com/k14s/starlark-go/starlark"
+	"github.com/k14s/starlark-go/starlarktest"
 	"github.com/wonderix/shalm/pkg/shalm"
-	"go.starlark.net/starlark"
-	"go.starlark.net/starlarktest"
 
 	"github.com/spf13/cobra"
 )

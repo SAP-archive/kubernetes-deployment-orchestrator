@@ -5,8 +5,8 @@ import (
 	"regexp"
 
 	"github.com/blang/semver"
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
-	"go.starlark.net/starlark"
 )
 
 var nameRegexp = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9\\-\\./]*$")

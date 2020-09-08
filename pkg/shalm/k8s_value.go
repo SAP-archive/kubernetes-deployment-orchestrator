@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 )
 
 // K8sValue -

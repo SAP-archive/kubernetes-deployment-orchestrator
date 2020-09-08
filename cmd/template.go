@@ -5,7 +5,7 @@ import (
 
 	"github.com/wonderix/shalm/pkg/shalm"
 
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 
 	"github.com/spf13/cobra"
 )

@@ -14,7 +14,7 @@ import (
 
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
 
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 )
 
 type chartProxy struct {

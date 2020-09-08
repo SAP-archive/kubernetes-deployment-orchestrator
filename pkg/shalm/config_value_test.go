@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"io/ioutil"
 
+	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pkg/errors"
-	"go.starlark.net/starlark"
 )
 
 var _ = Describe("config value", func() {

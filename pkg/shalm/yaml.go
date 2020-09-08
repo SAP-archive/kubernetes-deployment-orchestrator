@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 	"gopkg.in/yaml.v2"
 )
 

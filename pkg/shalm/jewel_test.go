@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"go.starlark.net/starlark"
 )
 
 type testBackend struct {

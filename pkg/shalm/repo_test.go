@@ -11,10 +11,10 @@ import (
 	runtime2 "k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/blang/semver"
+	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
-	"go.starlark.net/starlark"
 )
 
 var (

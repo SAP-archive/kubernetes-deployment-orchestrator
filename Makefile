@@ -78,7 +78,7 @@ docker-context/kubectl: Makefile
 	chmod +x docker-context/kubectl
 
 docker-context/kapp:  Makefile
-	curl -SsL https://github.com/k14s/kapp/releases/download/v0.30.0/kapp-linux-amd64 -o docker-context/kapp
+	curl -SsL https://github.com/k14s/kapp/releases/download/v0.34.0/kapp-linux-amd64 -o docker-context/kapp
 	chmod +x docker-context/kapp
 
 docker-prepare:: docker-context/shalm docker-context/kubectl docker-context/kapp

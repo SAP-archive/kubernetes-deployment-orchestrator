@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 
 	"github.com/k14s/ytt/pkg/yttlibrary"
 	"github.com/k14s/ytt/pkg/yttlibrary/overlay"

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"go.starlark.net/starlark"
-	"go.starlark.net/starlarkstruct"
+	"github.com/k14s/starlark-go/starlark"
+	"github.com/k14s/starlark-go/starlarkstruct"
 )
 
 func (c *chartImpl) loadChartYaml() error {

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 
 	"github.com/blang/semver"
 	. "github.com/onsi/ginkgo"

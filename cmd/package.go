@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 
 	"github.com/spf13/cobra"
 )

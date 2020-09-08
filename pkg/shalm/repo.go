@@ -21,9 +21,9 @@ import (
 	"time"
 
 	"github.com/blang/semver"
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
-	"go.starlark.net/starlark"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 )

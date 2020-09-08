@@ -7,8 +7,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	"go.starlark.net/starlark"
-	"go.starlark.net/starlarkstruct"
+	"github.com/k14s/starlark-go/starlark"
+	"github.com/k14s/starlark-go/starlarkstruct"
 )
 
 func toStarlark(vi interface{}) starlark.Value {

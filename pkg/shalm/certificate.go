@@ -11,8 +11,8 @@ import (
 
 	"github.com/rickb777/date/period"
 
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
-	"go.starlark.net/starlark"
 	corev1 "k8s.io/api/core/v1"
 )
 

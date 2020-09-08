@@ -1,7 +1,7 @@
 package shalm
 
 import (
-	"go.starlark.net/starlark"
+	"github.com/k14s/starlark-go/starlark"
 )
 
 type kwargsParser struct {

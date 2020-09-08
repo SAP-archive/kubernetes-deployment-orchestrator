@@ -5,8 +5,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/manifoldco/promptui"
-	"go.starlark.net/starlark"
 )
 
 type configType int

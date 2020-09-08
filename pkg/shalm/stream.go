@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
 	"github.com/wonderix/shalm/pkg/shalm/renderer"
-	"go.starlark.net/starlark"
 )
 
 // Stream -

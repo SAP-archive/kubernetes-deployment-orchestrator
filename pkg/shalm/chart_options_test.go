@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/pflag"
 	. "github.com/wonderix/shalm/pkg/shalm/test"
-	"go.starlark.net/starlark"
 )
 
 var _ = Describe("Chart Options", func() {

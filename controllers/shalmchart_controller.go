@@ -22,9 +22,9 @@ import (
 
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
 	"github.com/wonderix/shalm/pkg/shalm"
-	"go.starlark.net/starlark"
 
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"

@@ -5,9 +5,9 @@ import (
 	"io"
 	"time"
 
+	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"go.starlark.net/starlark"
 )
 
 var _ = Describe("K8sValue", func() {

@@ -12,11 +12,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/wonderix/shalm/pkg/shalm/renderer"
 
+	"github.com/k14s/starlark-go/starlark"
 	cmdcore "github.com/k14s/ytt/pkg/cmd/core"
 	"github.com/k14s/ytt/pkg/files"
-	"go.starlark.net/starlark"
 
 	"github.com/k14s/ytt/pkg/cmd/template"
+	"github.com/k14s/ytt/pkg/workspace"
 )
 
 type release struct {
@@ -49,8 +50,6 @@ type kubeVersions struct {
 type capabilities struct {
 	KubeVersion kubeVersions
 }
-
-type moduleLoader = func(thread *starlark.Thread, module string) (starlark.StringDict, error)
 
 func (c *chartImpl) Template(thread *starlark.Thread) Stream {
 	streams := []Stream{}
@@ -167,7 +166,7 @@ func (c *chartImpl) helmTemplate(thread *starlark.Thread, dir string, glob strin
 func (c *chartImpl) yttTemplate(thread *starlark.Thread, fileTuple starlark.Tuple) Stream {
 	return func(writer io.Writer) error {
 		context := injectedContext{}
-		o := &template.TemplateOptions{Extender: func(l moduleLoader) moduleLoader {
+		o := &template.TemplateOptions{Extender: func(l workspace.ModuleLoader) workspace.ModuleLoader {
 			return func(thread *starlark.Thread, module string) (starlark.StringDict, error) {
 				if module == "@shalm:context" {
 					return context.module(), nil

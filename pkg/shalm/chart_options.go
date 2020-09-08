@@ -7,8 +7,8 @@ import (
 	"regexp"
 
 	"github.com/blang/semver"
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/spf13/pflag"
-	"go.starlark.net/starlark"
 	"sigs.k8s.io/yaml"
 )
 

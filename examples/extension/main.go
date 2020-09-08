@@ -6,8 +6,8 @@ import (
 
 	"github.com/wonderix/shalm/pkg/shalm"
 
+	"github.com/k14s/starlark-go/starlark"
 	"github.com/wonderix/shalm/cmd"
-	"go.starlark.net/starlark"
 )
 
 type myJewelBackend struct {
