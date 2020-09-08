@@ -14,11 +14,12 @@ var _ = Describe("Object", func() {
 			Kind:       "Object",
 			APIVersion: "v1",
 			MetaData: MetaData{
-				Name:      "name",
-				Namespace: "space",
-				Labels:    map[string]string{"key": "value"},
+				Name:        "name",
+				Namespace:   "space",
+				Labels:      map[string]string{"key": "value"},
+				Annotations: map[string]string{"x": "y"},
 				Additional: map[string]json.RawMessage{
-					"annotations": json.RawMessage([]byte(`{"x":"y"}`)),
+					"finalizers": json.RawMessage([]byte(`["test"]`)),
 				},
 			},
 			Additional: map[string]json.RawMessage{
@@ -34,6 +35,9 @@ var _ = Describe("Object", func() {
 			  "annotations": {
 				"x": "y"
 			  },
+			  "finalizers": [
+				"test"
+			  ],
 			  "labels": {
 				"key": "value"
 			  },

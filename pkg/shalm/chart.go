@@ -346,6 +346,9 @@ func (c *chartImpl) packedChartObject() ObjectStream {
 					"shalm.wonderix.github.com/chart": "true",
 					"shalm.wonderix.github.com/id":    c.GetID(),
 				},
+				Annotations: map[string]string{
+					"kapp.k14s.io/disable-original": "true",
+				},
 			},
 			Additional: map[string]json.RawMessage{
 				"data": data,

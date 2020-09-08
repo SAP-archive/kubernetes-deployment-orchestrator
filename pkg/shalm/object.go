@@ -7,10 +7,11 @@ import (
 
 // MetaData -
 type MetaData struct {
-	Namespace  string
-	Name       string
-	Labels     map[string]string
-	Additional map[string]json.RawMessage
+	Namespace   string
+	Name        string
+	Labels      map[string]string
+	Annotations map[string]string
+	Additional  map[string]json.RawMessage
 }
 
 // Object -
@@ -32,6 +33,9 @@ func (m MetaData) MarshalJSON() ([]byte, error) {
 	if len(m.Labels) != 0 {
 		add(r, "labels", m.Labels)
 	}
+	if len(m.Annotations) != 0 {
+		add(r, "annotations", m.Annotations)
+	}
 	return json.Marshal(r)
 }
 
@@ -44,6 +48,7 @@ func (m *MetaData) UnmarshalJSON(b []byte) error {
 	remove(r, "namespace", &m.Namespace)
 	remove(r, "name", &m.Name)
 	remove(r, "labels", &m.Labels)
+	remove(r, "annotations", &m.Annotations)
 	m.Additional = r
 	return nil
 }
