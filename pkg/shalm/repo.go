@@ -211,8 +211,11 @@ func (r *repoImpl) newChartFromURL(thread *starlark.Thread, url string, opts ...
 	return newChart(thread, r, dir, guessIDAndVersion(url, opts)...)
 }
 
+var invalidLabel = regexp.MustCompile("[^-A-Za-z0-9_.]")
+
 func extractIDAndVersion(opts []ChartOption, name, version string) []ChartOption {
 	vers, err := semver.ParseTolerant(version)
+	name = invalidLabel.ReplaceAllString(name, "_")
 	if err == nil {
 		return append(opts, WithID(name), WithVersion(vers))
 	}

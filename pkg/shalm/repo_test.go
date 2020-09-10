@@ -92,22 +92,22 @@ var _ = Describe("Repo", func() {
 	Context("name and version", func() {
 		It("guesses github releases correct", func() {
 			options := chartOptions(guessIDAndVersion("https://github.com/wonderix/shalm/releases/download/v0.6.1/shalm-0.6.1-dirty.tgz", nil))
-			Expect(options.id).To(Equal("github.com/wonderix/shalm"))
+			Expect(options.id).To(Equal("github.com_wonderix_shalm"))
 			Expect(options.version).To(Equal(&semver.Version{Major: 0, Minor: 6, Patch: 1}))
 		})
 		It("guesses github archives correct", func() {
 			options := chartOptions(guessIDAndVersion("https://github.com/wonderix/shalm/archive/0.6.1.zip", nil))
-			Expect(options.id).To(Equal("github.com/wonderix/shalm"))
+			Expect(options.id).To(Equal("github.com_wonderix_shalm"))
 			Expect(options.version).To(Equal(&semver.Version{Major: 0, Minor: 6, Patch: 1}))
 		})
 		It("guesses github enterprise archives correct", func() {
 			options := chartOptions(guessIDAndVersion("https://github.tools.sap/api/v3/repos/cki/cf-for-k8s-scp/zipball/v0.6.1", nil))
-			Expect(options.id).To(Equal("github.tools.sap/cki/cf-for-k8s-scp"))
+			Expect(options.id).To(Equal("github.tools.sap_cki_cf-for-k8s-scp"))
 			Expect(options.version).To(Equal(&semver.Version{Major: 0, Minor: 6, Patch: 1}))
 		})
 		It("other url matches", func() {
 			options := chartOptions(guessIDAndVersion("https://test.com/test/v0.6.1", nil))
-			Expect(options.id).To(Equal("test.com/test"))
+			Expect(options.id).To(Equal("test.com_test"))
 			Expect(options.version).To(Equal(&semver.Version{Major: 0, Minor: 6, Patch: 1}))
 		})
 	})
