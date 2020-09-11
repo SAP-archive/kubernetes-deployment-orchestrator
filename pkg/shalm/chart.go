@@ -130,6 +130,9 @@ func (c *chartImpl) walk(cb func(name string, size int64, body io.Reader, err er
 		if err != nil {
 			return err
 		}
+		if strings.HasPrefix(rel, ".") {
+			return nil
+		}
 		body, err := os.Open(file)
 		if err != nil {
 			return err
