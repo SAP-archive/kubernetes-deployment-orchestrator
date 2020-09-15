@@ -20,6 +20,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
 	go.starlark.net v0.0.0-20200901195727-6e684ef5eeee
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/tools v0.0.0-20200407041343-bf15fae40dea // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.2
@@ -30,4 +31,4 @@ require (
 
 )
 
-replace github.com/k14s/ytt => github.com/wonderix/ytt  v0.28.1-0.20200908051131-36914082e903
+replace github.com/k14s/ytt => github.com/wonderix/ytt v0.28.1-0.20200908051131-36914082e903
