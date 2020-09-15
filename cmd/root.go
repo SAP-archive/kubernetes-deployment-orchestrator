@@ -83,6 +83,8 @@ func defaultLoad(thread *starlark.Thread, module string) (starlark.StringDict, e
 		return yttlibrary.StructAPI, nil
 	case "@ytt:module":
 		return yttlibrary.ModuleAPI, nil
+	case "@shalm:bcrypt":
+		return BcryptAPI, nil
 	}
 	return nil, fmt.Errorf("Unknown module '%s'", module)
 }
