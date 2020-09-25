@@ -20,7 +20,7 @@ type JewelBackend interface {
 type ComplexJewelBackend interface {
 	JewelBackend
 	Template() (map[string][]byte, error)
-	Delete() error
+	Delete(map[string][]byte) error
 }
 
 const stateInit = 0
@@ -98,10 +98,17 @@ func NewJewel(backend JewelBackend, name string) (starlark.Value, error) {
 	}, nil
 }
 
-func (c *jewel) delete() error {
+func (c *jewel) delete(v Vault) error {
 	complex, ok := c.backend.(ComplexJewelBackend)
 	if ok {
-		return complex.Delete()
+		data, err := v.Read(c.name)
+		if err != nil {
+			if v.IsNotExist(err) {
+				return nil
+			}
+			return err
+		}
+		return complex.Delete(data)
 	}
 	return nil
 }
@@ -125,8 +132,8 @@ func (c *jewel) read(v Vault) error {
 		}
 	} else if data != nil {
 		c.data = data
-		c.state = stateLoaded
 	}
+	c.state = stateLoaded
 	return nil
 }
 

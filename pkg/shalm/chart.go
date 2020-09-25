@@ -413,8 +413,9 @@ func (c *chartImpl) deleteLocal(thread *starlark.Thread, k K8sValue, k8sOptions 
 	if err != nil {
 		return err
 	}
+	vault := &vaultK8s{k8s: k, namespace: c.namespace}
 	return c.eachJewel(func(v *jewel) error {
-		return v.delete()
+		return v.delete(vault)
 	})
 }
 

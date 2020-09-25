@@ -6,3 +6,4 @@ cover.out
 .idea
 config
 docker-context/
+osb.json

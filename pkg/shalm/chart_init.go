@@ -149,7 +149,7 @@ func (c *chartImpl) subChartValues(name string) map[string]interface{} {
 	if !ok {
 		return nil
 	}
-	return toGoMap(d)
+	return ToGoMap(d)
 }
 
 func (c *chartImpl) wrapNamespace(callable starlark.Callable, namespace string) starlark.Callable {

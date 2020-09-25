@@ -343,3 +343,8 @@ The following libraries are available through the [`load` statement](https://git
 | `@ytt:sha256` |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
 | `@ytt:url`    |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
 | `@ytt:yaml`   |  See [ytt documentation](https://github.com/k14s/ytt/blob/master/docs/lang-ref-ytt.md)           |
+| `@shalm:bcrypt` | Method to create password hashes using bcrypt          |
+| `@shalm:osb`   | Open Service Broker Bindings See below           |
+
+
+### Open Service Broker Bindings

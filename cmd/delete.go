@@ -44,4 +44,5 @@ func delete(url string, k shalm.K8s, opts ...shalm.ChartOption) error {
 func init() {
 	deleteChartArgs.AddFlags(deleteCmd.Flags())
 	deleteK8sArgs.AddFlags(deleteCmd.Flags())
+	rootOsbConfig.AddFlags(deleteCmd.Flags())
 }

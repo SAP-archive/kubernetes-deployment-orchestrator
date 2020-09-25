@@ -18,6 +18,7 @@ import (
 
 var repoConfigFile string
 var repoConfigFileDefault string
+var rootOsbConfig = extensions.OsbConfig{}
 
 func init() {
 	homedir, err := os.UserHomeDir()
@@ -87,7 +88,7 @@ func defaultLoad(thread *starlark.Thread, module string) (starlark.StringDict, e
 	case "@shalm:bcrypt":
 		return BcryptAPI, nil
 	case "@shalm:osb":
-		return extensions.OsbAPI(nil), nil
+		return extensions.OsbAPI(rootOsbConfig), nil
 	}
 	return nil, fmt.Errorf("Unknown module '%s'", module)
 }

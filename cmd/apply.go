@@ -48,4 +48,5 @@ func apply(url string, k shalm.K8s, opts ...shalm.ChartOption) error {
 func init() {
 	applyChartArgs.AddFlags(applyCmd.Flags())
 	applyK8sArgs.AddFlags(applyCmd.Flags())
+	rootOsbConfig.AddFlags(applyCmd.Flags())
 }
