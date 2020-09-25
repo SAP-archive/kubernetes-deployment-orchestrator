@@ -12,6 +12,7 @@ import (
 	"github.com/k14s/ytt/pkg/yttlibrary/overlay"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"github.com/wonderix/shalm/pkg/extensions"
 	"github.com/wonderix/shalm/pkg/shalm"
 )
 
@@ -85,6 +86,8 @@ func defaultLoad(thread *starlark.Thread, module string) (starlark.StringDict, e
 		return yttlibrary.ModuleAPI, nil
 	case "@shalm:bcrypt":
 		return BcryptAPI, nil
+	case "@shalm:osb":
+		return extensions.OsbAPI(nil), nil
 	}
 	return nil, fmt.Errorf("Unknown module '%s'", module)
 }
