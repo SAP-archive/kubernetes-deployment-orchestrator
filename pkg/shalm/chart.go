@@ -13,6 +13,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/k14s/starlark-go/starlark"
+	gitignore "github.com/sabhiram/go-gitignore"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -119,6 +120,13 @@ func (c *chartImpl) GetVersionString() string {
 }
 
 func (c *chartImpl) walk(cb func(name string, size int64, body io.Reader, err error) error) error {
+	ignore := func(rel string) bool { return strings.HasPrefix(rel, ".") }
+	i, err := gitignore.CompileIgnoreFile(path.Join(c.dir, ".shalmignore"))
+	if err == nil {
+		ignore = func(rel string) bool {
+			return rel == ".shalmignore" || i.MatchesPath(rel)
+		}
+	}
 	return filepath.Walk(c.dir, func(file string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -130,7 +138,7 @@ func (c *chartImpl) walk(cb func(name string, size int64, body io.Reader, err er
 		if err != nil {
 			return err
 		}
-		if strings.HasPrefix(rel, ".") {
+		if ignore(rel) {
 			return nil
 		}
 		body, err := os.Open(file)

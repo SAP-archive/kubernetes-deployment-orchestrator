@@ -397,6 +397,38 @@ def init(self):
 		})
 
 	})
+	Context("shalmignore", func() {
+		var dir TestDir
+		var c ChartValue
+		thread := &starlark.Thread{Name: "main"}
+
+		BeforeEach(func() {
+			dir = NewTestDir()
+			dir.MkdirAll("templates", 0755)
+			dir.WriteFile("templates/deployment.yaml", []byte("namespace: {{ .Release.Namespace}}"), 0644)
+			dir.MkdirAll(".ignored", 0755)
+			for i := 0; i < 100; i++ {
+				dir.WriteFile(fmt.Sprintf(".ignored/test%d.md", i), []byte("0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"), 0644)
+			}
+			dir.WriteFile(".shalmignore", []byte(".ignored\n"), 0644)
+			dir.WriteFile("Chart.yaml", []byte("name: mariadb\nversion: 6.12.2\n"), 0644)
+			repo, _ := NewRepo()
+			var err error
+			c, err = newChart(thread, repo, dir.Root(), WithNamespace("namespace"), WithSkipChart(true))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(c.GetName()).To(Equal("mariadb"))
+
+		})
+		AfterEach(func() {
+			dir.Remove()
+		})
+		It("packages a chart", func() {
+			writer := &bytes.Buffer{}
+			err := c.Package(writer, false)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(writer.Bytes()).To(HaveLen(200))
+		})
+	})
 	It("behaves like starlark value", func() {
 		thread := &starlark.Thread{Name: "main"}
 		dir := NewTestDir()

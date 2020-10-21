@@ -45,6 +45,8 @@ shalm package --helm <shalm chart>
 
 In this case, the helm chart only includes two jobs (`post-install` and `pre-delete` hooks) which do the whole work.
 
+If you put a `.shalmignore` file in the chart folder, files matching the patterns in this file will be ignored.
+
 ## kapp Support
 
 Shalm charts can be applied/deleted using kapp. Therefore, you can pass `--tool kapp` at the command line.

@@ -6,6 +6,7 @@ require (
 	code.cloudfoundry.org/lager v2.0.0+incompatible
 	github.com/Masterminds/sprig/v3 v3.0.2
 	github.com/blang/semver v3.5.1+incompatible
+	github.com/drewolson/testflight v1.0.0 // indirect
 	github.com/fatih/color v1.9.0
 	github.com/go-logr/logr v0.1.0
 	github.com/google/uuid v1.1.1
@@ -21,10 +22,11 @@ require (
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/procfs v0.0.11 // indirect
 	github.com/rickb777/date v1.12.4
+	github.com/sabhiram/go-gitignore v0.0.0-20180611051255-d3107576ba94
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
-	go.starlark.net v0.0.0-20200901195727-6e684ef5eeee
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
+	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
 	golang.org/x/tools v0.0.0-20200407041343-bf15fae40dea // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.2
