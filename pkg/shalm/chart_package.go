@@ -166,7 +166,7 @@ spec:
       containers:
       - name: {{ .name }}-{{ .version }}-apply
         image: wonderix/shalm:{{ .tag }}
-        command: ["/app/shalm"]
+        command: ["/usr/bin/shalm"]
         args: 
         - apply
         - '/tmp/charts/chart.tgz'
@@ -203,7 +203,7 @@ spec:
       containers:
       - name: {{ .name }}-{{ .version }}-delete
         image: wonderix/shalm:{{ .tag }}
-        command: ["/app/shalm"]
+        command: ["/usr/bin/shalm"]
         args: 
         - delete
         - '/tmp/charts/chart.tgz'
