@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strings"
 
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -31,7 +32,13 @@ type result struct {
 	err error
 }
 
-var errUnknownResource = errors.New("Unknown resource")
+type errUnknownResource struct {
+	resource string
+}
+
+func (e *errUnknownResource) Error() string {
+	return fmt.Sprintf("Unknown resource %s", e.resource)
+}
 
 var kindToGroupVersionKind = map[string]schema.GroupVersionKind{}
 
@@ -100,7 +107,7 @@ func (r request) Name(name string) request {
 func (r request) Do() result {
 	gv, ok := kindToGroupVersionKind[strings.ToLower(r.resource)]
 	if !ok {
-		return result{err: errUnknownResource}
+		return result{err: &errUnknownResource{resource: r.resource}}
 	}
 
 	prefix := ""
@@ -124,6 +131,10 @@ func (r result) Get() (*Object, error) {
 	}
 	data, err := r.Result.Raw()
 	if err != nil {
+		statusError, ok := err.(*k8serrors.StatusError)
+		if ok {
+			return nil, fmt.Errorf("HTTP Status: %d, Message: %s", statusError.ErrStatus.Code, statusError.ErrStatus.Message)
+		}
 		return nil, err
 	}
 	if len(data) == 0 {

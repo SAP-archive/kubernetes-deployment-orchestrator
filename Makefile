@@ -81,15 +81,16 @@ docker-context/kapp:  Makefile
 	curl -SsL https://github.com/k14s/kapp/releases/download/v0.34.0/kapp-linux-amd64 -o docker-context/kapp
 	chmod +x docker-context/kapp
 
-docker-prepare:: docker-context/shalm docker-context/kubectl docker-context/kapp
+docker-build:: docker-context/build
 
 # Build the docker image
-docker-build:  docker-prepare
+docker-context/build:  docker-context/shalm docker-context/kubectl docker-context/kapp
 	docker build docker-context -f Dockerfile -t ${IMG}
 	docker tag ${IMG} ${REPOSITORY}:latest
+	touch docker-context/build
 
 # Push the docker image
-docker-push:
+docker-push: docker-context/build
 	docker push ${IMG}
 	docker push ${REPOSITORY}:latest
 

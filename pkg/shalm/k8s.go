@@ -400,7 +400,8 @@ func (k *k8sImpl) Get(kind string, name string, options *K8sOptions) (*Object, e
 		if err == nil {
 			return obj, nil
 		}
-		if err != errUnknownResource {
+		_, ok := err.(*errUnknownResource)
+		if !ok {
 			return nil, err
 		}
 	}
