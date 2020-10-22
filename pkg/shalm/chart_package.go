@@ -154,6 +154,25 @@ const valuesTemplate = `
 {{ end }}
 `
 const chartTemplate = `---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .name }}-{{ .version }}
+  namespace: {{ "{{ .Release.Namespace }}" }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .name }}-{{ .version }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: {{ .name }}-{{ .version }}
+    namespace: {{ "{{ .Release.Namespace }}" }}
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -163,6 +182,7 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: {{ .name }}-{{ .version }}
       containers:
       - name: {{ .name }}-{{ .version }}-apply
         image: wonderix/shalm:{{ .tag }}
