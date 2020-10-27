@@ -71,10 +71,11 @@ func (o *OsbConfig) factory() (osb.Client, error) {
 }
 
 type osbBindingBackend struct {
-	clientFactory osbClientFactory
-	service       string
-	plan          string
-	parameters    map[string]interface{}
+	clientFactory     osbClientFactory
+	service           string
+	plan              string
+	parameters        map[string]interface{}
+	bindingParameters map[string]interface{}
 }
 
 var (
@@ -172,7 +173,7 @@ func (v *osbBindingBackend) Apply(m map[string][]byte) (map[string][]byte, error
 		ServiceID:           selectedService.ID,
 		PlanID:              selectedPlan.ID,
 		AcceptsIncomplete:   false,
-		Parameters:          v.parameters,
+		Parameters:          v.bindingParameters,
 		Context:             nil,
 		OriginatingIdentity: nil,
 	})
@@ -271,12 +272,16 @@ func makeOsbBindung(clientFactory osbClientFactory) func(thread *starlark.Thread
 		c := &osbBindingBackend{clientFactory: clientFactory}
 		var name string
 		var parameters starlark.IterableMapping
-		err := starlark.UnpackArgs("binding", args, kwargs, "name", &name, "service", &c.service, "plan", &c.plan, "parameters?", &parameters)
+		var bindingParameters starlark.IterableMapping
+		err := starlark.UnpackArgs("binding", args, kwargs, "name", &name, "service", &c.service, "plan", &c.plan, "parameters?", &parameters, "binding_parametes", &bindingParameters)
 		if err != nil {
 			return nil, err
 		}
 		if parameters != nil {
 			c.parameters = shalm.ToGoMap(parameters)
+		}
+		if bindingParameters != nil {
+			c.bindingParameters = shalm.ToGoMap(bindingParameters)
 		}
 		return shalm.NewJewel(c, name)
 	}
