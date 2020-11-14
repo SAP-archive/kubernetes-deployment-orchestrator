@@ -66,7 +66,7 @@ Shalm also supports [unit testing](doc/unit_tests.md)
 | API definition                 | +               | -     | (+)      | -         |
 | Reuse of existing charts       | +               | +     | (+)      | ?         |
 | Only simple logic in templates | +               | +     | -        | +         |
-| Interaction with k8s           | +               | -     | -        | -         |
+| Interaction with k8s           | +               | +     | -        | -         |
 | Repository                     | +               | +     | -        | -         |
 | Mature technology              | -               | +     | +        | +         |
 | Manage user credentials        | +               | -     | -        | -         |
@@ -75,7 +75,7 @@ Shalm also supports [unit testing](doc/unit_tests.md)
 | Remove outdated objects        | +<sup>(1)</sup> | +     | +        | -         |
 | Migrate existing objects       | +<sup>(1)</sup> | -     | -        | -         |
 
-<sup>(1)</sup>: Must be implemented inside `apply` method.
+<sup>(1)</sup>: Must be implemented inside `apply` method or by using kapp as installer.
 
 
 ## Difference to helm
