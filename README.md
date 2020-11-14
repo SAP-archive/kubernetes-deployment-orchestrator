@@ -7,8 +7,9 @@ This project brings the starlark scripting language to helm charts.
 
 ## Features
 
+* Ease orchestration of deployments
+* Strict separation of templates and logic
 * Define APIs for helm charts
-* Ease composition of charts
 * Control deployment by overriding methods
 * Compatible with helm
 * Share a common service like a database manager or an ingress between a set of sub charts
