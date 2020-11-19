@@ -220,6 +220,7 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: {{ .name }}-{{ .version }}
       containers:
       - name: {{ .name }}-{{ .version }}-delete
         image: wonderix/shalm:{{ .tag }}

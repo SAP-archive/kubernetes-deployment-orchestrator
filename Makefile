@@ -18,7 +18,7 @@ endif
 
 GO_FILES:=$(shell git ls-files '*.go')
 
-all: manager
+all: bin/shalm manager 
 
 # Run tests
 test: generate fmt vet 
