@@ -50,7 +50,7 @@ func kwargsToGo(kwargs []starlark.Tuple) map[string]interface{} {
 func kwargsToStarlark(kwargs map[string]interface{}) []starlark.Tuple {
 	var result []starlark.Tuple
 	for k, v := range kwargs {
-		result = append(result, starlark.Tuple{starlark.String(k), toStarlark(v)})
+		result = append(result, starlark.Tuple{starlark.String(k), ToStarlark(v)})
 	}
 	return result
 }

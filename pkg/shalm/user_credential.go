@@ -22,10 +22,10 @@ func (u *userCredentialBackend) Name() string {
 	return "user_credential"
 }
 
-func (u *userCredentialBackend) Keys() map[string]string {
-	return map[string]string{
-		"username": u.usernameKey,
-		"password": u.passwordKey,
+func (u *userCredentialBackend) Keys() map[string]JewelValue {
+	return map[string]JewelValue{
+		"username": {Name: u.usernameKey},
+		"password": {Name: u.passwordKey},
 	}
 }
 

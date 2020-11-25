@@ -455,6 +455,6 @@ func (c *chartImpl) eachJewel(block func(x *jewel) error) error {
 
 func (c *chartImpl) mergeValues(values map[string]interface{}) {
 	for k, v := range values {
-		c.values[k] = merge(c.values[k], toStarlark(v))
+		c.values[k] = merge(c.values[k], ToStarlark(v))
 	}
 }

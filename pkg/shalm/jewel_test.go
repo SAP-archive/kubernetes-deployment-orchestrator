@@ -20,9 +20,9 @@ func (u *testBackend) Name() string {
 	return "jewel"
 }
 
-func (u *testBackend) Keys() map[string]string {
-	return map[string]string{
-		"field": "field.json",
+func (u *testBackend) Keys() map[string]JewelValue {
+	return map[string]JewelValue{
+		"field": {Name: "field.json"},
 	}
 }
 

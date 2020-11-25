@@ -20,9 +20,9 @@ func (v *myJewelBackend) Name() string {
 	return "myjewel"
 }
 
-func (v *myJewelBackend) Keys() map[string]string {
-	return map[string]string{
-		"username": "username",
+func (v *myJewelBackend) Keys() map[string]shalm.JewelValue {
+	return map[string]shalm.JewelValue{
+		"username": {Name: "username"},
 	}
 }
 

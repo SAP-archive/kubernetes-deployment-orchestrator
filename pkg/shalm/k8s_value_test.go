@@ -156,7 +156,7 @@ var _ = Describe("K8sValue", func() {
 		o := Object{MetaData: MetaData{
 			Name: "test",
 		}}
-		_, err = starlark.Call(thread, watch, starlark.Tuple{toStarlark(o)}, nil)
+		_, err = starlark.Call(thread, watch, starlark.Tuple{ToStarlark(o)}, nil)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(appliedObject.MetaData.Name).To(Equal(o.MetaData.Name))

@@ -88,9 +88,16 @@ func (v *osbBindingBackend) Name() string {
 	return "binding"
 }
 
-func (v *osbBindingBackend) Keys() map[string]string {
-	return map[string]string{
-		"credentials": "credentials",
+func (v *osbBindingBackend) Keys() map[string]shalm.JewelValue {
+	return map[string]shalm.JewelValue{
+		"credentials": {Name: "credentials", Converter: func(data []byte) (starlark.Value, error) {
+			credentials := map[string]interface{}{}
+			err := json.Unmarshal(data, &credentials)
+			if err != nil {
+				return starlark.None, err
+			}
+			return shalm.ToStarlark(credentials), nil
+		}},
 	}
 }
 
@@ -273,7 +280,7 @@ func makeOsbBindung(clientFactory osbClientFactory) func(thread *starlark.Thread
 		var name string
 		var parameters starlark.IterableMapping
 		var bindingParameters starlark.IterableMapping
-		err := starlark.UnpackArgs("binding", args, kwargs, "name", &name, "service", &c.service, "plan", &c.plan, "parameters?", &parameters, "binding_parametes", &bindingParameters)
+		err := starlark.UnpackArgs("binding", args, kwargs, "name", &name, "service", &c.service, "plan", &c.plan, "parameters?", &parameters, "binding_parameters", &bindingParameters)
 		if err != nil {
 			return nil, err
 		}

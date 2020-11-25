@@ -16,7 +16,7 @@ var _ = Describe("Converter", func() {
 		data["Bool"] = true
 		data["Float"] = 0.1
 		data["Map"] = map[string]string{"test1": "test1", "test2": "test2"}
-		starlarkValue := toStarlark(data)
+		starlarkValue := ToStarlark(data)
 		goValue := toGo(starlarkValue).(map[string]interface{})
 		Expect(goValue["String"]).To(Equal("test"))
 		Expect(goValue["ByteArray"]).To(Equal("test"))

@@ -52,11 +52,11 @@ func (cc *chartClass) Attr(name string) (starlark.Value, error) {
 	case "description":
 		return starlark.String(cc.Description), nil
 	case "keywords":
-		return toStarlark(cc.Keywords), nil
+		return ToStarlark(cc.Keywords), nil
 	case "home":
 		return starlark.String(cc.Home), nil
 	case "sources":
-		return toStarlark(cc.Sources), nil
+		return ToStarlark(cc.Sources), nil
 	case "icon":
 		return starlark.String(cc.Icon), nil
 	}

@@ -32,11 +32,11 @@ func (c *certificateBackend) Name() string {
 	return "certificate"
 }
 
-func (c *certificateBackend) Keys() map[string]string {
-	return map[string]string{
-		"certificate": c.certificateKey,
-		"private_key": c.privateKeyKey,
-		"ca":          c.caKey,
+func (c *certificateBackend) Keys() map[string]JewelValue {
+	return map[string]JewelValue{
+		"certificate": {Name: c.certificateKey},
+		"private_key": {Name: c.privateKeyKey},
+		"ca":          {Name: c.caKey},
 	}
 }
 

@@ -99,7 +99,7 @@ func (p *kwArgsYamlVar) Set(val string) error {
 		if err != nil {
 			return err
 		}
-		*p.kwargs = append(*p.kwargs, starlark.Tuple{starlark.String(key), toStarlark(v)})
+		*p.kwargs = append(*p.kwargs, starlark.Tuple{starlark.String(key), ToStarlark(v)})
 		return nil
 	})
 }

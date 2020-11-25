@@ -57,9 +57,9 @@ func (v *configValueBackend) Name() string {
 	return "config_value"
 }
 
-func (v *configValueBackend) Keys() map[string]string {
-	return map[string]string{
-		"value": "value",
+func (v *configValueBackend) Keys() map[string]JewelValue {
+	return map[string]JewelValue{
+		"value": {Name: "value"},
 	}
 }
 

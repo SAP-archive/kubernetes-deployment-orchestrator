@@ -30,7 +30,7 @@ func (c *chartImpl) loadYaml(name string) error {
 		return err
 	}
 	for k, v := range values {
-		c.values[k] = toStarlark(v)
+		c.values[k] = ToStarlark(v)
 	}
 	return nil
 }

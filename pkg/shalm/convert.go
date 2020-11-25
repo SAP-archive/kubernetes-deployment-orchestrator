@@ -11,7 +11,8 @@ import (
 	"github.com/k14s/starlark-go/starlarkstruct"
 )
 
-func toStarlark(vi interface{}) starlark.Value {
+// ToStarlark -
+func ToStarlark(vi interface{}) starlark.Value {
 	if vi == nil {
 		return starlark.None
 	}
@@ -46,17 +47,17 @@ func toStarlark(vi interface{}) starlark.Value {
 		}
 		a := make([]starlark.Value, 0)
 		for i := 0; i < v.Len(); i++ {
-			a = append(a, toStarlark(v.Index(i).Interface()))
+			a = append(a, ToStarlark(v.Index(i).Interface()))
 		}
 		return starlark.Tuple(a)
 	case reflect.Ptr:
-		return toStarlark(v.Elem().Interface())
+		return ToStarlark(v.Elem().Interface())
 	case reflect.Map:
 		d := starlark.NewDict(16)
 		for _, key := range v.MapKeys() {
 			strct := v.MapIndex(key)
-			keyValue := toStarlark(key.Interface())
-			d.SetKey(keyValue, toStarlark(strct.Interface()))
+			keyValue := ToStarlark(key.Interface())
+			d.SetKey(keyValue, ToStarlark(strct.Interface()))
 		}
 		return d
 	case reflect.Struct:
@@ -78,7 +79,7 @@ func toStarlark(vi interface{}) starlark.Value {
 			if err != nil {
 				panic(err)
 			}
-			return toStarlark(m)
+			return ToStarlark(m)
 		}
 	}
 	panic(fmt.Errorf("cannot convert %v to starlark", vi))

@@ -9,10 +9,26 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// JewelValue -
+type JewelValue struct {
+	Name      string
+	Converter func(data []byte) (starlark.Value, error)
+}
+
+func (s *JewelValue) convert(data []byte) (starlark.Value, error) {
+	if data == nil {
+		return starlark.None, nil
+	}
+	if s.Converter != nil {
+		return s.Converter(data)
+	}
+	return starlark.String(string(data)), nil
+}
+
 // JewelBackend -
 type JewelBackend interface {
 	Name() string
-	Keys() map[string]string
+	Keys() map[string]JewelValue
 	Apply(map[string][]byte) (map[string][]byte, error)
 }
 
@@ -171,11 +187,11 @@ func (c *jewel) ensure() (err error) {
 	return nil
 }
 
-func (c *jewel) templateValues() map[string]string {
+func (c *jewel) templateValues() map[string]starlark.Value {
 	_ = c.ensure()
-	result := map[string]string{}
+	result := map[string]starlark.Value{}
 	for k, v := range c.backend.Keys() {
-		result[k] = dataValue(c.data[v])
+		result[k], _ = v.convert(c.data[v.Name])
 	}
 	return result
 }
@@ -212,7 +228,7 @@ func (c *jewel) Attr(name string) (starlark.Value, error) {
 	if err != nil {
 		return starlark.None, err
 	}
-	return starlark.String(dataValue(c.data[key])), nil
+	return key.convert(c.data[key.Name])
 }
 
 // AttrNames -
