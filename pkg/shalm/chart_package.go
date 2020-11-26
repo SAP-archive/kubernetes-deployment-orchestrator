@@ -179,8 +179,12 @@ metadata:
   name: {{ .name }}-{{ .version }}-apply
   annotations:
     "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: {{ .name }}-{{ .version }}
       containers:
@@ -190,11 +194,11 @@ spec:
         args: 
         - apply
         - '/tmp/charts/chart.tgz'
-        {{ range $key, $value := .args -}}
-        {{ printf "{{ if .Values.%s -}}" $value }}
+        {{- range $key, $value := .args }}
+        {{ "{{- if .Values." }}{{ $value }}{{ " }}" }}
         - '--set'
-        - '{{ $value }}={{ printf "{{ .Values.%s }}" $value }}'
-        {{ "{{- end }}" }}
+        - '{{ $value }}={{ "{{ .Values." }}{{ $value }}{{ " }}"  }}'
+        {{ "{{- end }}\n" }}
         {{- end }}
         volumeMounts:
         - name: chart-volume
@@ -217,8 +221,12 @@ metadata:
   name: {{ .name }}-{{ .version }}-delete
   annotations:
     "helm.sh/hook": "pre-delete"
+    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: {{ .name }}-{{ .version }}
       containers:
@@ -228,11 +236,11 @@ spec:
         args: 
         - delete
         - '/tmp/charts/chart.tgz'
-        {{ range $key, $value := .args -}}
-        {{ printf "{{ if .Values.%s -}}" $value }}
+        {{- range $key, $value := .args }}
+        {{ "{{- if .Values." }}{{ $value }}{{ " }}" }}
         - '--set'
-        - '{{ $value }}={{ printf "{{ .Values.%s }}" $value }}'
-        {{ "{{- end }}" }}
+        - '{{ $value }}={{ "{{ .Values." }}{{ $value }}{{ " }}"  }}'
+        {{ "{{- end }}\n" }}
         {{- end }}
         volumeMounts:
         - name: chart-volume
