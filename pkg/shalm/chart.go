@@ -366,6 +366,37 @@ func (c *chartImpl) packedChartObject() ObjectStream {
 				"data": data,
 			},
 		})
+		byteData := map[string][]byte{}
+		for k, v := range stringDictToGo(c.values) {
+			j, err := json.Marshal(v)
+			if err != nil {
+				return err
+			}
+			byteData[k] = j
+		}
+		data, err = json.Marshal(byteData)
+		if err != nil {
+			return err
+		}
+		w(&Object{
+			APIVersion: corev1.SchemeGroupVersion.String(),
+			Kind:       "Secret",
+			MetaData: MetaData{
+				Name:      "shalm." + c.GetName(),
+				Namespace: c.namespace,
+				Labels: map[string]string{
+					"shalm.wonderix.github.com/chart":   "true",
+					"shalm.wonderix.github.com/genus":   c.GetGenus(),
+					"shalm.wonderix.github.com/version": c.GetVersionString(),
+				},
+				Annotations: map[string]string{
+					"kapp.k14s.io/disable-original": "true",
+				},
+			},
+			Additional: map[string]json.RawMessage{
+				"data": data,
+			},
+		})
 		return nil
 	}
 }
