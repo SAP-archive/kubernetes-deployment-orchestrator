@@ -189,7 +189,7 @@ type ChartOptions struct {
 	values    valuesFile
 	skipChart bool
 	readOnly  bool
-	id        string
+	genus     string
 	version   *semver.Version
 }
 
@@ -201,9 +201,9 @@ func WithNamespace(namespace string) ChartOption {
 	return func(options *ChartOptions) { options.namespace = namespace }
 }
 
-// WithID -
-func WithID(value string) ChartOption {
-	return func(options *ChartOptions) { options.id = value }
+// WithGenus -
+func WithGenus(value string) ChartOption {
+	return func(options *ChartOptions) { options.genus = value }
 }
 
 // WithVersion -
@@ -257,7 +257,7 @@ func (v *ChartOptions) AddFlags(flagsSet *pflag.FlagSet) {
 	flagsSet.Var(&kwArgsFileVar{kwargs: &v.kwargs}, "set-file", "Set values from respective files (key=path).")
 	flagsSet.Var(&kwArgsEnvVar{kwargs: &v.kwargs}, "set-env", "Set values from respective environment variable (key=env).")
 	flagsSet.VarP(&v.proxyMode, "proxy", "p", "Install helm chart using a combination of CR and operator. Possible values off, local and remote")
-	flagsSet.StringVarP(&v.namespace, "namespace", "n", defaultNamespace, "Namespace for installation")
+	flagsSet.StringVarP(&v.namespace, "namespace", "n", defaultNamespace, "namespace for installation")
 	flagsSet.StringVarP(&v.suffix, "suffix", "s", "", "Suffix which is used to build the chart name")
 	flagsSet.VarP(&v.values, "values", "f", "Load additional values from a file")
 }

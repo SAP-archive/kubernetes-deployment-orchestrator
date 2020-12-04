@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/spf13/pflag"
+
 	"github.com/blang/semver"
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
@@ -30,8 +32,9 @@ import (
 
 // RepoListOptions -
 type RepoListOptions struct {
-	AllNamespaces bool
-	Namespace     string
+	allNamespaces bool
+	namespace     string
+	genus         string
 }
 
 // Repo -
@@ -172,9 +175,16 @@ func (r *repoImpl) List(thread *starlark.Thread, k8s K8s, repoListOptions *RepoL
 	}
 	listOptions := &ListOptions{
 		LabelSelector: labels.NewSelector().Add(*requirement),
-		AllNamespaces: repoListOptions.AllNamespaces,
+		AllNamespaces: repoListOptions.allNamespaces,
 	}
-	k8sOptions := &K8sOptions{Quiet: true, Namespace: repoListOptions.Namespace, Namespaced: !repoListOptions.AllNamespaces}
+	if len(repoListOptions.genus) != 0 {
+		requirement, err := labels.NewRequirement("shalm.wonderix.github.com/genus", selection.Equals, []string{repoListOptions.genus})
+		if err != nil {
+			return nil, err
+		}
+		listOptions.LabelSelector.Add(*requirement)
+	}
+	k8sOptions := &K8sOptions{Quiet: true, Namespace: repoListOptions.namespace, Namespaced: !repoListOptions.allNamespaces}
 	obj, err := k8s.List("configmaps", k8sOptions, listOptions)
 	if err != nil {
 		return nil, err
@@ -217,9 +227,9 @@ func extractIDAndVersion(opts []ChartOption, name, version string) []ChartOption
 	vers, err := semver.ParseTolerant(version)
 	name = invalidLabel.ReplaceAllString(name, "_")
 	if err == nil {
-		return append(opts, WithID(name), WithVersion(vers))
+		return append(opts, WithGenus(name), WithVersion(vers))
 	}
-	return append(opts, WithID(name))
+	return append(opts, WithGenus(name))
 
 }
 
@@ -388,5 +398,13 @@ func zipExtract(in io.Reader, dir string, prefix *regexp.Regexp) error {
 		out.Close()
 	}
 	return nil
+
+}
+
+// AddFlags -
+func (s *RepoListOptions) AddFlags(flagsSet *pflag.FlagSet) {
+	flagsSet.BoolVarP(&s.allNamespaces, "all-namespaces", "A", false, "List charts in all namespaces")
+	flagsSet.StringVarP(&s.namespace, "namespace", "n", "default", "namespace")
+	flagsSet.StringVarP(&s.genus, "genus", "g", "", "Search for package with the given genus")
 
 }

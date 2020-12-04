@@ -86,7 +86,7 @@ func (o *Object) setDefaultNamespace(namespace string) {
 
 func (o *Object) kindOrdinal() int {
 	switch o.Kind {
-	case "Namespace":
+	case "namespace":
 		return 1
 	case "NetworkPolicy":
 		return 2

@@ -19,7 +19,7 @@ import (
 
 // Chart -
 type Chart interface {
-	GetID() string
+	GetGenus() string
 	GetName() string
 	GetVersion() semver.Version
 	GetNamespace() string
@@ -78,8 +78,8 @@ func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOptio
 	if err := c.init(thread, repo, hasChartYaml, co.args, co.kwargs); err != nil {
 		return nil, err
 	}
-	if len(co.id) != 0 {
-		c.clazz.ID = co.id
+	if len(co.genus) != 0 {
+		c.clazz.Genus = co.genus
 	}
 	if co.version != nil {
 		c.clazz.Version = co.version.String()
@@ -93,11 +93,11 @@ func (c *chartImpl) builtin(name string, fn func(thread *starlark.Thread, fn *st
 	return starlark.NewBuiltin(name+" at "+path.Join(c.dir, "Chart.star"), fn)
 }
 
-func (c *chartImpl) GetID() string {
-	if len(c.clazz.ID) == 0 {
+func (c *chartImpl) GetGenus() string {
+	if len(c.clazz.Genus) == 0 {
 		return c.clazz.Name
 	}
-	return c.clazz.ID
+	return c.clazz.Genus
 }
 
 func (c *chartImpl) GetName() string {
@@ -318,7 +318,7 @@ func (c *chartImpl) nameSpaceObject() ObjectStream {
 		return nil
 		// return w(&Object{
 		// 	APIVersion: corev1.SchemeGroupVersion.String(),
-		// 	Kind:       "Namespace",
+		// 	Kind:       "namespace",
 		// 	MetaData: MetaData{
 		// 		Name: c.namespace,
 		// 	},
@@ -340,7 +340,7 @@ func (c *chartImpl) packedChartObject() ObjectStream {
 			return err
 		}
 		data, err := json.Marshal(map[string]string{
-			"id":      c.GetID(),
+			"genus":   c.GetGenus(),
 			"version": c.GetVersion().String(),
 			"chart":   base64.StdEncoding.EncodeToString(buffer.Bytes()),
 		})
@@ -354,8 +354,9 @@ func (c *chartImpl) packedChartObject() ObjectStream {
 				Name:      "shalm." + c.GetName(),
 				Namespace: c.namespace,
 				Labels: map[string]string{
-					"shalm.wonderix.github.com/chart": "true",
-					"shalm.wonderix.github.com/id":    c.GetID(),
+					"shalm.wonderix.github.com/chart":   "true",
+					"shalm.wonderix.github.com/genus":   c.GetGenus(),
+					"shalm.wonderix.github.com/version": c.GetVersionString(),
 				},
 				Annotations: map[string]string{
 					"kapp.k14s.io/disable-original": "true",

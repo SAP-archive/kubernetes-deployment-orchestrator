@@ -50,7 +50,7 @@ var _ = Describe("k8s", func() {
 	})
 	It("Sorts in correct order", func() {
 		ordinal := 0
-		for _, kind := range []string{"Namespace",
+		for _, kind := range []string{"namespace",
 			"NetworkPolicy",
 			"ResourceQuota",
 			"LimitRange",
@@ -91,7 +91,7 @@ var _ = Describe("k8s", func() {
 	})
 
 	It("doesn't set default namespace non namepspaced objects", func() {
-		for _, kind := range []string{"Namespace", "ResourceQuota", "CustomResourceDefinition", "ClusterRole",
+		for _, kind := range []string{"namespace", "ResourceQuota", "CustomResourceDefinition", "ClusterRole",
 			"ClusterRoleList", "ClusterRoleBinding", "ClusterRoleBindingList", "APIService"} {
 			obj := Object{Kind: kind}
 			obj.setDefaultNamespace("test")

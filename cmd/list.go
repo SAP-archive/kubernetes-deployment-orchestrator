@@ -36,15 +36,14 @@ func list(k8s shalm.K8s, listOptions *shalm.RepoListOptions) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%-20s %-20s %-10s\n", "ID", "NAMESPACE", "VERSION")
+	fmt.Printf("%-20s %-20s %-10s\n", "GENUS", "NAMESPACE", "VERSION")
 	for _, c := range charts {
-		fmt.Printf("%-20s %-20s %-10s\n", c.GetID(), c.GetNamespace(), c.GetVersion().String())
+		fmt.Printf("%-20s %-20s %-10s\n", c.GetGenus(), c.GetNamespace(), c.GetVersion().String())
 	}
 	return nil
 }
 
 func init() {
-	listCmd.Flags().BoolVarP(&listOptions.AllNamespaces, "all-namespaces", "A", false, "List charts in all namespaces")
-	listCmd.Flags().StringVarP(&listOptions.Namespace, "namespace", "n", "default", "Namespace")
+	listOptions.AddFlags(listCmd.Flags())
 	listK8sArgs.AddFlags(listCmd.Flags())
 }

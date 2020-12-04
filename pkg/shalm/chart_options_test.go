@@ -111,7 +111,7 @@ var _ = Describe("Chart Options", func() {
 			args.AddFlags(&flagsSet)
 			Expect(flagsSet.FlagUsages()).To(ContainSubstring(`--set kwargs             Set values (key=val).`))
 			Expect(flagsSet.FlagUsages()).To(ContainSubstring(`-p, --proxy proxy-mode       Install helm chart using a combination of CR and operator. Possible values off, local and remote (default off)`))
-			Expect(flagsSet.FlagUsages()).To(ContainSubstring(`-n, --namespace string       Namespace for installation (default "default")`))
+			Expect(flagsSet.FlagUsages()).To(ContainSubstring(`-n, --namespace string       namespace for installation (default "default")`))
 			Expect(flagsSet.FlagUsages()).To(ContainSubstring(`-s, --suffix string          Suffix which is used to build the chart name`))
 		})
 	})

@@ -64,7 +64,7 @@ func (c *chartProxy) applyFunction() starlark.Callable {
 		var k8s K8s = k.(K8s)
 		namespace := &corev1.Namespace{
 			TypeMeta: v1.TypeMeta{
-				Kind:       "Namespace",
+				Kind:       "namespace",
 				APIVersion: corev1.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: v1.ObjectMeta{

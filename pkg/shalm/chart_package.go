@@ -158,7 +158,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ .name }}-{{ .version }}
-  namespace: {{ "{{ .Release.Namespace }}" }}
+  namespace: {{ "{{ .Release.namespace }}" }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -171,7 +171,7 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: {{ .name }}-{{ .version }}
-    namespace: {{ "{{ .Release.Namespace }}" }}
+    namespace: {{ "{{ .Release.namespace }}" }}
 ---
 apiVersion: batch/v1
 kind: Job
