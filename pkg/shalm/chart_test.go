@@ -299,7 +299,7 @@ def init(self):
 		BeforeEach(func() {
 			dir = NewTestDir()
 			dir.MkdirAll("templates", 0755)
-			dir.WriteFile("templates/deployment.yaml", []byte("namespace: {{ .Release.namespace}}"), 0644)
+			dir.WriteFile("templates/deployment.yaml", []byte("namespace: {{ .Release.Namespace}}"), 0644)
 			dir.WriteFile("Chart.yaml", []byte("name: mariadb\nversion: 6.12.2\n"), 0644)
 			repo, _ := NewRepo()
 			var err error
@@ -376,7 +376,7 @@ def init(self):
 			dir.MkdirAll("chart2/templates", 0755)
 			dir.WriteFile("chart1/Chart.star", []byte("def init(self):\n  self.chart2 = chart(\"../chart2\",namespace=\"chart2\")\n"), 0644)
 
-			dir.WriteFile("chart2/templates/deployment.yaml", []byte("namespace: {{ .Release.namespace}}"), 0644)
+			dir.WriteFile("chart2/templates/deployment.yaml", []byte("namespace: {{ .Release.Namespace}}"), 0644)
 			dir.WriteFile("chart2/Chart.yaml", []byte("name: test\nversion: 1.0.0\n"), 0644)
 			c, err := newChart(thread, repo, dir.Join("chart1"), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
@@ -426,7 +426,7 @@ def init(self):
 			writer := &bytes.Buffer{}
 			err := c.Package(writer, false)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(writer.Bytes()).To(HaveLen(200))
+			Expect(writer.Bytes()).To(HaveLen(198))
 		})
 	})
 	It("behaves like starlark value", func() {

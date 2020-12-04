@@ -12,15 +12,21 @@ import (
 var nameRegexp = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9\\-\\./]*$")
 
 type chartClass struct {
-	APIVersion  string   `json:"apiVersion,omitempty"`
-	Name        string   `json:"name,omitempty"`
-	Genus       string   `json:"genus,omitempty"`
-	Version     string   `json:"version,omitempty"`
-	Description string   `json:"description,omitempty"`
-	Keywords    []string `json:"keywords,omitempty"`
-	Home        string   `json:"home,omitempty"`
-	Sources     []string `json:"sources,omitempty"`
-	Icon        string   `json:"icon,omitempty"`
+	APIVersion    string                   `json:"apiVersion,omitempty"`
+	Name          string                   `json:"name,omitempty"`
+	Genus         string                   `json:"genus,omitempty"`
+	Version       string                   `json:"version,omitempty"`
+	Description   string                   `json:"description,omitempty"`
+	Keywords      []string                 `json:"keywords,omitempty"`
+	Home          string                   `json:"home,omitempty"`
+	Sources       []string                 `json:"sources,omitempty"`
+	Icon          string                   `json:"icon,omitempty"`
+	KubeVersion   string                   `json:"kubeVersion,omitempty"`
+	Maintainers   []map[string]interface{} `json:"maintainers,omitempty"`
+	Engine        string                   `json:"engine,omitempty"`
+	AppVersion    string                   `json:"appVersion,omitempty"`
+	Deprecated    bool                     `json:"deprecated,omitempty"`
+	TillerVersion string                   `json:"tillerVersion,omitempty"`
 }
 
 var _ starlark.HasSetField = (*chartClass)(nil)
@@ -59,6 +65,18 @@ func (cc *chartClass) Attr(name string) (starlark.Value, error) {
 		return ToStarlark(cc.Sources), nil
 	case "icon":
 		return starlark.String(cc.Icon), nil
+	case "kube_version":
+		return starlark.String(cc.KubeVersion), nil
+	case "maintainers":
+		return ToStarlark(cc.Maintainers), nil
+	case "engine":
+		return starlark.String(cc.Engine), nil
+	case "app_version":
+		return starlark.String(cc.AppVersion), nil
+	case "deprecated":
+		return starlark.Bool(cc.Deprecated), nil
+	case "tiller_version":
+		return starlark.String(cc.TillerVersion), nil
 	}
 	return starlark.None, starlark.NoSuchAttrError(fmt.Sprintf("chart_class has no .%s attribute", name))
 }
@@ -108,30 +126,46 @@ func (cc *chartClass) SetField(name string, val starlark.Value) error {
 	switch name {
 	case "api_version":
 		cc.APIVersion = val.(starlark.String).GoString()
-		return nil
 	case "name":
 		name := val.(starlark.String).GoString()
 		if err := validateName(name); err != nil {
 			return err
 		}
 		cc.Name = name
-		return nil
 	case "version":
 		version := val.(starlark.String).GoString()
 		if err := validateVersion(version); err != nil {
 			return err
 		}
 		cc.Version = version
-		return nil
 	case "description":
 		cc.Description = val.(starlark.String).GoString()
-		return nil
+	case "keywords":
+		cc.Keywords = toGoStringList(val)
 	case "home":
 		cc.Home = val.(starlark.String).GoString()
-		return nil
+	case "sources":
+		cc.Sources = toGoStringList(val)
 	case "icon":
 		cc.Icon = val.(starlark.String).GoString()
-		return nil
+	case "kube_version":
+		cc.KubeVersion = val.(starlark.String).GoString()
+	case "maintainers":
+		maintainers := toGo(val).([]interface{})
+		cc.Maintainers = make([]map[string]interface{}, 0)
+		for _, maintainer := range maintainers {
+			cc.Maintainers = append(cc.Maintainers, maintainer.(map[string]interface{}))
+		}
+	case "engine":
+		cc.Engine = val.(starlark.String).GoString()
+	case "app_version":
+		cc.AppVersion = val.(starlark.String).GoString()
+	case "deprecated":
+		cc.Deprecated = bool(val.(starlark.Bool))
+	case "tiller_version":
+		cc.TillerVersion = val.(starlark.String).GoString()
+	default:
+		return starlark.NoSuchAttrError(fmt.Sprintf("chart_class has no .%s attribute", name))
 	}
-	return starlark.NoSuchAttrError(fmt.Sprintf("chart_class has no .%s attribute", name))
+	return nil
 }

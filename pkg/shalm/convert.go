@@ -100,6 +100,22 @@ func ToGoMap(v starlark.IterableMapping) map[string]interface{} {
 	return d
 }
 
+func toGoStringList(v starlark.Value) []string {
+	if v == nil {
+		return nil
+	}
+	switch v := v.(type) {
+	case starlark.Indexable: // Tuple, List
+		a := make([]string, 0)
+		for i := 0; i < starlark.Len(v); i++ {
+			a = append(a, v.Index(i).(starlark.String).GoString())
+		}
+		return a
+	default:
+		panic(fmt.Errorf("cannot convert %s to go string list", v.Type()))
+	}
+}
+
 func toGo(v starlark.Value) interface{} {
 	if v == nil {
 		return nil

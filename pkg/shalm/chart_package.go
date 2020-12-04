@@ -51,7 +51,7 @@ func (c *chartImpl) packageHelm(writer io.Writer) error {
 			return err
 		}
 		b.Close()
-		t := template.Must(template.New("chart").Parse(chartTemplate))
+		t := template.Must(template.New("chart").Delims("<<", ">>").Parse(chartTemplate))
 		return t.Execute(w, map[string]interface{}{
 			"tag":      DockerTag(),
 			"chartTgz": buf.String(),
@@ -63,7 +63,7 @@ func (c *chartImpl) packageHelm(writer io.Writer) error {
 		return err
 	}
 	if err := writeFile(tw, path.Join(c.clazz.Name, "values.yaml"), func(w io.Writer) error {
-		t := template.Must(template.New("chart").Parse(valuesTemplate))
+		t := template.Must(template.New("chart").Delims("<<", ">>").Parse(valuesTemplate))
 		return t.Execute(w, map[string]interface{}{
 			"args": args,
 		})
@@ -149,34 +149,34 @@ func tarExtract(in io.Reader, dir string, prefix *regexp.Regexp) error {
 }
 
 const valuesTemplate = `
-{{ range $key, $value := .args }}
-{{ $value }}: ~
-{{ end }}
+<< range $key, $value := .args >>
+<< $value >>: ~
+<< end >>
 `
 const chartTemplate = `---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ .name }}-{{ .version }}
-  namespace: {{ "{{ .Release.namespace }}" }}
+  name: << .name >>-<< .version >>
+  namespace: {{ .Release.Namespace }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ .name }}-{{ .version }}
+  name: << .name >>-<< .version >>
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cluster-admin
 subjects:
   - kind: ServiceAccount
-    name: {{ .name }}-{{ .version }}
-    namespace: {{ "{{ .Release.namespace }}" }}
+    name: << .name >>-<< .version >>
+    namespace: {{ .Release.Namespace }}
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .name }}-{{ .version }}-apply
+  name: << .name >>-<< .version >>-apply
   annotations:
     "helm.sh/hook": "post-install,post-upgrade"
     "helm.sh/hook-delete-policy": hook-succeeded
@@ -186,10 +186,10 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: {{ .name }}-{{ .version }}
+      serviceAccountName: << .name >>-<< .version >>
       containers:
-      - name: {{ .name }}-{{ .version }}-apply
-        image: wonderix/shalm:{{ .tag }}
+      - name: << .name >>-<< .version >>-apply
+        image: wonderix/shalm:<< .tag >>
         command: ["/usr/bin/shalm"]
         args: 
         - apply
@@ -209,16 +209,16 @@ spec:
       volumes:
       - name: chart-volume
         configMap:
-          name: {{ .name }}-{{ .version }}
+          name: << .name >>-<< .version >>
       - name: values-volume
         secret:
-          secretName: {{ .name }}-{{ .version }}
+          secretName: << .name >>-<< .version >>
   backoffLimit: 4
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .name }}-{{ .version }}-delete
+  name: << .name >>-<< .version >>-delete
   annotations:
     "helm.sh/hook": "pre-delete"
     "helm.sh/hook-delete-policy": hook-succeeded
@@ -228,10 +228,10 @@ spec:
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
-      serviceAccountName: {{ .name }}-{{ .version }}
+      serviceAccountName: << .name >>-<< .version >>
       containers:
-      - name: {{ .name }}-{{ .version }}-delete
-        image: wonderix/shalm:{{ .tag }}
+      - name: << .name >>-<< .version >>-delete
+        image: wonderix/shalm:<< .tag >>
         command: ["/usr/bin/shalm"]
         args: 
         - delete
@@ -251,28 +251,28 @@ spec:
       volumes:
       - name: chart-volume
         configMap:
-          name: {{ .name }}-{{ .version }}
+          name: << .name >>-<< .version >>
       - name: values-volume
         secret:
-          secretName: {{ .name }}-{{ .version }}
+          secretName: << .name >>-<< .version >>
   backoffLimit: 4
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .name }}-{{ .version }}
+  name: << .name >>-<< .version >>
 binaryData:
-  chart.tgz: {{ .chartTgz }}
+  chart.tgz: << .chartTgz >>
 ---
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ .name }}-{{ .version }}
+  name: << .name >>-<< .version >>
 stringData:
   "values.yaml": |
-    {{- range $key, $value := .args }}
-    {{ "{{- if .Values." }}{{ $value }}{{ " }}" }}
-    {{ $value }}: {{ "{{ .Values." }}{{ $value }}{{ " | toJson }}"  }}
-    {{ "{{- end }}\n" }}
+    <<- range $key, $value := .args >>
+    {{- if .Values.<<- $value >> }}
+    << $value ->>:{{ .Values.<<- $value ->> | toJson }}
     {{- end }}
+    <<- end >>
 `

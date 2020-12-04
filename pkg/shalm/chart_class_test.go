@@ -39,6 +39,18 @@ var _ = Describe("chartClass", func() {
 		Expect(err).NotTo(HaveOccurred())
 		Expect(cc.Description).To(Equal("description"))
 
+		maintainer := starlark.NewDict(1)
+		maintainer.SetKey(starlark.String("name"), starlark.String("name"))
+		err = cc.SetField("maintainers", starlark.NewList([]starlark.Value{maintainer}))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cc.Maintainers).To(HaveLen(1))
+		Expect(cc.Maintainers[0]).To(HaveKeyWithValue("name", "name"))
+
+		err = cc.SetField("sources", starlark.NewList([]starlark.Value{starlark.String("source")}))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cc.Sources).To(HaveLen(1))
+		Expect(cc.Sources[0]).To(Equal("source"))
+
 		err = cc.SetField("home", starlark.String("home"))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(cc.Home).To(Equal("home"))
@@ -46,6 +58,18 @@ var _ = Describe("chartClass", func() {
 		err = cc.SetField("icon", starlark.String("icon"))
 		Expect(err).NotTo(HaveOccurred())
 		Expect(cc.Icon).To(Equal("icon"))
+
+		err = cc.SetField("kube_version", starlark.String("kube_version"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cc.KubeVersion).To(Equal("kube_version"))
+
+		err = cc.SetField("engine", starlark.String("engine"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cc.Engine).To(Equal("engine"))
+
+		err = cc.SetField("app_version", starlark.String("app_version"))
+		Expect(err).NotTo(HaveOccurred())
+		Expect(cc.AppVersion).To(Equal("app_version"))
 
 		err = cc.SetField("invalid", starlark.String("invalid"))
 		Expect(err).To(HaveOccurred())
