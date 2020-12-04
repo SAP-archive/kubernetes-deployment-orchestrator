@@ -194,15 +194,12 @@ spec:
         args: 
         - apply
         - '/tmp/charts/chart.tgz'
-        {{- range $key, $value := .args }}
-        {{ "{{- if .Values." }}{{ $value }}{{ " }}" }}
-        - '--set'
-        - '{{ $value }}={{ "{{ .Values." }}{{ $value }}{{ " }}"  }}'
-        {{ "{{- end }}\n" }}
-        {{- end }}
+        - '--values=/tmp/values/values.yaml'
         volumeMounts:
         - name: chart-volume
           mountPath: /tmp/charts
+        - name: values-volume
+          mountPath: /tmp/values
         env:
         - name: SHALM_NAMESPACE
           valueFrom:
@@ -213,6 +210,9 @@ spec:
       - name: chart-volume
         configMap:
           name: {{ .name }}-{{ .version }}
+      - name: values-volume
+        secret:
+          secretName: {{ .name }}-{{ .version }}
   backoffLimit: 4
 ---
 apiVersion: batch/v1
@@ -236,15 +236,12 @@ spec:
         args: 
         - delete
         - '/tmp/charts/chart.tgz'
-        {{- range $key, $value := .args }}
-        {{ "{{- if .Values." }}{{ $value }}{{ " }}" }}
-        - '--set'
-        - '{{ $value }}={{ "{{ .Values." }}{{ $value }}{{ " }}"  }}'
-        {{ "{{- end }}\n" }}
-        {{- end }}
+        - '--values=/tmp/values/values.yaml'
         volumeMounts:
         - name: chart-volume
           mountPath: /tmp/charts
+        - name: values-volume
+          mountPath: /tmp/values
         env:
         - name: SHALM_NAMESPACE
           valueFrom:
@@ -255,6 +252,9 @@ spec:
       - name: chart-volume
         configMap:
           name: {{ .name }}-{{ .version }}
+      - name: values-volume
+        secret:
+          secretName: {{ .name }}-{{ .version }}
   backoffLimit: 4
 ---
 apiVersion: v1
@@ -263,4 +263,16 @@ metadata:
   name: {{ .name }}-{{ .version }}
 binaryData:
   chart.tgz: {{ .chartTgz }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .name }}-{{ .version }}
+stringData:
+  "values.yaml": |
+    {{- range $key, $value := .args }}
+    {{ "{{- if .Values." }}{{ $value }}{{ " }}" }}
+    {{ $value }}: {{ "{{ .Values." }}{{ $value }}{{ " | toJson }}"  }}
+    {{ "{{- end }}\n" }}
+    {{- end }}
 `

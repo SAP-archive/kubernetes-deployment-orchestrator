@@ -258,6 +258,8 @@ func merge(value starlark.Value, override starlark.Value) starlark.Value {
 			d := starlark.StringDict{}
 			value.ToStringDict(d)
 			return starlarkstruct.FromStringDict(starlarkstruct.Default, mergeStringDict(d, override))
+		case starlark.NoneType:
+			return override
 		default:
 			panic(fmt.Errorf("cannot merge %s", value.Type()))
 		}
