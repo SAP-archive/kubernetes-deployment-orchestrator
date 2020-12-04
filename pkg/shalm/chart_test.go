@@ -103,7 +103,7 @@ def method(self):
 def apply(self,k8s):
 	k8s.for_config('test')
 	return self.__apply(k8s)
-def template(self):
+def template(self,glob=""):
 	return '{ "Kind" : "hello" }'
 def delete(self,k8s):
 	return self.__delete(k8s)
@@ -315,7 +315,7 @@ def init(self):
 			defer dir.Remove()
 			Expect(c.GetName()).To(Equal("mariadb"))
 			buf := &bytes.Buffer{}
-			err := c.Template(thread)(buf)
+			err := c.Template(thread, NewK8sInMemoryEmpty())(buf)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(buf.String()).To(Equal("---\nnamespace: namespace\n"))
 		})
@@ -546,7 +546,7 @@ def init(self):
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("templates correct", func() {
-			s := c.Template(thread)
+			s := c.Template(thread, NewK8sInMemoryEmpty())
 			out := &bytes.Buffer{}
 			err := s(out)
 			Expect(err).NotTo(HaveOccurred())

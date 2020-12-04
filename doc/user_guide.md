@@ -25,7 +25,7 @@ metadata:
 ```
 
 ```python
-def template(self,glob=''):
+def template(self,glob='',k8s=None):
   return self.ytt("yttx",self.helm())  # Use ytt templating with templates in directory 'yttx' feeding in output from another helm template
 ```
 

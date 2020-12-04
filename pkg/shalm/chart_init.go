@@ -114,16 +114,9 @@ func (c *chartImpl) init(thread *starlark.Thread, repo Repo, hasChartYaml bool, 
 			if k == "init" {
 				c.initFunc = v.(*starlark.Function)
 			}
-			f, ok := v.(starlark.Callable)
+			f, ok := v.(*starlark.Function)
 			if ok {
-				c.methods[k] = c.builtin("bind_"+f.Name(), func(thread *starlark.Thread, _ *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-					allArgs := make([]starlark.Value, args.Len()+1)
-					allArgs[0] = c
-					for i := 0; i < args.Len(); i++ {
-						allArgs[i+1] = args.Index(i)
-					}
-					return starlark.Call(thread, f, allArgs, kwargs)
-				})
+				c.methods[k] = &chartMethod{Function: f, chart: c}
 			}
 		}
 
@@ -138,6 +131,20 @@ func (c *chartImpl) init(thread *starlark.Thread, repo Repo, hasChartYaml bool, 
 	c.methods["delete"] = c.wrapNamespace(c.methods["delete"], c.namespace)
 
 	return nil
+}
+
+type chartMethod struct {
+	*starlark.Function
+	chart *chartImpl
+}
+
+func (s *chartMethod) CallInternal(thread *starlark.Thread, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
+	allArgs := make([]starlark.Value, args.Len()+1)
+	allArgs[0] = s.chart
+	for i := 0; i < args.Len(); i++ {
+		allArgs[i+1] = args.Index(i)
+	}
+	return starlark.Call(thread, s.Function, allArgs, kwargs)
 }
 
 func (c *chartImpl) subChartValues(name string) map[string]interface{} {

@@ -17,6 +17,10 @@ type K8sValue interface {
 
 // NewK8sValue create new instance to interact with kubernetes
 func NewK8sValue(k K8s) K8sValue {
+	result, ok := k.(K8sValue)
+	if ok {
+		return result
+	}
 	return &k8sValueImpl{k}
 }
 

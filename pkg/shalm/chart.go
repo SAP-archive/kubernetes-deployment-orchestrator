@@ -25,7 +25,7 @@ type Chart interface {
 	GetNamespace() string
 	Apply(thread *starlark.Thread, k K8s) error
 	Delete(thread *starlark.Thread, k K8s) error
-	Template(thread *starlark.Thread) Stream
+	Template(thread *starlark.Thread, k K8s) Stream
 	Package(writer io.Writer, helmFormat bool) error
 }
 
@@ -310,7 +310,7 @@ func (c *chartImpl) applyLocal(thread *starlark.Thread, k K8sValue, k8sOptions *
 		return nil
 	}
 	k8sOptions.Namespaced = false
-	return k.Apply(concat(decode(c.template(thread, glob, true)), c.nameSpaceObject(), c.packedChartObject()), k8sOptions)
+	return k.Apply(concat(decode(c.template(thread, glob, k)), c.nameSpaceObject(), c.packedChartObject()), k8sOptions)
 }
 
 func (c *chartImpl) nameSpaceObject() ObjectStream {
@@ -449,7 +449,7 @@ func (c *chartImpl) deleteLocal(thread *starlark.Thread, k K8sValue, k8sOptions 
 		return nil
 	}
 	k8sOptions.Namespaced = false
-	err := k.Delete(concat(decode(c.template(thread, glob, false)), c.packedChartObject()), k8sOptions)
+	err := k.Delete(concat(decode(c.template(thread, glob, k)), c.packedChartObject()), k8sOptions)
 	if err != nil {
 		return err
 	}

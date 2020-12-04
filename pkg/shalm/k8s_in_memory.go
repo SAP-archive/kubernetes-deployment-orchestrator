@@ -30,6 +30,11 @@ func NewK8sInMemory(namespace string, objects ...Object) *K8sInMemory {
 	return result
 }
 
+// NewK8sInMemoryEmpty creates a new K8sInMemory instance
+func NewK8sInMemoryEmpty() *K8sInMemory {
+	return NewK8sInMemory("default")
+}
+
 var _ K8s = (*K8sInMemory)(nil)
 
 // Host -

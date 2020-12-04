@@ -34,7 +34,7 @@ func template(url string) shalm.Stream {
 	if err != nil {
 		return shalm.ErrorStream(err)
 	}
-	return c.Template(thread)
+	return c.Template(thread, shalm.NewK8sInMemoryEmpty())
 
 }
 
