@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/wonderix/shalm/pkg/shalm"
@@ -11,6 +12,7 @@ import (
 )
 
 var templateChartArgs = shalm.ChartOptions{}
+var templateK8sArgs = shalm.K8sConfigs{}
 
 var templateCmd = &cobra.Command{
 	Use:   "template [chart]",
@@ -18,11 +20,17 @@ var templateCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		exit(template(args[0])(os.Stdout))
+		k8s, err := k8s(applyK8sArgs.Merge(), shalm.WithProgressSubscription(func(progress int) {
+			fmt.Printf("Progress  %d%%\n", progress)
+		}))
+		if err != nil {
+			exit(err)
+		}
+		exit(template(args[0], k8s)(os.Stdout))
 	},
 }
 
-func template(url string) shalm.Stream {
+func template(url string, k shalm.K8s) shalm.Stream {
 
 	thread := &starlark.Thread{Name: "main", Load: rootExecuteOptions.load}
 	repo, err := repo()
@@ -34,10 +42,11 @@ func template(url string) shalm.Stream {
 	if err != nil {
 		return shalm.ErrorStream(err)
 	}
-	return c.Template(thread, shalm.NewK8sInMemoryEmpty())
+	return c.Template(thread, k)
 
 }
 
 func init() {
 	templateChartArgs.AddFlags(templateCmd.Flags())
+	templateK8sArgs.AddFlags(templateCmd.Flags())
 }
