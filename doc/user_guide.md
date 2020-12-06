@@ -82,7 +82,8 @@ def init(self):
 
 ### Override apply, delete or template
 
-With `shalm` it's possible to override the `apply`, `delete` and `template` methods. The following example illustrates how this could be done
+With `shalm` it's possible to override the `apply`, `delete` and `template` methods. The `template` function can be overridden with either
+two parameters `(self, glob='')` or three parameters `(self, glob='', k8s=None)`, The following example illustrates how this could be done
 
 ```python
 def init(self):
@@ -95,7 +96,7 @@ def apply(self,k8s):
   self.uaa.apply(k8s)     # Apply uaa stuff (recursive)
   self.__apply(k8s)       # Apply everthing defined in this chart (not recursive)
 
-def template(self,glob=''):
+def template(self,glob='', k8s=None):
   return self.helm(glob=glob)  # Use helm templating (default)
 ```
 
@@ -158,7 +159,7 @@ def init(self):
   self.ca = certificate("ca",is_ca=True,validity="P10Y",domains=["ca.com"]) # Create CA
   self.cert = certificate("server",signer=self.ca,domains=["example.com"],validity="P1Y")
 
-def template(self,glob=""):
+def template(self, glob = "", k8s = None):
   return self.ytt("ytt/configmap.yml") # use ytt for templating
 ```
 

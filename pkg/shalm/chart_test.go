@@ -103,7 +103,7 @@ def method(self):
 def apply(self,k8s):
 	k8s.for_config('test')
 	return self.__apply(k8s)
-def template(self,glob=""):
+def template(self, glob = "",k8s = None):
 	return '{ "Kind" : "hello" }'
 def delete(self,k8s):
 	return self.__delete(k8s)
