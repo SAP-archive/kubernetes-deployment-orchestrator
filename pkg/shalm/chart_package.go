@@ -272,7 +272,7 @@ stringData:
   "values.yaml": |
     <<- range $key, $value := .args >>
     {{- if .Values.<<- $value >> }}
-    << $value ->>:{{ .Values.<<- $value ->> | toJson }}
+    << $value >>: {{ .Values.<<- $value ->> | toJson }}
     {{- end }}
     <<- end >>
 `
