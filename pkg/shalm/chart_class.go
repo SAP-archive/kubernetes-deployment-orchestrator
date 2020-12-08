@@ -12,21 +12,21 @@ import (
 var nameRegexp = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9\\-\\./]*$")
 
 type chartClass struct {
-	APIVersion    string                   `json:"apiVersion,omitempty"`
-	Name          string                   `json:"name,omitempty"`
-	Genus         string                   `json:"genus,omitempty"`
-	Version       string                   `json:"version,omitempty"`
-	Description   string                   `json:"description,omitempty"`
-	Keywords      []string                 `json:"keywords,omitempty"`
-	Home          string                   `json:"home,omitempty"`
-	Sources       []string                 `json:"sources,omitempty"`
-	Icon          string                   `json:"icon,omitempty"`
-	KubeVersion   string                   `json:"kubeVersion,omitempty"`
-	Maintainers   []map[string]interface{} `json:"maintainers,omitempty"`
-	Engine        string                   `json:"engine,omitempty"`
-	AppVersion    string                   `json:"appVersion,omitempty"`
-	Deprecated    bool                     `json:"deprecated,omitempty"`
-	TillerVersion string                   `json:"tillerVersion,omitempty"`
+	APIVersion    string                   `json:"apiVersion,omitempty" yaml:"apiVersion,omitempty"`
+	Name          string                   `json:"name,omitempty" yaml:"name,omitempty"`
+	Genus         string                   `json:"genus,omitempty" yaml:"genus,omitempty"`
+	Version       string                   `json:"version,omitempty" yaml:"version,omitempty"`
+	Description   string                   `json:"description,omitempty" yaml:"description,omitempty"`
+	Keywords      []string                 `json:"keywords,omitempty" yaml:"keywords,omitempty"`
+	Home          string                   `json:"home,omitempty" yaml:"home,omitempty"`
+	Sources       []string                 `json:"sources,omitempty" yaml:"sources,omitempty"`
+	Icon          string                   `json:"icon,omitempty" yaml:"icon,omitempty"`
+	KubeVersion   string                   `json:"kubeVersion,omitempty" yaml:"kubeVersion,omitempty"`
+	Maintainers   []map[string]interface{} `json:"maintainers,omitempty" yaml:"maintainers,omitempty"`
+	Engine        string                   `json:"engine,omitempty" yaml:"engine,omitempty"`
+	AppVersion    string                   `json:"appVersion,omitempty" yaml:"appVersion,omitempty"`
+	Deprecated    bool                     `json:"deprecated,omitempty" yaml:"deprecated,omitempty"`
+	TillerVersion string                   `json:"tillerVersion,omitempty" yaml:"tillerVersion,omitempty"`
 }
 
 var _ starlark.HasSetField = (*chartClass)(nil)
