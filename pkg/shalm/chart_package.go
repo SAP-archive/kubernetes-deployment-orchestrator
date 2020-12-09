@@ -179,7 +179,7 @@ metadata:
   name: << .name >>-<< .version >>-apply
   annotations:
     "helm.sh/hook": "post-install,post-upgrade"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   template:
     metadata:
@@ -221,7 +221,7 @@ metadata:
   name: << .name >>-<< .version >>-delete
   annotations:
     "helm.sh/hook": "pre-delete"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   template:
     metadata:
