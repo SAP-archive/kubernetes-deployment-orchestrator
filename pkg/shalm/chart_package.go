@@ -13,8 +13,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/k14s/starlark-go/starlark"
-
 	"gopkg.in/yaml.v2"
 )
 
@@ -37,16 +35,12 @@ func (c *chartImpl) packageHelm(writer io.Writer) error {
 	}); err != nil {
 		return err
 	}
-	args := make([]string, 0)
+	var args []string
 	if c.initFunc != nil {
+		args = make([]string, c.initFunc.NumParams()-1)
 		for i := 1; i < c.initFunc.NumParams(); i++ {
-			arg, _ := c.initFunc.Param(i)
-			args = append(args, arg)
+			args[i-1], _ = c.initFunc.Param(i)
 		}
-	}
-	// add properties
-	for _, t := range c.GetValueOrDefault().(starlark.IterableMapping).Items() {
-		args = append(args, t.Index(0).(starlark.String).GoString())
 	}
 
 	if err := writeFile(tw, path.Join(c.clazz.Name, "templates", "chart.yaml"), func(w io.Writer) error {

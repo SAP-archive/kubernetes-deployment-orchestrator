@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/apimachinery/pkg/types"
-
 	"github.com/k14s/starlark-go/starlark"
 )
 
@@ -172,32 +170,6 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 				if err != nil {
 					return starlark.None, err
 				}
-				if obj == nil {
-					return starlark.None, nil
-				}
-				return WrapDict(ToStarlark(obj)), nil
-			}), nil
-		}
-	case "patch":
-		{
-			return starlark.NewBuiltin("patch", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-				var kind string
-				var name string
-				typ := string(types.JSONPatchType)
-				var patch string
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("get", args, parser.Parse(),
-					"kind", &kind, "name", &name, "patch", &patch, "type?", &typ); err != nil {
-					return nil, err
-				}
-				if name == "" {
-					return starlark.None, errors.New("no parameter name given")
-				}
-				obj, err := k.Patch(kind, name, types.PatchType(typ), patch, k8sOptions)
-				if err != nil {
-					return starlark.None, err
-				}
 				return WrapDict(ToStarlark(obj)), nil
 			}), nil
 		}
@@ -285,9 +257,9 @@ func (k *k8sValueImpl) AttrNames() []string {
 }
 
 func unpackK8sOptions(parser *kwargsParser) *K8sOptions {
-	result := &K8sOptions{}
+	result := &K8sOptions{Namespaced: true}
 	parser.Arg("namespaced", func(value starlark.Value) {
-		result.ClusterScoped = !bool(value.(starlark.Bool))
+		result.Namespaced = bool(value.(starlark.Bool))
 	})
 	parser.Arg("ignore_not_found", func(value starlark.Value) {
 		result.IgnoreNotFound = bool(value.(starlark.Bool))

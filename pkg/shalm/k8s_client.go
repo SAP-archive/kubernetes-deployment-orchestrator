@@ -9,8 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/types"
-
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -90,10 +89,6 @@ func (k *k8sClient) Get() request {
 	return request{request: k.client.Get()}
 }
 
-func (k *k8sClient) Patch(pt types.PatchType) request {
-	return request{request: k.client.Patch(pt)}
-}
-
 func (r request) Namespace(namespace *string) request {
 	r.namespace = namespace
 	return r
@@ -106,11 +101,6 @@ func (r request) Resource(resource string) request {
 
 func (r request) Name(name string) request {
 	r.name = name
-	return r
-}
-
-func (r request) Body(obj interface{}) request {
-	r.request.Body(obj)
 	return r
 }
 
@@ -141,6 +131,10 @@ func (r result) Get() (*Object, error) {
 	}
 	data, err := r.Result.Raw()
 	if err != nil {
+		statusError, ok := err.(*k8serrors.StatusError)
+		if ok {
+			return nil, fmt.Errorf("HTTP Status: %d, Message: %s", statusError.ErrStatus.Code, statusError.ErrStatus.Message)
+		}
 		return nil, err
 	}
 	if len(data) == 0 {
@@ -154,13 +148,6 @@ func (r result) Get() (*Object, error) {
 		return nil, errors.New(string(data))
 	}
 	return &obj, nil
-}
-
-func (r result) Error() error {
-	if r.err != nil {
-		return r.err
-	}
-	return r.Error()
 }
 
 func homeDir() string {

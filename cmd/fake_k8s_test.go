@@ -5,9 +5,8 @@ import (
 	"context"
 	"sync"
 
-	semver "github.com/Masterminds/semver/v3"
+	"github.com/blang/semver"
 	"github.com/wonderix/shalm/pkg/shalm"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type FakeK8s struct {
@@ -71,12 +70,12 @@ type FakeK8s struct {
 		result1 shalm.K8s
 		result2 error
 	}
-	ForSubChartStub        func(string, string, *semver.Version, int) shalm.K8s
+	ForSubChartStub        func(string, string, semver.Version, int) shalm.K8s
 	forSubChartMutex       sync.RWMutex
 	forSubChartArgsForCall []struct {
 		arg1 string
 		arg2 string
-		arg3 *semver.Version
+		arg3 semver.Version
 		arg4 int
 	}
 	forSubChartReturns struct {
@@ -143,23 +142,6 @@ type FakeK8s struct {
 		result2 error
 	}
 	listReturnsOnCall map[int]struct {
-		result1 *shalm.Object
-		result2 error
-	}
-	PatchStub        func(string, string, types.PatchType, string, *shalm.K8sOptions) (*shalm.Object, error)
-	patchMutex       sync.RWMutex
-	patchArgsForCall []struct {
-		arg1 string
-		arg2 string
-		arg3 types.PatchType
-		arg4 string
-		arg5 *shalm.K8sOptions
-	}
-	patchReturns struct {
-		result1 *shalm.Object
-		result2 error
-	}
-	patchReturnsOnCall map[int]struct {
 		result1 *shalm.Object
 		result2 error
 	}
@@ -537,13 +519,13 @@ func (fake *FakeK8s) ForConfigReturnsOnCall(i int, result1 shalm.K8s, result2 er
 	}{result1, result2}
 }
 
-func (fake *FakeK8s) ForSubChart(arg1 string, arg2 string, arg3 *semver.Version, arg4 int) shalm.K8s {
+func (fake *FakeK8s) ForSubChart(arg1 string, arg2 string, arg3 semver.Version, arg4 int) shalm.K8s {
 	fake.forSubChartMutex.Lock()
 	ret, specificReturn := fake.forSubChartReturnsOnCall[len(fake.forSubChartArgsForCall)]
 	fake.forSubChartArgsForCall = append(fake.forSubChartArgsForCall, struct {
 		arg1 string
 		arg2 string
-		arg3 *semver.Version
+		arg3 semver.Version
 		arg4 int
 	}{arg1, arg2, arg3, arg4})
 	fake.recordInvocation("ForSubChart", []interface{}{arg1, arg2, arg3, arg4})
@@ -564,13 +546,13 @@ func (fake *FakeK8s) ForSubChartCallCount() int {
 	return len(fake.forSubChartArgsForCall)
 }
 
-func (fake *FakeK8s) ForSubChartCalls(stub func(string, string, *semver.Version, int) shalm.K8s) {
+func (fake *FakeK8s) ForSubChartCalls(stub func(string, string, semver.Version, int) shalm.K8s) {
 	fake.forSubChartMutex.Lock()
 	defer fake.forSubChartMutex.Unlock()
 	fake.ForSubChartStub = stub
 }
 
-func (fake *FakeK8s) ForSubChartArgsForCall(i int) (string, string, *semver.Version, int) {
+func (fake *FakeK8s) ForSubChartArgsForCall(i int) (string, string, semver.Version, int) {
 	fake.forSubChartMutex.RLock()
 	defer fake.forSubChartMutex.RUnlock()
 	argsForCall := fake.forSubChartArgsForCall[i]
@@ -889,73 +871,6 @@ func (fake *FakeK8s) ListReturnsOnCall(i int, result1 *shalm.Object, result2 err
 		})
 	}
 	fake.listReturnsOnCall[i] = struct {
-		result1 *shalm.Object
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeK8s) Patch(arg1 string, arg2 string, arg3 types.PatchType, arg4 string, arg5 *shalm.K8sOptions) (*shalm.Object, error) {
-	fake.patchMutex.Lock()
-	ret, specificReturn := fake.patchReturnsOnCall[len(fake.patchArgsForCall)]
-	fake.patchArgsForCall = append(fake.patchArgsForCall, struct {
-		arg1 string
-		arg2 string
-		arg3 types.PatchType
-		arg4 string
-		arg5 *shalm.K8sOptions
-	}{arg1, arg2, arg3, arg4, arg5})
-	fake.recordInvocation("Patch", []interface{}{arg1, arg2, arg3, arg4, arg5})
-	fake.patchMutex.Unlock()
-	if fake.PatchStub != nil {
-		return fake.PatchStub(arg1, arg2, arg3, arg4, arg5)
-	}
-	if specificReturn {
-		return ret.result1, ret.result2
-	}
-	fakeReturns := fake.patchReturns
-	return fakeReturns.result1, fakeReturns.result2
-}
-
-func (fake *FakeK8s) PatchCallCount() int {
-	fake.patchMutex.RLock()
-	defer fake.patchMutex.RUnlock()
-	return len(fake.patchArgsForCall)
-}
-
-func (fake *FakeK8s) PatchCalls(stub func(string, string, types.PatchType, string, *shalm.K8sOptions) (*shalm.Object, error)) {
-	fake.patchMutex.Lock()
-	defer fake.patchMutex.Unlock()
-	fake.PatchStub = stub
-}
-
-func (fake *FakeK8s) PatchArgsForCall(i int) (string, string, types.PatchType, string, *shalm.K8sOptions) {
-	fake.patchMutex.RLock()
-	defer fake.patchMutex.RUnlock()
-	argsForCall := fake.patchArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
-}
-
-func (fake *FakeK8s) PatchReturns(result1 *shalm.Object, result2 error) {
-	fake.patchMutex.Lock()
-	defer fake.patchMutex.Unlock()
-	fake.PatchStub = nil
-	fake.patchReturns = struct {
-		result1 *shalm.Object
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeK8s) PatchReturnsOnCall(i int, result1 *shalm.Object, result2 error) {
-	fake.patchMutex.Lock()
-	defer fake.patchMutex.Unlock()
-	fake.PatchStub = nil
-	if fake.patchReturnsOnCall == nil {
-		fake.patchReturnsOnCall = make(map[int]struct {
-			result1 *shalm.Object
-			result2 error
-		})
-	}
-	fake.patchReturnsOnCall[i] = struct {
 		result1 *shalm.Object
 		result2 error
 	}{result1, result2}
@@ -1347,8 +1262,6 @@ func (fake *FakeK8s) Invocations() map[string][][]interface{} {
 	defer fake.isNotExistMutex.RUnlock()
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
-	fake.patchMutex.RLock()
-	defer fake.patchMutex.RUnlock()
 	fake.progressMutex.RLock()
 	defer fake.progressMutex.RUnlock()
 	fake.rolloutStatusMutex.RLock()

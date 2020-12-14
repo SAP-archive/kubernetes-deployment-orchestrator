@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"os"
-	"text/tabwriter"
+	"fmt"
 
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/wonderix/shalm/pkg/shalm"
@@ -37,11 +36,9 @@ func list(k8s shalm.K8s, listOptions *shalm.RepoListOptions) error {
 	if err != nil {
 		return err
 	}
-	writer := tabwriter.NewWriter(os.Stdout, 3, 4, 1, ' ', 0)
-	defer writer.Flush()
-	writer.Write([]byte("GENUS\tNAMESPACE\tVERSION\n"))
+	fmt.Printf("%-20s %-20s %-10s\n", "GENUS", "NAMESPACE", "VERSION")
 	for _, c := range charts {
-		writer.Write([]byte(c.GetGenus() + "\t" + c.GetNamespace() + "\t" + c.GetVersion().String() + "\n"))
+		fmt.Printf("%-20s %-20s %-10s\n", c.GetGenus(), c.GetNamespace(), c.GetVersion().String())
 	}
 	return nil
 }

@@ -13,7 +13,7 @@ import (
 	goruntime "runtime"
 	"time"
 
-	semver "github.com/Masterminds/semver/v3"
+	"github.com/blang/semver"
 	"github.com/wonderix/shalm/pkg/shalm"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,14 +67,11 @@ var _ = Describe("ShalmChartReconciler", func() {
 					return cb.Encode()(buffer)
 				},
 			}
-			k8s.ForSubChartStub = func(s string, app string, version *semver.Version, children int) shalm.K8s {
+			k8s.ForSubChartStub = func(s string, app string, version semver.Version, children int) shalm.K8s {
 				return k8s
 			}
 			k8s.WithContextStub = func(ctx context.Context) shalm.K8s {
 				return k8s
-			}
-			k8s.GetStub = func(s string, s2 string, options *shalm.K8sOptions) (*shalm.Object, error) {
-				return &shalm.Object{}, nil
 			}
 
 			clnt := &FakeClient{
@@ -127,7 +124,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			Expect(buffer.String()).To(ContainSubstring(`"serviceName":"mariadb-master"`))
 			Expect(chart.ObjectMeta.Finalizers).To(ContainElement("controller.shalm.wonderix.github.com"))
 			Expect(chart.Status.LastOp.Progress).To(Equal(100))
-			Expect(k8s.ApplyCallCount()).To(Equal(3))
+			Expect(k8s.ApplyCallCount()).To(Equal(1))
 		})
 
 		It("handles error correct during apply", func() {
@@ -163,7 +160,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			_, err := reconciler.Reconcile(ctrl.Request{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(chart.ObjectMeta.Finalizers).NotTo(ContainElement("controller.shalm.wonderix.github.com"))
-			Expect(k8s.DeleteCallCount()).To(Equal(2))
+			Expect(k8s.DeleteCallCount()).To(Equal(1))
 			Expect(buffer.String()).To(ContainSubstring(`"serviceName":"mariadb-master"`))
 		})
 		It("handles error correct during delete", func() {

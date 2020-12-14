@@ -146,8 +146,6 @@ func toGo(v starlark.Value) interface{} {
 		return stringDictToGo(v.values)
 	case *stream:
 		return nil
-	case *dependency:
-		return nil
 	case *injectedFiles:
 		return nil
 	case *jewel:
@@ -156,8 +154,6 @@ func toGo(v starlark.Value) interface{} {
 		d := starlark.StringDict{}
 		v.ToStringDict(d)
 		return stringDictToGo(d)
-	case Property:
-		return toGo(v.GetValueOrDefault())
 	default:
 		panic(fmt.Errorf("cannot convert %s to go", v.Type()))
 	}
