@@ -21,5 +21,5 @@ func DockerTag() string {
 	if err != nil || len(v.Pre) > 0 {
 		return "latest"
 	}
-	return v.String()
+	return "v" + v.String()
 }
