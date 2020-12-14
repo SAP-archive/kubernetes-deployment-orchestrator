@@ -17,7 +17,7 @@ func Version() string {
 
 // DockerTag -
 func DockerTag() string {
-	v, err := semver.Parse(version)
+	v, err := semver.ParseTolerant(version)
 	if err != nil || len(v.Pre) > 0 {
 		return "latest"
 	}
