@@ -438,7 +438,19 @@ func (k *k8sImpl) Patch(kind string, name string, pt types.PatchType, patch stri
 		return nil, errors.New("Not connected")
 	}
 	obj, err := k.client.Patch(pt).Namespace(k.ns(options)).Resource(kind).Name(name).Body([]byte(patch)).Do().Get()
-	return ignoreNotFound(obj, err, options)
+	if err != nil {
+		if options.IgnoreNotFound {
+			statusError, ok := err.(*k8serrors.StatusError)
+			if ok {
+				if statusError.ErrStatus.Code == 422 {
+					return nil, nil
+				}
+			}
+		}
+		return ignoreNotFound(obj, err, options)
+
+	}
+	return obj, nil
 }
 
 func (k *k8sImpl) CreateOrUpdate(obj *Object, mutate func(obj *Object) error, options *K8sOptions) (*Object, error) {
