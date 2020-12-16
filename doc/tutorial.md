@@ -120,7 +120,7 @@ shalm template .
 ### ytt templating
 
 
-Go templating is mostly compatible with helm. All required functions are provided. All attributes of `self` are available as `.Values`
+You should prefer ytt templating because ytt also uses starlark. Therefore the interoperability between shalm and ytt is much better compared to helm templating.
 
 ```python
 # Chart.star
@@ -147,6 +147,30 @@ cat > ytt-templates/secret.yaml <<EOF
 kind: Secret
 stringData:
   timeout: #@ self.timeout
+EOF
+shalm template .
+```
+
+### Overriding methods
+
+You can override the built in methods `apply`, `delete` and `template`. You can use the provided methods `__apply`, `__delete` and `__template` to call the base implementations
+
+
+```yaml
+# Chart.star
+def template(self, glob="", k8s=None):
+   print("Hello World")
+   return self.__template(glob, k8s)
+```
+
+```bash
+rm -rf /tmp/example
+mkdir -p /tmp/example
+cd /tmp/example
+cat > Chart.star <<EOF
+def template(self, glob="", k8s=None):
+   print("Hello World")
+   return self.__template(glob, k8s)
 EOF
 shalm template .
 ```
@@ -178,31 +202,6 @@ EOF
 shalm apply .
 shalm delete .
 ```
-
-
-### Overriding apply/delete
-
-
-```yaml
-# Chart.star
-def apply(self,k8s):
-   print(k8s.get("services","kubernetes"))
-   self.__apply(k8s)
-```
-
-```bash
-rm -rf /tmp/example
-mkdir -p /tmp/example/ytt-templates
-cd /tmp/example
-cat > Chart.star <<EOF
-def apply(self,k8s):
-   print(k8s.get("services","kubernetes"))
-   self.__apply(k8s)
-EOF
-shalm apply .
-shalm delete .
-```
-
 ### kapp
 
 ```python
