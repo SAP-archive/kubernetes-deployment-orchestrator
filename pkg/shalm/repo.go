@@ -21,11 +21,13 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
+	"gopkg.in/yaml.v2"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
+	"github.com/wonderix/shalm/pkg/shalm/renderer"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 )
@@ -77,7 +79,8 @@ func NewRepo(config ...RepoConfig) (Repo, error) {
 	dirCache := NewDirCache(path.Join(homedir, ".shalm", "cache-etag"))
 	cache := dirCache.WrapDir(loadArchive)
 	cache = openLocal(cache)
-	cache = openURL(dirCache.WrapDir(loadURL(httpClient, configs.Credentials)), cache)
+	cache = openURL(dirCache, httpClient, configs.Credentials, cache)
+	cache = openHelm(dirCache, httpClient, configs.Credentials, cache)
 	cache = openWithFragment(cache)
 	cache = openWithCatalogs(configs.Catalogs, cache)
 	r := &repoImpl{
@@ -87,12 +90,61 @@ func NewRepo(config ...RepoConfig) (Repo, error) {
 	return r, nil
 }
 
-func openURL(urlCache OpenDirCache, dfltCache OpenDirCache) OpenDirCache {
+func openURL(dirCache *DirCache, client *http.Client, credentials []credential, dfltCache OpenDirCache) OpenDirCache {
+	urlCache := dirCache.WrapDir(loadURL(client, credentials, extractArchive))
 	return func(url string) (string, error) {
 		if strings.HasPrefix(url, "https://") || strings.HasPrefix(url, "http://") {
 			return urlCache(url)
 		}
 		return dfltCache(url)
+	}
+}
+
+func openHelm(dirCache *DirCache, client *http.Client, credentials []credential, cache OpenDirCache) OpenDirCache {
+	helmCache := dirCache.WrapDir(loadURL(client, credentials, func(body io.Reader, dir string) error {
+		out, err := os.Create(path.Join(dir, "index.yaml"))
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+		_, err = io.Copy(out, body)
+		return err
+	}))
+	return func(uri string) (string, error) {
+		u, err := url.Parse(uri)
+		if err != nil {
+			return cache(uri)
+		}
+		if u.Scheme == "helm" {
+			chart := path.Base(u.Path)
+			u.Path = path.Join(path.Dir(u.Path), "index.yaml")
+			u.Scheme = "https"
+			dir, err := helmCache(u.String())
+			if err != nil {
+				return "", err
+			}
+			indexIn, err := os.Open(path.Join(dir, "index.yaml"))
+			if err != nil {
+				return "", err
+			}
+			defer indexIn.Close()
+			var index renderer.Index
+			decoder := yaml.NewDecoder(indexIn)
+			err = decoder.Decode(&index)
+			if err != nil {
+				return "", err
+			}
+			entries, ok := index.Entries[chart]
+			if !ok {
+				return "", fmt.Errorf("chart %s not found in index", chart)
+			}
+			for _, entry := range entries {
+				if !entry.Deprecated && len(entry.URLs) > 0 {
+					return cache(entry.URLs[0])
+				}
+			}
+		}
+		return cache(uri)
 	}
 }
 
@@ -165,7 +217,7 @@ func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpe
 		}
 
 	} else {
-		c, err = newChartFromReader(thread, r, r.cacheDirForChart(spec.ChartTgz), bytes.NewReader(spec.ChartTgz), chartDirExpr, options...)
+		c, err = newChartFromReader(thread, r, r.cacheDirForChart(spec.ChartTgz), bytes.NewReader(spec.ChartTgz), options...)
 	}
 	if err != nil {
 		return nil, err
@@ -194,7 +246,7 @@ func newChartFromConfigMap(thread *starlark.Thread, r *repoImpl, configMap Objec
 		return nil, err
 	}
 	gv := &GenusAndVersion{version: version, genus: configMap.MetaData.Labels["shalm.wonderix.github.com/genus"]}
-	return newChartFromReader(thread, r, r.cacheDirForChart(tgz), bytes.NewReader(tgz), chartDirExpr, gv.AsOptions()...)
+	return newChartFromReader(thread, r, r.cacheDirForChart(tgz), bytes.NewReader(tgz), gv.AsOptions()...)
 }
 
 func (r *repoImpl) List(thread *starlark.Thread, k8s K8s, repoListOptions *RepoListOptions) ([]ChartValue, error) {
@@ -235,8 +287,8 @@ func (r *repoImpl) List(thread *starlark.Thread, k8s K8s, repoListOptions *RepoL
 	return charts, nil
 }
 
-func newChartFromReader(thread *starlark.Thread, repo Repo, dir string, reader io.Reader, prefix *regexp.Regexp, opts ...ChartOption) (*chartImpl, error) {
-	if err := extract(reader, dir, prefix); err != nil {
+func newChartFromReader(thread *starlark.Thread, repo Repo, dir string, reader io.Reader, opts ...ChartOption) (*chartImpl, error) {
+	if err := extractArchive(reader, dir); err != nil {
 		return nil, err
 	}
 	return newChart(thread, repo, dir, opts...)
@@ -278,13 +330,13 @@ func loadArchive(name string, targetDir func() (string, error), etagOld string) 
 		return "", err
 	}
 	defer in.Close()
-	if err := extract(in, dir, chartDirExpr); err != nil {
+	if err := extractArchive(in, dir); err != nil {
 		return "", err
 	}
 	return tag, nil
 }
 
-func loadURL(client *http.Client, credentials []credential) func(name string, targetDir func() (string, error), etagOld string) (string, error) {
+func loadURL(client *http.Client, credentials []credential, extract func(body io.Reader, dir string) error) func(name string, targetDir func() (string, error), etagOld string) (string, error) {
 	return func(url string, targetDir func() (string, error), etagOld string) (string, error) {
 		request, err := http.NewRequest(http.MethodGet, url, nil)
 		maxMatch := 0
@@ -315,12 +367,14 @@ func loadURL(client *http.Client, credentials []credential) func(name string, ta
 			return "", fmt.Errorf("Error fetching %s: status=%d", url, res.StatusCode)
 		}
 		defer res.Body.Close()
-		prefix := chartDirExpr
 		dir, err := targetDir()
 		if err != nil {
 			return "", err
 		}
-		extract(res.Body, dir, prefix)
+		err = extract(res.Body, dir)
+		if err != nil {
+			return "", err
+		}
 		etag := res.Header.Get("Etag")
 		if len(etag) == 0 {
 			etag = fmt.Sprintf("%x", time.Now().Unix())
@@ -340,7 +394,8 @@ func openLocal(openArchive OpenDirCache) OpenDirCache {
 	}
 }
 
-func extract(in io.Reader, dir string, prefix *regexp.Regexp) error {
+func extractArchive(in io.Reader, dir string) error {
+	prefix := chartDirExpr
 	reader := bufio.NewReader(in)
 	testBytes, err := reader.Peek(64)
 	if err != nil {

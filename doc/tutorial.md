@@ -13,13 +13,10 @@ Shalm is designed from ground up to be mostly compatible with helm packages
 You deploy almost every helm chart using *shalm*. But *shalm* doesn't support hooks. 
 
 ```
-helm repo add stable https://charts.helm.sh/stable
-helm show chart stable/mariadb
-URL=$(curl -s https://charts.helm.sh/stable/index.yaml | yaml2json | jq -r '.entries.mysql | map(select(.deprecated != true  )) | .[0].urls[0]')
-shalm apply $URL
+shalm apply helm://charts.helm.sh/stable/mysql
 kubectl get pods
 shalm list -A
-shalm delete $URL
+shalm delete helm://charts.helm.sh/stable/mysql
 
 ```
 
