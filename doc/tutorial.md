@@ -262,29 +262,161 @@ EOF
 shalm template . --set timeout=60
 ```
 
-## Subcharts
 
-## Helm subcharts
+## Associations
+### Subcharts
 
-## Dependencies
+Subcharts can be used if another chart is owned (not shared) by the parent chart. You can set any property of the sub chart.
 
-## Configuring Subcharts and Dependencies
+```python
+def init(self):
+  self.mysql = chart('helm://charts.helm.sh/stable/mysql')
+  self.mysql.ssl.enabled = False
+```
 
-## User credentials
+```bash
+rm -rf /tmp/example
+mkdir -p /tmp/example
+cd /tmp/example
+cat > Chart.star <<EOF
+def init(self):
+  self.mysql = chart('helm://charts.helm.sh/stable/mysql')
+  self.mysql.ssl.enabled = False
+EOF
+shalm template .
+```
 
-## Certificates
+### Helm subcharts
+
+This is mostly the same as the example above, except that `helm template` is used for templating and `helm upgrade -i` fro application.
+
+```python
+def init(self):
+  self.mysql = helm_chart('helm://charts.helm.sh/stable/mysql')
+  self.mysql.ssl.enabled = False
+```
+### Dependencies
+
+Dependencies can be used, if a subchart can be shared. If the dependency is not installed, it's automatically applied to the cluster.
+You can also set properties of the sub chart. But this is not implemented correctly yet.
+
+```python
+def init(self):
+  self.mysql = depends_on('helm://charts.helm.sh/stable/mysql',">= 1.0")
+```
+
+## Utilities
+### User credentials
+
+```python
+def init(self):
+  self.credential = user_credential('test')
+```
+
+```bash
+rm -rf /tmp/example
+mkdir -p /tmp/example
+cd /tmp/example
+cat > Chart.star <<EOF
+def init(self):
+  self.credential = user_credential('test')
+EOF
+shalm template .
+```
+
+### Certificates
+
+```python
+def init(self):
+  self.certificate = certificate('test',is_ca=True,domain="example.com")
+```
+
+```bash
+rm -rf /tmp/example
+mkdir -p /tmp/example
+cd /tmp/example
+cat > Chart.star <<EOF
+def init(self):
+  self.certificate = certificate('test',is_ca=True,domain="example.com")
+EOF
+shalm template .
+```
 
 ## kubernetes client
 
+Shalm includes a full featured kubernetes client which can be used in `apply`, `delete` or `template` actions
+
 ### Get
+
+```python
+def apply(self,k8s):
+  print(k8s.get('service','kubernetes').status)
+```
+
+```bash
+rm -rf /tmp/example
+mkdir -p /tmp/example
+cd /tmp/example
+cat > Chart.star <<EOF
+def apply(self,k8s):
+  print(k8s.get('service','kubernetes').status)
+EOF
+shalm apply .
+```
 
 ### Watch
 
+```python
+def apply(self,k8s):
+  for service in k8s.watch('service','kubernetes'):
+    print(service)
+```
+
+```bash
+rm -rf /tmp/example
+mkdir -p /tmp/example
+cd /tmp/example
+cat > Chart.star <<EOF
+def apply(self,k8s):
+  for service in k8s.watch('service','kubernetes'):
+    print(service)
+EOF
+shalm apply .
+```
+
+
 ### Apply
+
+```python
+def apply(self,k8s):
+  service = k8s.get('service','kubernetes')
+  service.metadata.labels.test = "test"
+  k8s.apply(service)
+```
 
 ### Delete
 
+
+## Unit testing
+
+There is an in memory implementation of the kubernetes client
+
+```python
+c = chart("../charts/example/simple/mariadb")
+c.apply(k8s)
+mariadb = k8s.get("statefulset","mariadb-master")
+assert.eq(mariadb.metadata.name,"mariadb-master")
+assert.neq(mariadb.metadata.name,"mariadb-masterx")
+```
+
+```bash
+shalm test test/*.star
+```
+
 ## Controller
 
+There is also a controller available, which reconciles installation. Currently it's broken.
 ## Extend
+
+It's easy to extend shalm with you own DSL: https://github.com/wonderix/cfpkg
 

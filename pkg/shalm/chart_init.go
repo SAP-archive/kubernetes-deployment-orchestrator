@@ -6,7 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"reflect"
-	"strings"
+	"regexp"
 
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/k14s/starlark-go/starlarkstruct"
@@ -65,6 +65,8 @@ func (c *chartImpl) loadYamlFunction() starlark.Callable {
 	})
 }
 
+var urlPattern = regexp.MustCompile("^[a-z]+:/.*")
+
 // NewChartFunction -
 func NewChartFunction(repo Repo, dir string, options ...ChartOption) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
@@ -72,7 +74,7 @@ func NewChartFunction(repo Repo, dir string, options ...ChartOption) func(thread
 			return starlark.None, fmt.Errorf("%s: got %d arguments, want at most %d", "chart", 0, 1)
 		}
 		url := args[0].(starlark.String).GoString()
-		if !(filepath.IsAbs(url) || strings.HasPrefix(url, "http")) {
+		if !(filepath.IsAbs(url) || urlPattern.MatchString(url)) {
 			url = path.Join(dir, url)
 		}
 
