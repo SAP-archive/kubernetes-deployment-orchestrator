@@ -15,7 +15,7 @@ Shalm is designed from ground up to be mostly compatible with helm packages
 
 ### Helm to shalm
 
-You deploy almost every helm chart using *shalm*. But *shalm* doesn't support hooks. 
+You can deploy almost every helm chart using *shalm*. But *shalm* doesn't support hooks. 
 
 ```
 shalm apply helm://charts.helm.sh/stable/mysql
@@ -27,7 +27,7 @@ shalm delete helm://charts.helm.sh/stable/mysql
 
 ### Shalm to helm
 
-Shalm chart can be wrapped into helm charts using `shalm package --helm`. Shalm uses `pre-upgrade` hooks to implement this.
+Shalm charts can be wrapped into helm charts using `shalm package --helm`. Shalm uses `pre-upgrade` hooks to implement this.
 
 
 ```python
@@ -183,6 +183,7 @@ shalm template .
 You can choose between different deployment methods:
 * kubectl 
 * kapp
+* helm (see [helm-subcharts](#helm-subcharts))
 
 ### kubectl
 
@@ -244,12 +245,17 @@ You can define properties, which can be set using the command lines. All items f
 ```python
 def init(self):
   self.timeout = property(default=30)
+  self.docker_config = struct_property(password=property(),username=property(default="_json_key"))
 ```
 
 ```yaml
 kind: Secret
 stringData:
   timeout: #@ self.timeout
+```
+
+```bash
+shalm template . --set timeout=60
 ```
 
 ```bash
@@ -270,6 +276,12 @@ shalm template . --set timeout=60
 
 
 ## Associations
+
+You can have 3 types of associations
+* sub charts
+* depedencies
+* helm sub charts
+
 ### Subcharts
 
 Subcharts can be used if another chart is owned (not shared) by the parent chart. You can set any property of the sub chart.
@@ -357,13 +369,13 @@ shalm apply /tmp/example
 
 | URL                                                               | Description                               |
 |-------------------------------------------------------------------|-------------------------------------------|
-| ./                                                                | current directory                         |
-| helm://charts.helm.sh/stable/mysql                                | latest helm chart in this helm repository |
-| helm://charts.helm.sh/stable/mysql                                | latest helm chart in this helm repository |
-| https://github.com/<repo>/archive/<branch-or-tag>.zip             | Github repository                         |
-| https://github.com/wonderix/shalm/archive/master.zip#charts/shalm | Subdirectory in github repository         |
-| https://<host>/api/v3/repos/<owner>/<repo>/zipball/<branch>       | Enterprise github repository              |
-| catalog:<chart>                                                   | Chart from catalog (see below)            |
+| `./`                                                                | current directory                         |
+| `helm://charts.helm.sh/stable/mysql`                                | latest helm chart in this helm repository |
+| `helm://charts.helm.sh/stable/mysql`                                | latest helm chart in this helm repository |
+| `https://github.com/<repo>/archive/<branch-or-tag>.zip`             | Github repository                         |
+| `https://github.com/wonderix/shalm/archive/master.zip#charts/shalm` | Subdirectory in github repository         |
+| `https://<host>/api/v3/repos/<owner>/<repo>/zipball/<branch>`       | Enterprise github repository              |
+| `catalog:<chart>`                                                   | Chart from catalog (see below)            |
 
 ### Catalog
 
