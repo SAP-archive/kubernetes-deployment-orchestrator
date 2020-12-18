@@ -15,7 +15,7 @@ Shalm is designed from ground up to be mostly compatible with helm packages
 
 ### Helm to shalm
 
-You can deploy almost every helm chart using *shalm*. But *shalm* doesn't support hooks. 
+You can deploy almost every helm chart using *shalm* except those, which uses [hooks](https://helm.sh/docs/topics/charts_hooks/) for deployment. 
 
 ```
 shalm apply helm://charts.helm.sh/stable/mysql
@@ -27,7 +27,7 @@ shalm delete helm://charts.helm.sh/stable/mysql
 
 ### Shalm to helm
 
-Shalm charts can be wrapped into helm charts using `shalm package --helm`. Shalm uses `pre-upgrade` hooks to implement this.
+Shalm charts can be wrapped into helm charts using `shalm package --helm`. Shalm uses [hooks](https://helm.sh/docs/topics/charts_hooks/) to implement this.
 
 
 ```python
@@ -53,6 +53,41 @@ helm uninstall example
 ## Templating
 
 In shalm, you can chose between go templating and [ytt](https://get-ytt.io/)
+
+### ytt templating
+
+
+You should prefer ytt templating because ytt also uses starlark. Therefore the interoperability between shalm and ytt is much better compared to helm templating.
+You can directly call methods from ytt.
+
+```python
+# Chart.star
+def init(self):
+  self.timeout = 30
+```
+
+```yaml
+kind: Secret
+stringData:
+  timeout: #@ self.timeout
+```
+
+
+```bash
+rm -rf /tmp/example
+mkdir -p /tmp/example/ytt-templates
+cd /tmp/example
+cat > Chart.star <<EOF
+def init(self):
+  self.timeout = 30
+EOF
+cat > ytt-templates/secret.yaml <<EOF
+kind: Secret
+stringData:
+  timeout: #@ self.timeout
+EOF
+shalm template .
+```
 
 ### Go Templating (helm)
 
@@ -119,40 +154,6 @@ shalm template .
 ```
 
 
-### ytt templating
-
-
-You should prefer ytt templating because ytt also uses starlark. Therefore the interoperability between shalm and ytt is much better compared to helm templating.
-You can directly call methods from ytt.
-
-```python
-# Chart.star
-def init(self):
-  self.timeout = 30
-```
-
-```yaml
-kind: Secret
-stringData:
-  timeout: #@ self.timeout
-```
-
-
-```bash
-rm -rf /tmp/example
-mkdir -p /tmp/example/ytt-templates
-cd /tmp/example
-cat > Chart.star <<EOF
-def init(self):
-  self.timeout = 30
-EOF
-cat > ytt-templates/secret.yaml <<EOF
-kind: Secret
-stringData:
-  timeout: #@ self.timeout
-EOF
-shalm template .
-```
 
 ### Overriding methods
 
@@ -306,7 +307,7 @@ shalm template .
 
 ### Helm subcharts
 
-This is mostly the same as the example above, except that `helm template` is used for templating and `helm upgrade -i` fro application.
+This is mostly the same as the example above, except that `helm template` is used for templating and `helm upgrade -i` for application.
 
 ```python
 def init(self):
@@ -454,6 +455,8 @@ shalm apply .
 ```
 
 ### Watch
+
+The `watch` loop will never end by default. You need to use `break` for this purpose.
 
 ```python
 def apply(self,k8s):
