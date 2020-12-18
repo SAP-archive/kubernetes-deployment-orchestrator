@@ -657,17 +657,19 @@ func usedByAnnotation(reference string) string {
 }
 
 func (c *chartImpl) AddUsedBy(reference string, k K8s) (int, error) {
-	obj, err := k.Patch("configmap", c.objName(), types.JSONPatchType, fmt.Sprintf(`[{"op": "add", "path": "/metadata/annotations/%s", "value" : "True"}]`, usedByAnnotation(reference)), &K8sOptions{Namespace: c.namespace})
+	patch := fmt.Sprintf(`[{"op": "add", "path": "/metadata/annotations/%s", "value" : "True"}]`, usedByAnnotation(reference))
+	obj, err := k.Patch("configmap", c.objName(), types.JSONPatchType, patch, &K8sOptions{Namespace: c.namespace})
 	if err != nil {
-		return 0, fmt.Errorf("can't add reference to configmap %s in namespace %s: %v %v", c.objName(), c.namespace, err, obj)
+		return 0, fmt.Errorf("can't add reference to configmap %s in namespace %s: %v %v. error during application of patch `%s`", c.objName(), c.namespace, err, obj, patch)
 	}
 	return remainingReferences(obj), nil
 }
 
 func (c *chartImpl) RemoveUsedBy(reference string, k K8s) (int, error) {
-	obj, err := k.Patch("configmap", c.objName(), types.JSONPatchType, fmt.Sprintf(`[{"op": "remove", "path": "/metadata/annotations/%s"}]`, usedByAnnotation(reference)), &K8sOptions{Namespace: c.namespace, IgnoreNotFound: true})
+	patch := fmt.Sprintf(`[{"op": "remove", "path": "/metadata/annotations/%s"}]`, usedByAnnotation(reference))
+	obj, err := k.Patch("configmap", c.objName(), types.JSONPatchType, patch, &K8sOptions{Namespace: c.namespace, IgnoreNotFound: true})
 	if err != nil {
-		return 0, fmt.Errorf("can't remove reference from configmap %s in namespace %s: %v", c.objName(), c.namespace, err)
+		return 0, fmt.Errorf("can't remove reference from configmap %s in namespace %s: %verror during application of patch `%s`", c.objName(), c.namespace, err, patch)
 	}
 	return remainingReferences(obj), nil
 }

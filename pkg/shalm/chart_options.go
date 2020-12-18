@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"regexp"
 
 	"github.com/Masterminds/semver/v3"
@@ -214,7 +215,7 @@ func NewGenusAndVersion(url string) *GenusAndVersion {
 	if match = catalogURL.FindStringSubmatch(url); match != nil {
 		return extractGenusAndVersion(match[1], "")
 	}
-	return &GenusAndVersion{}
+	return extractGenusAndVersion(path.Base(url), "")
 }
 
 // ChartOptions -

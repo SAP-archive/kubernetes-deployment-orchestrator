@@ -93,10 +93,7 @@ func validateName(name string) error {
 	return nil
 }
 func validateVersion(version string) error {
-	if len(version) == 0 {
-		return nil
-	}
-	_, err := semver.NewVersion(version)
+	_, err := newVersion(version)
 	return err
 }
 
@@ -110,11 +107,15 @@ func (cc *chartClass) Validate() error {
 	return nil
 }
 
-func (cc *chartClass) GetVersion() *semver.Version {
-	if len(cc.Version) == 0 {
-		return &semver.Version{}
+func newVersion(version string) (*semver.Version, error) {
+	if len(version) == 0 {
+		return &semver.Version{}, nil
 	}
-	result, err := semver.NewVersion(cc.Version)
+	return semver.NewVersion(version)
+}
+
+func (cc *chartClass) GetVersion() *semver.Version {
+	result, err := newVersion(cc.Version)
 	if err != nil {
 		panic(errors.Wrap(err, "Invalid version in helm chart"))
 	}

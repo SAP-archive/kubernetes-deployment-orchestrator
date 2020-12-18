@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/pflag"
 	"gopkg.in/yaml.v2"
 
-	"github.com/Masterminds/semver/v3"
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
@@ -241,7 +240,7 @@ func newChartFromConfigMap(thread *starlark.Thread, r *repoImpl, configMap Objec
 	if err := json.Unmarshal(dataJSON, &data); err != nil {
 		return nil, err
 	}
-	version, err := semver.NewVersion(configMap.MetaData.Labels["shalm.wonderix.github.com/version"])
+	version, err := newVersion(configMap.MetaData.Labels["shalm.wonderix.github.com/version"])
 	if err != nil {
 		return nil, err
 	}
@@ -298,7 +297,7 @@ var invalidLabel = regexp.MustCompile("[^-A-Za-z0-9_.]")
 
 func extractGenusAndVersion(name, version string) *GenusAndVersion {
 	result := &GenusAndVersion{}
-	vers, err := semver.NewVersion(version)
+	vers, err := newVersion(version)
 	if err == nil {
 		result.version = vers
 	}

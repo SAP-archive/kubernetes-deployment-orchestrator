@@ -2,6 +2,11 @@
 
 This tutorial will guide you through the different topics of shalm
 
+## Starlark
+
+Starlark is a python dialect, which is also use in bazel or ytt. It allows you to run code
+in a controlled sandbox without access to the outer world.
+
 ## Interoperability with helm
 
 Shalm is designed from ground up to be mostly compatible with helm packages
@@ -118,6 +123,7 @@ shalm template .
 
 
 You should prefer ytt templating because ytt also uses starlark. Therefore the interoperability between shalm and ytt is much better compared to helm templating.
+You can directly call methods from ytt.
 
 ```python
 # Chart.star
@@ -298,11 +304,82 @@ def init(self):
 ### Dependencies
 
 Dependencies can be used, if a subchart can be shared. If the dependency is not installed, it's automatically applied to the cluster.
-You can also set properties of the sub chart. But this is not implemented correctly yet.
+You can also set properties of the sub chart. But this is not implemented correctly yet. 
+Currently the properties are only taken into account, if the dependency is not already installed.
+
 
 ```python
 def init(self):
   self.mysql = depends_on('helm://charts.helm.sh/stable/mysql',">= 1.0")
+```
+
+### Calling methods of associations
+
+It's not only possible to set properties of associations. It's also possible to 
+call methods. For associations created with `depends_on` this only possible
+during `apply` or `delete`.
+
+```python
+def hello(self, name):
+  print("Hello " + name)
+```
+
+```python
+def init(self):
+  self.__class__.version = "1.0.0"
+  self.hello = depends_on('../hello',">= 0.0")
+def apply(self,k8s):
+  self.hello.hello("Kyma")
+```
+
+```bash
+rm -rf /tmp/hello
+mkdir -p /tmp/hello
+cd /tmp/hello
+cat > Chart.star <<EOF
+def hello(self, name):
+  print("Hello " + name)
+EOF
+rm -rf /tmp/example
+mkdir -p /tmp/example
+cd /tmp/example
+cat > Chart.star <<EOF
+def init(self):
+  self.__class__.version = "1.0.0"
+  self.hello = depends_on('../hello',">= 0.0")
+def apply(self,k8s):
+  self.hello.hello("Kyma")
+EOF
+shalm apply /tmp/example
+```
+
+## URLs
+
+| URL                                                               | Description                               |
+|-------------------------------------------------------------------|-------------------------------------------|
+| ./                                                                | current directory                         |
+| helm://charts.helm.sh/stable/mysql                                | latest helm chart in this helm repository |
+| helm://charts.helm.sh/stable/mysql                                | latest helm chart in this helm repository |
+| https://github.com/<repo>/archive/<branch-or-tag>.zip             | Github repository                         |
+| https://github.com/wonderix/shalm/archive/master.zip#charts/shalm | Subdirectory in github repository         |
+| https://<host>/api/v3/repos/<owner>/<repo>/zipball/<branch>       | Enterprise github repository              |
+| catalog:<chart>                                                   | Chart from catalog (see below)            |
+
+### Catalog
+
+You can define a catalog, which contains all charts, you would like to be able to deploy. 
+The chart name is appended to the configured catalog URL.
+The catalog can be configured in `~/.shalm/config`. You can have many catalogs. They are tried in the given order.
+
+```yaml
+catalogs:
+  - /Users/d001323/workspace/catalog
+```
+
+You can use the urls like
+
+```bash
+shalm template catalog:cluster-essentials
 ```
 
 ## Utilities
