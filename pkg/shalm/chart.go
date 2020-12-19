@@ -67,6 +67,12 @@ func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOptio
 	c.values = make(map[string]starlark.Value)
 	c.methods = make(map[string]starlark.Callable)
 	hasChartYaml := false
+	if len(co.genus) != 0 {
+		c.clazz.Genus = co.genus
+	}
+	if co.version != nil {
+		c.clazz.Version = co.version.String()
+	}
 	if err := c.loadChartYaml(); err != nil {
 		if !os.IsNotExist(err) {
 			return nil, err
@@ -83,12 +89,6 @@ func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOptio
 	}
 	if err := c.init(thread, hasChartYaml, co); err != nil {
 		return nil, err
-	}
-	if len(co.genus) != 0 {
-		c.clazz.Genus = co.genus
-	}
-	if co.version != nil {
-		c.clazz.Version = co.version.String()
 	}
 	c.SetValue(co.properties.GetValue())
 	return c, nil

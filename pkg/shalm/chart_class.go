@@ -109,7 +109,7 @@ func (cc *chartClass) Validate() error {
 
 func newVersion(version string) (*semver.Version, error) {
 	if len(version) == 0 {
-		return &semver.Version{}, nil
+		return nil, nil
 	}
 	return semver.NewVersion(version)
 }
@@ -118,6 +118,9 @@ func (cc *chartClass) GetVersion() *semver.Version {
 	result, err := newVersion(cc.Version)
 	if err != nil {
 		panic(errors.Wrap(err, "Invalid version in helm chart"))
+	}
+	if result == nil {
+		return &semver.Version{}
 	}
 	return result
 }
