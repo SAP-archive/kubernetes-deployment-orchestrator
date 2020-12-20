@@ -527,7 +527,7 @@ func (k *k8sImpl) List(kind string, options *K8sOptions, listOptions *ListOption
 
 // Watch -
 func (k *k8sImpl) Watch(kind string, name string, options *K8sOptions) ObjectStream {
-	return func(writer ObjectWriter) error {
+	return func(writer ObjectConsumer) error {
 		cmd := k.kubectl("get", options, kind, name, "-o", "json", "--watch")
 		reader, w := io.Pipe()
 		cmd.Stdout = w

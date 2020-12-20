@@ -317,7 +317,7 @@ func (c *chartImpl) yttTemplateFunction() starlark.Callable {
 }
 
 func (c *chartImpl) jewelStream() k8s.ObjectStream {
-	return func(w k8s.ObjectWriter) error {
+	return func(w k8s.ObjectConsumer) error {
 		vault := &vaultK8s{objectWriter: w, namespace: c.namespace}
 		return c.eachJewel(func(v *jewel) error {
 			return v.write(vault)

@@ -21,7 +21,7 @@ var _ = Describe("k8s_in_memory", func() {
 	})
 
 	It("apply works", func() {
-		err := k8s.Apply(func(writer ObjectWriter) error {
+		err := k8s.Apply(func(writer ObjectConsumer) error {
 			return writer(&Object{Kind: "Secret", MetaData: MetaData{Name: "test"}})
 		}, &K8sOptions{})
 		Expect(err).NotTo(HaveOccurred())
@@ -31,7 +31,7 @@ var _ = Describe("k8s_in_memory", func() {
 	})
 	It("delete works", func() {
 		k8s = NewK8sInMemory(namespace, secret)
-		err := k8s.Delete(func(writer ObjectWriter) error {
+		err := k8s.Delete(func(writer ObjectConsumer) error {
 			return writer(&Object{Kind: "Secret", MetaData: MetaData{Name: "test"}})
 		}, &K8sOptions{})
 		Expect(err).NotTo(HaveOccurred())

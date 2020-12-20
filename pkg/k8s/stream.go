@@ -30,7 +30,7 @@ func ErrorStream(err error) Stream {
 
 // ObjectErrorStream -
 func ObjectErrorStream(err error) ObjectStream {
-	return func(writer ObjectWriter) error {
+	return func(writer ObjectConsumer) error {
 		return err
 	}
 }

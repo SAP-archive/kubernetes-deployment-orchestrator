@@ -139,12 +139,12 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 					return nil, err
 				}
 				done()
-				var os func(w ObjectWriter) error
+				var os func(w ObjectConsumer) error
 				s, ok := value.(*streamValue)
 				if ok {
 					os = Decode(s.Stream)
 				} else {
-					os = func(w ObjectWriter) error {
+					os = func(w ObjectConsumer) error {
 						var o Object
 						data, err := json.Marshal(starutils.ToGo(value))
 						if err != nil {
@@ -295,7 +295,7 @@ func (k *k8sValueImpl) AttrNames() []string {
 
 // Args -
 func (k *K8sOptions) Args() ([]interface{}, func()) {
-	namespaced := false
+	namespaced := true
 	timeout := 0
 	return []interface{}{"namespaced?", &namespaced, "ignore_not_found?", &k.IgnoreNotFound, "namespace?", &k.Namespace, "timeout?", &timeout}, func() {
 		k.ClusterScoped = !namespaced

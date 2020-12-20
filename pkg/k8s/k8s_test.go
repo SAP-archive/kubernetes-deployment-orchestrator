@@ -50,15 +50,15 @@ var _ = Describe("k8s", func() {
 			return exec.Command("echo", `{ "kind" : "Deployment" }`)
 		}, K8sConfigs: K8sConfigs{tool: ToolKapp, kubeConfig: "test"}, ctx: context.Background()}
 		It("delete works", func() {
-			err := k8s.Delete(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
+			err := k8s.Delete(func(writer ObjectConsumer) error { return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("apply works", func() {
-			err := k8s.Apply(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
+			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("namespace is set to default if kubeconfig is given", func() {
-			err := k8s.Apply(func(writer ObjectWriter) error { return nil }, &K8sOptions{ClusterScoped: true})
+			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &K8sOptions{ClusterScoped: true})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(cmdArgs).To(ContainElements("-n", "default"))
 		})
@@ -82,12 +82,12 @@ var _ = Describe("k8s", func() {
 			Expect(k8s.kubeConfig).To(Equal(k2.(*k8sImpl).kubeConfig))
 		})
 		It("apply works", func() {
-			err := k8s.Apply(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
+			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("delete works", func() {
-			err := k8s.Delete(func(writer ObjectWriter) error { return nil }, &K8sOptions{})
+			err := k8s.Delete(func(writer ObjectConsumer) error { return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("delete object works", func() {
@@ -117,7 +117,7 @@ var _ = Describe("k8s", func() {
 			Expect(*content).To(Equal("hello"))
 		})
 		It("progress subscription works", func() {
-			err := k2.Apply(func(writer ObjectWriter) error { k2.(*k8sImpl).progressCb(1, 1); return nil }, &K8sOptions{})
+			err := k2.Apply(func(writer ObjectConsumer) error { k2.(*k8sImpl).progressCb(1, 1); return nil }, &K8sOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(progress).To(Equal(90))
 		})
@@ -131,7 +131,7 @@ var _ = Describe("k8s", func() {
 
 	It("sorts by kind", func() {
 		var err error
-		s := func(writer ObjectWriter) error {
+		s := func(writer ObjectConsumer) error {
 			writer(&Object{Kind: "Other"})
 			writer(&Object{Kind: "StatefulSet"})
 			writer(&Object{Kind: "Service"})

@@ -75,7 +75,7 @@ func (k K8sInMemory) Watch(kind string, name string, options *K8sOptions) Object
 	if err != nil {
 		return ObjectErrorStream(err)
 	}
-	return func(writer ObjectWriter) error {
+	return func(writer ObjectConsumer) error {
 		return writer(obj)
 	}
 }

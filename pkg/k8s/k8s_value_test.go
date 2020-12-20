@@ -63,7 +63,7 @@ var _ = Describe("K8sValue", func() {
 				return &Object{}, nil
 			},
 			WatchStub: func(kind string, name string, k8s *K8sOptions) ObjectStream {
-				return func(w ObjectWriter) error {
+				return func(w ObjectConsumer) error {
 					return nil
 				}
 			},
@@ -115,7 +115,7 @@ var _ = Describe("K8sValue", func() {
 	It("watches objects", func() {
 		fake := &FakeK8s{
 			WatchStub: func(kind string, name string, options *K8sOptions) ObjectStream {
-				return func(w ObjectWriter) error {
+				return func(w ObjectConsumer) error {
 					obj := Object{Additional: map[string]json.RawMessage{"key": json.RawMessage([]byte(`"value"`))}}
 					return w(&obj)
 				}

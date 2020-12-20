@@ -47,7 +47,7 @@ const stateReady = 2
 
 type vaultK8s struct {
 	k8s          k8s.K8sReader
-	objectWriter k8s.ObjectWriter
+	objectWriter k8s.ObjectConsumer
 	namespace    string
 }
 

@@ -11,11 +11,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
-// ObjectWriter -
-type ObjectWriter = func(obj *Object) error
+// ObjectConsumer -
+type ObjectConsumer = func(obj *Object) error
 
 // ObjectStream -
-type ObjectStream func(w ObjectWriter) error
+type ObjectStream func(w ObjectConsumer) error
 
 // CancelObjectStream -
 type CancelObjectStream struct{}
@@ -28,7 +28,7 @@ var _ error = (*CancelObjectStream)(nil)
 
 // Map -
 func (o ObjectStream) Map(f func(obj *Object) *Object) ObjectStream {
-	return func(w ObjectWriter) error {
+	return func(w ObjectConsumer) error {
 		return o(func(obj *Object) error {
 			return w(f(obj))
 		})
@@ -37,7 +37,7 @@ func (o ObjectStream) Map(f func(obj *Object) *Object) ObjectStream {
 
 // Sort -
 func (o ObjectStream) Sort(f func(o1 *Object, o2 *Object) int, reverse bool) ObjectStream {
-	return func(w ObjectWriter) error {
+	return func(w ObjectConsumer) error {
 		var objs []*Object
 		err := o(func(obj *Object) error {
 			objs = append(objs, obj)
@@ -85,11 +85,11 @@ func (o ObjectStream) GroupBy(group func(o *Object) string) func(key string) Obj
 	})
 	return func(key string) ObjectStream {
 		if err != nil {
-			return func(w ObjectWriter) error {
+			return func(w ObjectConsumer) error {
 				return err
 			}
 		}
-		return func(w ObjectWriter) error {
+		return func(w ObjectConsumer) error {
 			for _, obj := range objs {
 				if group(obj) == key {
 					if err := w(obj); err != nil {
@@ -104,7 +104,7 @@ func (o ObjectStream) GroupBy(group func(o *Object) string) func(key string) Obj
 
 // Filter -
 func (o ObjectStream) Filter(filter func(obj *Object) bool) ObjectStream {
-	return func(w ObjectWriter) error {
+	return func(w ObjectConsumer) error {
 		return o(func(obj *Object) error {
 			if filter(obj) {
 				return w(obj)
@@ -116,7 +116,7 @@ func (o ObjectStream) Filter(filter func(obj *Object) bool) ObjectStream {
 
 // Decode -
 func Decode(in Stream) ObjectStream {
-	return func(w ObjectWriter) error {
+	return func(w ObjectConsumer) error {
 		buffer := &bytes.Buffer{}
 		err := in(buffer)
 		if err != nil {
@@ -145,7 +145,7 @@ func Decode(in Stream) ObjectStream {
 }
 
 func concat(streams ...ObjectStream) ObjectStream {
-	return func(w ObjectWriter) error {
+	return func(w ObjectConsumer) error {
 		for _, s := range streams {
 			if err := s(w); err != nil {
 				return err
@@ -158,7 +158,7 @@ func concat(streams ...ObjectStream) ObjectStream {
 var encoder = k8sjson.NewSerializerWithOptions(k8sjson.DefaultMetaFactory, nil, nil, k8sjson.SerializerOptions{})
 
 func objectStreamOf(objs ...runtime.Object) ObjectStream {
-	return func(w ObjectWriter) error {
+	return func(w ObjectConsumer) error {
 		for _, obj := range objs {
 			buffer := &bytes.Buffer{}
 			if err := encoder.Encode(obj, buffer); err != nil {

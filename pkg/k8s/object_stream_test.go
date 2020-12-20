@@ -9,7 +9,7 @@ var _ = Describe("k8s", func() {
 
 	Context("ObjectStream", func() {
 		It("filters", func() {
-			stream := ObjectStream(func(w ObjectWriter) error {
+			stream := ObjectStream(func(w ObjectConsumer) error {
 				w(&Object{Kind: "test"})
 				return w(&Object{Kind: "xxx"})
 			})
@@ -31,7 +31,7 @@ var _ = Describe("k8s", func() {
 			}
 		})
 		It("buffers", func() {
-			stream := ObjectStream(func(w ObjectWriter) error {
+			stream := ObjectStream(func(w ObjectConsumer) error {
 				w(&Object{Kind: "test"})
 				return w(&Object{Kind: "xxx"})
 			})
