@@ -13,7 +13,7 @@ import (
 )
 
 var templateChartArgs = shalm.ChartOptions{}
-var templateK8sArgs = k8s.K8sConfigs{}
+var templateK8sArgs = k8s.Configs{}
 
 var templateCmd = &cobra.Command{
 	Use:   "template [chart]",

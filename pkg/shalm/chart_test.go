@@ -197,7 +197,7 @@ def template(self,glob=''):
 		It("applies ytt", func() {
 			writer := bytes.Buffer{}
 			k := &k8s.FakeK8s{
-				ApplyStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+				ApplyStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 					return i.Encode()(&writer)
 				},
 			}
@@ -241,7 +241,7 @@ def template(self,glob=''):
 			}
 			writer := bytes.Buffer{}
 			k := &k8s.FakeK8s{
-				ApplyStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+				ApplyStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 					return i.Encode()(&writer)
 				},
 			}
@@ -279,7 +279,7 @@ def init(self):
 		It("applies ytt", func() {
 			writer := bytes.Buffer{}
 			k := &k8s.FakeK8s{
-				ApplyStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+				ApplyStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 					return i.Encode()(&writer)
 				},
 			}
@@ -325,7 +325,7 @@ def init(self):
 			Expect(c.GetName()).To(Equal("mariadb"))
 			writer := bytes.Buffer{}
 			k := &k8s.FakeK8s{
-				ApplyStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+				ApplyStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 					return i.Encode()(&writer)
 				},
 			}
@@ -341,7 +341,7 @@ def init(self):
 			Expect(c.GetName()).To(Equal("mariadb"))
 			writer := bytes.Buffer{}
 			k := &k8s.FakeK8s{
-				DeleteStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+				DeleteStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 					i.Encode()(&writer)
 					return nil
 				},
@@ -383,7 +383,7 @@ def init(self):
 			Expect(err).NotTo(HaveOccurred())
 			writer := bytes.Buffer{}
 			k := &k8s.FakeK8s{
-				DeleteStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+				DeleteStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 					i.Encode()(&writer)
 					return nil
 				},
@@ -481,10 +481,10 @@ def init(self):
 		Expect(err).NotTo(HaveOccurred())
 		var obj k8s.Object
 		k := &k8s.FakeK8s{
-			ApplyStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+			ApplyStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 				return i(func(o *k8s.Object) error { obj = *o; return nil })
 			},
-			GetStub: func(kind string, name string, k8s *k8s.K8sOptions) (*k8s.Object, error) {
+			GetStub: func(kind string, name string, k8s *k8s.Options) (*k8s.Object, error) {
 				return nil, errors.New("NotFound")
 			},
 			IsNotExistStub: func(err error) bool {

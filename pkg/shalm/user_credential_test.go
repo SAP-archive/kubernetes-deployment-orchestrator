@@ -21,7 +21,7 @@ var _ = Describe("userCredentials", func() {
 			user.Username = []byte("username1")
 			user.Password = []byte("password1")
 			k := k8s.FakeK8s{
-				GetStub: func(kind string, name string, ko *k8s.K8sOptions) (*k8s.Object, error) {
+				GetStub: func(kind string, name string, ko *k8s.Options) (*k8s.Object, error) {
 					data, _ := json.Marshal(user)
 					return &k8s.Object{
 						Additional: map[string]json.RawMessage{
@@ -41,7 +41,7 @@ var _ = Describe("userCredentials", func() {
 
 		It("creates new random username and password if user_credential doesn't exist", func() {
 			k := k8s.FakeK8s{
-				GetStub: func(kind string, name string, k8s *k8s.K8sOptions) (*k8s.Object, error) {
+				GetStub: func(kind string, name string, k8s *k8s.Options) (*k8s.Object, error) {
 					return nil, errors.New("NotFound")
 				},
 				IsNotExistStub: func(err error) bool {

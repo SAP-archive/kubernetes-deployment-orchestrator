@@ -11,9 +11,9 @@ import (
 )
 
 var applyChartArgs = shalm.ChartOptions{}
-var applyK8sArgs = k8s.K8sConfigs{}
+var applyK8sArgs = k8s.Configs{}
 
-var newK8s = func(configs ...k8s.K8sConfig) (k8s.K8s, error) {
+var newK8s = func(configs ...k8s.Config) (k8s.K8s, error) {
 	return k8s.NewK8s(configs...)
 }
 

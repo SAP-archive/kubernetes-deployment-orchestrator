@@ -52,7 +52,7 @@ type ShalmChartReconciler struct {
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
 	Repo     shalm.Repo
-	K8s      func(configs ...k8s.K8sConfig) (k8s.K8s, error)
+	K8s      func(configs ...k8s.Config) (k8s.K8s, error)
 	Load     func(thread *starlark.Thread, module string) (dict starlark.StringDict, err error)
 	Recorder record.EventRecorder
 }

@@ -27,7 +27,7 @@ const maxDepth = 10
 
 const namespace = "default"
 
-var testK8s = func(configs ...k8s.K8sConfig) (k8s.K8s, error) {
+var testK8s = func(configs ...k8s.Config) (k8s.K8s, error) {
 	return k8s.NewK8sInMemory(namespace), nil
 }
 

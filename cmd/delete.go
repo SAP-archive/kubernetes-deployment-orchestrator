@@ -11,7 +11,7 @@ import (
 )
 
 var deleteChartArgs = shalm.ChartOptions{}
-var deleteK8sArgs = k8s.K8sConfigs{}
+var deleteK8sArgs = k8s.Configs{}
 var deleteOptions = shalm.DeleteOptions{}
 
 var deleteCmd = &cobra.Command{

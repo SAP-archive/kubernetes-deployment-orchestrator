@@ -16,7 +16,7 @@ var _ = Describe("k8s", func() {
 
 	Context("K8sConfigs", func() {
 		It("args are correct", func() {
-			args := K8sConfigs{}
+			args := Configs{}
 			flagsSet := pflag.FlagSet{}
 			args.AddFlags(&flagsSet)
 			Expect(flagsSet.FlagUsages()).To(ContainSubstring(`-t, --tool tool`))
@@ -48,17 +48,17 @@ var _ = Describe("k8s", func() {
 		k8s := k8sImpl{command: func(_ context.Context, name string, arg ...string) *exec.Cmd {
 			cmdArgs = arg
 			return exec.Command("echo", `{ "kind" : "Deployment" }`)
-		}, K8sConfigs: K8sConfigs{tool: ToolKapp, kubeConfig: "test"}, ctx: context.Background()}
+		}, Configs: Configs{tool: ToolKapp, kubeConfig: "test"}, ctx: context.Background()}
 		It("delete works", func() {
-			err := k8s.Delete(func(writer ObjectConsumer) error { return nil }, &K8sOptions{})
+			err := k8s.Delete(func(writer ObjectConsumer) error { return nil }, &Options{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("apply works", func() {
-			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &K8sOptions{})
+			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &Options{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("namespace is set to default if kubeconfig is given", func() {
-			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &K8sOptions{ClusterScoped: true})
+			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &Options{ClusterScoped: true})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(cmdArgs).To(ContainElements("-n", "default"))
 		})
@@ -70,7 +70,7 @@ var _ = Describe("k8s", func() {
 			return exec.Command("echo", `{ "kind" : "Deployment" }`)
 		}, app: "app", version: semver.MustParse("1.2"), namespace: "namespace",
 			ctx: context.Background(),
-			K8sConfigs: K8sConfigs{
+			Configs: Configs{
 				progressSubscription: func(p int) {
 					progress = p
 				},
@@ -82,27 +82,27 @@ var _ = Describe("k8s", func() {
 			Expect(k8s.kubeConfig).To(Equal(k2.(*k8sImpl).kubeConfig))
 		})
 		It("apply works", func() {
-			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &K8sOptions{})
+			err := k8s.Apply(func(writer ObjectConsumer) error { return nil }, &Options{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 
 		It("delete works", func() {
-			err := k8s.Delete(func(writer ObjectConsumer) error { return nil }, &K8sOptions{})
+			err := k8s.Delete(func(writer ObjectConsumer) error { return nil }, &Options{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("delete object works", func() {
-			err := k8s.DeleteObject("kind", "name", &K8sOptions{})
+			err := k8s.DeleteObject("kind", "name", &Options{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("rollout status works", func() {
-			err := k8s.RolloutStatus("kind", "name", &K8sOptions{})
+			err := k8s.RolloutStatus("kind", "name", &Options{})
 			Expect(err).NotTo(HaveOccurred())
 		})
 		It("for namespace works", func() {
 			Expect(k2.(*k8sImpl).namespace).To(Equal("ns"))
 		})
 		It("get works", func() {
-			obj, err := k8s.Get("kind", "name", &K8sOptions{})
+			obj, err := k8s.Get("kind", "name", &Options{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(obj.Kind).To(Equal("Deployment"))
 		})
@@ -111,13 +111,13 @@ var _ = Describe("k8s", func() {
 			defer dir.Remove()
 			dir.MkdirAll("chart2/templates", 0755)
 			dir.WriteFile("kubeconfig", []byte("hello"), 0644)
-			k8s := k8sImpl{K8sConfigs: K8sConfigs{kubeConfig: dir.Join("kubeconfig")}, ctx: context.Background()}
+			k8s := k8sImpl{Configs: Configs{kubeConfig: dir.Join("kubeconfig")}, ctx: context.Background()}
 			content := k8s.ConfigContent()
 			Expect(content).NotTo(BeNil())
 			Expect(*content).To(Equal("hello"))
 		})
 		It("progress subscription works", func() {
-			err := k2.Apply(func(writer ObjectConsumer) error { k2.(*k8sImpl).progressCb(1, 1); return nil }, &K8sOptions{})
+			err := k2.Apply(func(writer ObjectConsumer) error { k2.(*k8sImpl).progressCb(1, 1); return nil }, &Options{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(progress).To(Equal(90))
 		})

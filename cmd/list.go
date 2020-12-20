@@ -12,7 +12,7 @@ import (
 )
 
 var listOptions = &shalm.RepoListOptions{}
-var listK8sArgs = &k8s.K8sConfigs{}
+var listK8sArgs = &k8s.Configs{}
 
 var listCmd = &cobra.Command{
 	Use:   "list",

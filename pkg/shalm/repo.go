@@ -266,7 +266,7 @@ func (r *repoImpl) List(thread *starlark.Thread, k k8s.K8s, repoListOptions *Rep
 		}
 		listOptions.LabelSelector = listOptions.LabelSelector.Add(*requirement)
 	}
-	k8sOptions := &k8s.K8sOptions{Quiet: true, Namespace: repoListOptions.namespace, ClusterScoped: repoListOptions.allNamespaces}
+	k8sOptions := &k8s.Options{Quiet: true, Namespace: repoListOptions.namespace, ClusterScoped: repoListOptions.allNamespaces}
 	obj, err := k.List("configmaps", k8sOptions, listOptions)
 	if err != nil {
 		return nil, err

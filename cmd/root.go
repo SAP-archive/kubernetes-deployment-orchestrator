@@ -134,14 +134,14 @@ func WithTestFlags(flags func(flagsSet *pflag.FlagSet)) ExecuteOption {
 }
 
 // WithK8s overrides constructor for k8s
-func WithK8s(k func(configs ...k8s.K8sConfig) (k8s.K8s, error)) ExecuteOption {
+func WithK8s(k func(configs ...k8s.Config) (k8s.K8s, error)) ExecuteOption {
 	return func(e *ExecuteOptions) {
 		newK8s = k
 	}
 }
 
 // WithTestK8s overrides constructor for k8s
-func WithTestK8s(k func(configs ...k8s.K8sConfig) (k8s.K8s, error)) ExecuteOption {
+func WithTestK8s(k func(configs ...k8s.Config) (k8s.K8s, error)) ExecuteOption {
 	return func(e *ExecuteOptions) {
 		testK8s = k
 	}

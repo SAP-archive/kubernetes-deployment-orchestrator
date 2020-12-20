@@ -28,14 +28,14 @@ var _ = Describe("Apply Chart", func() {
 	It("produces the correct output", func() {
 		writer := bytes.Buffer{}
 		k := &k8s.FakeK8s{
-			ApplyStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+			ApplyStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 				return i.Encode()(&writer)
 			},
 		}
 		k.ForSubChartStub = func(s string, app string, version *semver.Version, children int) k8s.K8s {
 			return k
 		}
-		k.GetStub = func(s string, s2 string, options *k8s.K8sOptions) (*k8s.Object, error) {
+		k.GetStub = func(s string, s2 string, options *k8s.Options) (*k8s.Object, error) {
 			return &k8s.Object{}, nil
 		}
 

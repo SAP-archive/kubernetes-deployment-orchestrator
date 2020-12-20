@@ -14,7 +14,7 @@ import (
 	control "sigs.k8s.io/controller-runtime/pkg/controller"
 )
 
-var controllerK8sArgs = k8s.K8sConfigs{}
+var controllerK8sArgs = k8s.Configs{}
 
 var controllerCmd = &cobra.Command{
 	Use:   "controller",
@@ -55,8 +55,8 @@ func controller(stopCh <-chan struct{}) error {
 		Scheme: mgr.GetScheme(),
 		Log:    reconcilerLog,
 		Repo:   repo,
-		K8s: func(configs ...k8s.K8sConfig) (k8s.K8s, error) {
-			configs = append([]k8s.K8sConfig{controllerK8sArgs.Merge()}, configs...)
+		K8s: func(configs ...k8s.Config) (k8s.K8s, error) {
+			configs = append([]k8s.Config{controllerK8sArgs.Merge()}, configs...)
 			return k8s.NewK8s(configs...)
 		},
 		Load:     rootExecuteOptions.load,

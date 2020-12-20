@@ -56,13 +56,13 @@ var _ = Describe("K8sValue", func() {
 
 	It("methods behave well", func() {
 		fake := &FakeK8s{
-			GetStub: func(kind string, name string, k8s *K8sOptions) (*Object, error) {
+			GetStub: func(kind string, name string, k8s *Options) (*Object, error) {
 				return &Object{}, nil
 			},
-			ListStub: func(kind string, k8s *K8sOptions, listOptions *ListOptions) (*Object, error) {
+			ListStub: func(kind string, k8s *Options, listOptions *ListOptions) (*Object, error) {
 				return &Object{}, nil
 			},
-			WatchStub: func(kind string, name string, k8s *K8sOptions) ObjectStream {
+			WatchStub: func(kind string, name string, k8s *Options) ObjectStream {
 				return func(w ObjectConsumer) error {
 					return nil
 				}
@@ -114,7 +114,7 @@ var _ = Describe("K8sValue", func() {
 
 	It("watches objects", func() {
 		fake := &FakeK8s{
-			WatchStub: func(kind string, name string, options *K8sOptions) ObjectStream {
+			WatchStub: func(kind string, name string, options *Options) ObjectStream {
 				return func(w ObjectConsumer) error {
 					obj := Object{Additional: map[string]json.RawMessage{"key": json.RawMessage([]byte(`"value"`))}}
 					return w(&obj)
@@ -144,7 +144,7 @@ var _ = Describe("K8sValue", func() {
 	It("applies objects", func() {
 		var appliedObject Object
 		fake := &FakeK8s{
-			ApplyStub: func(s ObjectStream, options *K8sOptions) error {
+			ApplyStub: func(s ObjectStream, options *Options) error {
 				return s(func(o *Object) error {
 					appliedObject = *o
 					return nil
@@ -166,7 +166,7 @@ var _ = Describe("K8sValue", func() {
 	It("applies stream", func() {
 		var appliedObject Object
 		fake := &FakeK8s{
-			ApplyStub: func(s ObjectStream, options *K8sOptions) error {
+			ApplyStub: func(s ObjectStream, options *Options) error {
 				return s(func(o *Object) error {
 					appliedObject = *o
 					return nil

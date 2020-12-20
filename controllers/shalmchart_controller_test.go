@@ -51,7 +51,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			buffer     *bytes.Buffer
 			reconciler *ShalmChartReconciler
 			k          *k8s.FakeK8s
-			k8sConfigs k8s.K8sConfigs
+			k8sConfigs k8s.Configs
 			recorder   *record.FakeRecorder
 		)
 
@@ -61,10 +61,10 @@ var _ = Describe("ShalmChartReconciler", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			k = &k8s.FakeK8s{
-				ApplyStub: func(cb k8s.ObjectStream, options *k8s.K8sOptions) error {
+				ApplyStub: func(cb k8s.ObjectStream, options *k8s.Options) error {
 					return cb.Encode()(buffer)
 				},
-				DeleteStub: func(cb k8s.ObjectStream, options *k8s.K8sOptions) error {
+				DeleteStub: func(cb k8s.ObjectStream, options *k8s.Options) error {
 					return cb.Encode()(buffer)
 				},
 			}
@@ -74,7 +74,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			k.WithContextStub = func(ctx context.Context) k8s.K8s {
 				return k
 			}
-			k.GetStub = func(s string, s2 string, options *k8s.K8sOptions) (*k8s.Object, error) {
+			k.GetStub = func(s string, s2 string, options *k8s.Options) (*k8s.Object, error) {
 				return &k8s.Object{}, nil
 			}
 
@@ -104,7 +104,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 				Log:    ctrl.Log.WithName("reconciler"),
 				Scheme: nil,
 				Repo:   repo,
-				K8s: func(configs ...k8s.K8sConfig) (k8s.K8s, error) {
+				K8s: func(configs ...k8s.Config) (k8s.K8s, error) {
 					for _, config := range configs {
 						config(&k8sConfigs)
 					}
@@ -137,7 +137,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 					ChartTgz: chartTgz,
 				},
 			}
-			k.ApplyStub = func(cb k8s.ObjectStream, options *k8s.K8sOptions) error {
+			k.ApplyStub = func(cb k8s.ObjectStream, options *k8s.Options) error {
 				return fmt.Errorf("Apply error")
 			}
 			_, err := reconciler.Reconcile(ctrl.Request{})
@@ -178,7 +178,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 					ChartTgz: chartTgz,
 				},
 			}
-			k.DeleteStub = func(cb k8s.ObjectStream, options *k8s.K8sOptions) error {
+			k.DeleteStub = func(cb k8s.ObjectStream, options *k8s.Options) error {
 				return fmt.Errorf("delete error")
 			}
 			_, err := reconciler.Reconcile(ctrl.Request{})

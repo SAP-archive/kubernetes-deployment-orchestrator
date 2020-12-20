@@ -70,7 +70,7 @@ func (k K8sInMemory) SetTool(tool Tool) {
 }
 
 // Watch -
-func (k K8sInMemory) Watch(kind string, name string, options *K8sOptions) ObjectStream {
+func (k K8sInMemory) Watch(kind string, name string, options *Options) ObjectStream {
 	obj, err := k.GetObject(kind, name, options)
 	if err != nil {
 		return ObjectErrorStream(err)
@@ -81,7 +81,7 @@ func (k K8sInMemory) Watch(kind string, name string, options *K8sOptions) Object
 }
 
 // RolloutStatus -
-func (k K8sInMemory) RolloutStatus(kind string, name string, options *K8sOptions) error {
+func (k K8sInMemory) RolloutStatus(kind string, name string, options *Options) error {
 	_, err := k.GetObject(kind, name, options)
 	if err != nil {
 		return err
@@ -90,18 +90,18 @@ func (k K8sInMemory) RolloutStatus(kind string, name string, options *K8sOptions
 }
 
 // Wait -
-func (k K8sInMemory) Wait(kind string, name string, condition string, options *K8sOptions) error {
+func (k K8sInMemory) Wait(kind string, name string, condition string, options *Options) error {
 	return k.RolloutStatus(kind, name, options)
 }
 
 // DeleteObject -
-func (k K8sInMemory) DeleteObject(kind string, name string, options *K8sOptions) error {
+func (k K8sInMemory) DeleteObject(kind string, name string, options *Options) error {
 	delete(k.objects, k.key(kind, name, "", options))
 	return nil
 }
 
 // Apply -
-func (k K8sInMemory) Apply(output ObjectStream, options *K8sOptions) error {
+func (k K8sInMemory) Apply(output ObjectStream, options *Options) error {
 	return output(func(obj *Object) error {
 		k.objects[k.key(obj.Kind, obj.MetaData.Name, obj.MetaData.Namespace, options)] = *obj
 		return nil
@@ -109,7 +109,7 @@ func (k K8sInMemory) Apply(output ObjectStream, options *K8sOptions) error {
 }
 
 // Delete -
-func (k K8sInMemory) Delete(output ObjectStream, options *K8sOptions) error {
+func (k K8sInMemory) Delete(output ObjectStream, options *Options) error {
 	return output(func(obj *Object) error {
 		delete(k.objects, k.key(obj.Kind, obj.MetaData.Name, obj.MetaData.Namespace, options))
 		return nil
@@ -117,12 +117,12 @@ func (k K8sInMemory) Delete(output ObjectStream, options *K8sOptions) error {
 }
 
 // Get -
-func (k K8sInMemory) Get(kind string, name string, options *K8sOptions) (*Object, error) {
+func (k K8sInMemory) Get(kind string, name string, options *Options) (*Object, error) {
 	return k.GetObject(kind, name, options)
 }
 
 // Patch -
-func (k K8sInMemory) Patch(kind string, name string, pt types.PatchType, patchJSON string, options *K8sOptions) (*Object, error) {
+func (k K8sInMemory) Patch(kind string, name string, pt types.PatchType, patchJSON string, options *Options) (*Object, error) {
 	obj, err := k.GetObject(kind, name, options)
 	if err != nil {
 		return nil, err
@@ -152,7 +152,7 @@ func (k K8sInMemory) Patch(kind string, name string, pt types.PatchType, patchJS
 }
 
 // List -
-func (k K8sInMemory) List(kind string, options *K8sOptions, listOptions *ListOptions) (*Object, error) {
+func (k K8sInMemory) List(kind string, options *Options, listOptions *ListOptions) (*Object, error) {
 	return nil, errors.New("Not implemented")
 }
 
@@ -172,7 +172,7 @@ func (k K8sInMemory) ForConfig(config string) (K8s, error) {
 	return k, nil
 }
 
-func (k K8sInMemory) key(kind, name, namespace string, options *K8sOptions) string {
+func (k K8sInMemory) key(kind, name, namespace string, options *Options) string {
 	kind = strings.ToLower(kind)
 	if isNameSpaced(kind) {
 		if len(namespace) != 0 {
@@ -187,7 +187,7 @@ func (k K8sInMemory) key(kind, name, namespace string, options *K8sOptions) stri
 }
 
 // GetObject -
-func (k K8sInMemory) GetObject(kind string, name string, options *K8sOptions) (*Object, error) {
+func (k K8sInMemory) GetObject(kind string, name string, options *Options) (*Object, error) {
 	obj, ok := k.objects[k.key(kind, name, "", options)]
 	if !ok {
 		keys := []string{}
@@ -202,7 +202,7 @@ func (k K8sInMemory) GetObject(kind string, name string, options *K8sOptions) (*
 	return &obj, nil
 }
 
-func (k K8sInMemory) CreateOrUpdate(obj *Object, mutate func(obj *Object) error, options *K8sOptions) (*Object, error) {
+func (k K8sInMemory) CreateOrUpdate(obj *Object, mutate func(obj *Object) error, options *Options) (*Object, error) {
 	old, err := k.GetObject(obj.Kind, obj.MetaData.Name, options)
 	if err != nil {
 		if !k.IsNotExist(err) {
@@ -219,7 +219,7 @@ func (k K8sInMemory) CreateOrUpdate(obj *Object, mutate func(obj *Object) error,
 	return obj, nil
 }
 
-func (k K8sInMemory) DeleteByName(kind string, name string, options *K8sOptions) error {
+func (k K8sInMemory) DeleteByName(kind string, name string, options *Options) error {
 	delete(k.objects, k.key(kind, name, "", options))
 	return nil
 }
@@ -228,6 +228,6 @@ func (k K8sInMemory) DeleteByName(kind string, name string, options *K8sOptions)
 func (k K8sInMemory) Progress(progress int) {
 }
 
-func (k K8sInMemory) Namespace(options *K8sOptions) *string {
+func (k K8sInMemory) Namespace(options *Options) *string {
 	return &options.Namespace
 }

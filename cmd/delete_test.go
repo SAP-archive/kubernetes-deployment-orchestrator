@@ -17,7 +17,7 @@ var _ = Describe("Delete Chart", func() {
 	It("produces the correct output", func() {
 		writer := bytes.Buffer{}
 		k := &k8s.FakeK8s{
-			DeleteStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
+			DeleteStub: func(i k8s.ObjectStream, options *k8s.Options) error {
 				i.Encode()(&writer)
 				return nil
 			},

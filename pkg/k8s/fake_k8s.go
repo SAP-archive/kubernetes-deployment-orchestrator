@@ -10,11 +10,11 @@ import (
 )
 
 type FakeK8s struct {
-	ApplyStub        func(ObjectStream, *K8sOptions) error
+	ApplyStub        func(ObjectStream, *Options) error
 	applyMutex       sync.RWMutex
 	applyArgsForCall []struct {
 		arg1 ObjectStream
-		arg2 *K8sOptions
+		arg2 *Options
 	}
 	applyReturns struct {
 		result1 error
@@ -32,12 +32,12 @@ type FakeK8s struct {
 	configContentReturnsOnCall map[int]struct {
 		result1 *string
 	}
-	CreateOrUpdateStub        func(*Object, func(obj *Object) error, *K8sOptions) (*Object, error)
+	CreateOrUpdateStub        func(*Object, func(obj *Object) error, *Options) (*Object, error)
 	createOrUpdateMutex       sync.RWMutex
 	createOrUpdateArgsForCall []struct {
 		arg1 *Object
 		arg2 func(obj *Object) error
-		arg3 *K8sOptions
+		arg3 *Options
 	}
 	createOrUpdateReturns struct {
 		result1 *Object
@@ -47,11 +47,11 @@ type FakeK8s struct {
 		result1 *Object
 		result2 error
 	}
-	DeleteStub        func(ObjectStream, *K8sOptions) error
+	DeleteStub        func(ObjectStream, *Options) error
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
 		arg1 ObjectStream
-		arg2 *K8sOptions
+		arg2 *Options
 	}
 	deleteReturns struct {
 		result1 error
@@ -59,12 +59,12 @@ type FakeK8s struct {
 	deleteReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DeleteByNameStub        func(string, string, *K8sOptions) error
+	DeleteByNameStub        func(string, string, *Options) error
 	deleteByNameMutex       sync.RWMutex
 	deleteByNameArgsForCall []struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}
 	deleteByNameReturns struct {
 		result1 error
@@ -72,12 +72,12 @@ type FakeK8s struct {
 	deleteByNameReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DeleteObjectStub        func(string, string, *K8sOptions) error
+	DeleteObjectStub        func(string, string, *Options) error
 	deleteObjectMutex       sync.RWMutex
 	deleteObjectArgsForCall []struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}
 	deleteObjectReturns struct {
 		result1 error
@@ -112,12 +112,12 @@ type FakeK8s struct {
 	forSubChartReturnsOnCall map[int]struct {
 		result1 K8s
 	}
-	GetStub        func(string, string, *K8sOptions) (*Object, error)
+	GetStub        func(string, string, *Options) (*Object, error)
 	getMutex       sync.RWMutex
 	getArgsForCall []struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}
 	getReturns struct {
 		result1 *Object
@@ -158,11 +158,11 @@ type FakeK8s struct {
 	isNotExistReturnsOnCall map[int]struct {
 		result1 bool
 	}
-	ListStub        func(string, *K8sOptions, *ListOptions) (*Object, error)
+	ListStub        func(string, *Options, *ListOptions) (*Object, error)
 	listMutex       sync.RWMutex
 	listArgsForCall []struct {
 		arg1 string
-		arg2 *K8sOptions
+		arg2 *Options
 		arg3 *ListOptions
 	}
 	listReturns struct {
@@ -173,10 +173,10 @@ type FakeK8s struct {
 		result1 *Object
 		result2 error
 	}
-	NamespaceStub        func(*K8sOptions) *string
+	NamespaceStub        func(*Options) *string
 	namespaceMutex       sync.RWMutex
 	namespaceArgsForCall []struct {
-		arg1 *K8sOptions
+		arg1 *Options
 	}
 	namespaceReturns struct {
 		result1 *string
@@ -184,14 +184,14 @@ type FakeK8s struct {
 	namespaceReturnsOnCall map[int]struct {
 		result1 *string
 	}
-	PatchStub        func(string, string, types.PatchType, string, *K8sOptions) (*Object, error)
+	PatchStub        func(string, string, types.PatchType, string, *Options) (*Object, error)
 	patchMutex       sync.RWMutex
 	patchArgsForCall []struct {
 		arg1 string
 		arg2 string
 		arg3 types.PatchType
 		arg4 string
-		arg5 *K8sOptions
+		arg5 *Options
 	}
 	patchReturns struct {
 		result1 *Object
@@ -206,12 +206,12 @@ type FakeK8s struct {
 	progressArgsForCall []struct {
 		arg1 int
 	}
-	RolloutStatusStub        func(string, string, *K8sOptions) error
+	RolloutStatusStub        func(string, string, *Options) error
 	rolloutStatusMutex       sync.RWMutex
 	rolloutStatusArgsForCall []struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}
 	rolloutStatusReturns struct {
 		result1 error
@@ -234,13 +234,13 @@ type FakeK8s struct {
 	toolReturnsOnCall map[int]struct {
 		result1 Tool
 	}
-	WaitStub        func(string, string, string, *K8sOptions) error
+	WaitStub        func(string, string, string, *Options) error
 	waitMutex       sync.RWMutex
 	waitArgsForCall []struct {
 		arg1 string
 		arg2 string
 		arg3 string
-		arg4 *K8sOptions
+		arg4 *Options
 	}
 	waitReturns struct {
 		result1 error
@@ -248,12 +248,12 @@ type FakeK8s struct {
 	waitReturnsOnCall map[int]struct {
 		result1 error
 	}
-	WatchStub        func(string, string, *K8sOptions) ObjectStream
+	WatchStub        func(string, string, *Options) ObjectStream
 	watchMutex       sync.RWMutex
 	watchArgsForCall []struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}
 	watchReturns struct {
 		result1 ObjectStream
@@ -276,12 +276,12 @@ type FakeK8s struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeK8s) Apply(arg1 ObjectStream, arg2 *K8sOptions) error {
+func (fake *FakeK8s) Apply(arg1 ObjectStream, arg2 *Options) error {
 	fake.applyMutex.Lock()
 	ret, specificReturn := fake.applyReturnsOnCall[len(fake.applyArgsForCall)]
 	fake.applyArgsForCall = append(fake.applyArgsForCall, struct {
 		arg1 ObjectStream
-		arg2 *K8sOptions
+		arg2 *Options
 	}{arg1, arg2})
 	fake.recordInvocation("Apply", []interface{}{arg1, arg2})
 	fake.applyMutex.Unlock()
@@ -301,13 +301,13 @@ func (fake *FakeK8s) ApplyCallCount() int {
 	return len(fake.applyArgsForCall)
 }
 
-func (fake *FakeK8s) ApplyCalls(stub func(ObjectStream, *K8sOptions) error) {
+func (fake *FakeK8s) ApplyCalls(stub func(ObjectStream, *Options) error) {
 	fake.applyMutex.Lock()
 	defer fake.applyMutex.Unlock()
 	fake.ApplyStub = stub
 }
 
-func (fake *FakeK8s) ApplyArgsForCall(i int) (ObjectStream, *K8sOptions) {
+func (fake *FakeK8s) ApplyArgsForCall(i int) (ObjectStream, *Options) {
 	fake.applyMutex.RLock()
 	defer fake.applyMutex.RUnlock()
 	argsForCall := fake.applyArgsForCall[i]
@@ -389,13 +389,13 @@ func (fake *FakeK8s) ConfigContentReturnsOnCall(i int, result1 *string) {
 	}{result1}
 }
 
-func (fake *FakeK8s) CreateOrUpdate(arg1 *Object, arg2 func(obj *Object) error, arg3 *K8sOptions) (*Object, error) {
+func (fake *FakeK8s) CreateOrUpdate(arg1 *Object, arg2 func(obj *Object) error, arg3 *Options) (*Object, error) {
 	fake.createOrUpdateMutex.Lock()
 	ret, specificReturn := fake.createOrUpdateReturnsOnCall[len(fake.createOrUpdateArgsForCall)]
 	fake.createOrUpdateArgsForCall = append(fake.createOrUpdateArgsForCall, struct {
 		arg1 *Object
 		arg2 func(obj *Object) error
-		arg3 *K8sOptions
+		arg3 *Options
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("CreateOrUpdate", []interface{}{arg1, arg2, arg3})
 	fake.createOrUpdateMutex.Unlock()
@@ -415,13 +415,13 @@ func (fake *FakeK8s) CreateOrUpdateCallCount() int {
 	return len(fake.createOrUpdateArgsForCall)
 }
 
-func (fake *FakeK8s) CreateOrUpdateCalls(stub func(*Object, func(obj *Object) error, *K8sOptions) (*Object, error)) {
+func (fake *FakeK8s) CreateOrUpdateCalls(stub func(*Object, func(obj *Object) error, *Options) (*Object, error)) {
 	fake.createOrUpdateMutex.Lock()
 	defer fake.createOrUpdateMutex.Unlock()
 	fake.CreateOrUpdateStub = stub
 }
 
-func (fake *FakeK8s) CreateOrUpdateArgsForCall(i int) (*Object, func(obj *Object) error, *K8sOptions) {
+func (fake *FakeK8s) CreateOrUpdateArgsForCall(i int) (*Object, func(obj *Object) error, *Options) {
 	fake.createOrUpdateMutex.RLock()
 	defer fake.createOrUpdateMutex.RUnlock()
 	argsForCall := fake.createOrUpdateArgsForCall[i]
@@ -454,12 +454,12 @@ func (fake *FakeK8s) CreateOrUpdateReturnsOnCall(i int, result1 *Object, result2
 	}{result1, result2}
 }
 
-func (fake *FakeK8s) Delete(arg1 ObjectStream, arg2 *K8sOptions) error {
+func (fake *FakeK8s) Delete(arg1 ObjectStream, arg2 *Options) error {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
 		arg1 ObjectStream
-		arg2 *K8sOptions
+		arg2 *Options
 	}{arg1, arg2})
 	fake.recordInvocation("Delete", []interface{}{arg1, arg2})
 	fake.deleteMutex.Unlock()
@@ -479,13 +479,13 @@ func (fake *FakeK8s) DeleteCallCount() int {
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *FakeK8s) DeleteCalls(stub func(ObjectStream, *K8sOptions) error) {
+func (fake *FakeK8s) DeleteCalls(stub func(ObjectStream, *Options) error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = stub
 }
 
-func (fake *FakeK8s) DeleteArgsForCall(i int) (ObjectStream, *K8sOptions) {
+func (fake *FakeK8s) DeleteArgsForCall(i int) (ObjectStream, *Options) {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	argsForCall := fake.deleteArgsForCall[i]
@@ -515,13 +515,13 @@ func (fake *FakeK8s) DeleteReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeK8s) DeleteByName(arg1 string, arg2 string, arg3 *K8sOptions) error {
+func (fake *FakeK8s) DeleteByName(arg1 string, arg2 string, arg3 *Options) error {
 	fake.deleteByNameMutex.Lock()
 	ret, specificReturn := fake.deleteByNameReturnsOnCall[len(fake.deleteByNameArgsForCall)]
 	fake.deleteByNameArgsForCall = append(fake.deleteByNameArgsForCall, struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("DeleteByName", []interface{}{arg1, arg2, arg3})
 	fake.deleteByNameMutex.Unlock()
@@ -541,13 +541,13 @@ func (fake *FakeK8s) DeleteByNameCallCount() int {
 	return len(fake.deleteByNameArgsForCall)
 }
 
-func (fake *FakeK8s) DeleteByNameCalls(stub func(string, string, *K8sOptions) error) {
+func (fake *FakeK8s) DeleteByNameCalls(stub func(string, string, *Options) error) {
 	fake.deleteByNameMutex.Lock()
 	defer fake.deleteByNameMutex.Unlock()
 	fake.DeleteByNameStub = stub
 }
 
-func (fake *FakeK8s) DeleteByNameArgsForCall(i int) (string, string, *K8sOptions) {
+func (fake *FakeK8s) DeleteByNameArgsForCall(i int) (string, string, *Options) {
 	fake.deleteByNameMutex.RLock()
 	defer fake.deleteByNameMutex.RUnlock()
 	argsForCall := fake.deleteByNameArgsForCall[i]
@@ -577,13 +577,13 @@ func (fake *FakeK8s) DeleteByNameReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeK8s) DeleteObject(arg1 string, arg2 string, arg3 *K8sOptions) error {
+func (fake *FakeK8s) DeleteObject(arg1 string, arg2 string, arg3 *Options) error {
 	fake.deleteObjectMutex.Lock()
 	ret, specificReturn := fake.deleteObjectReturnsOnCall[len(fake.deleteObjectArgsForCall)]
 	fake.deleteObjectArgsForCall = append(fake.deleteObjectArgsForCall, struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("DeleteObject", []interface{}{arg1, arg2, arg3})
 	fake.deleteObjectMutex.Unlock()
@@ -603,13 +603,13 @@ func (fake *FakeK8s) DeleteObjectCallCount() int {
 	return len(fake.deleteObjectArgsForCall)
 }
 
-func (fake *FakeK8s) DeleteObjectCalls(stub func(string, string, *K8sOptions) error) {
+func (fake *FakeK8s) DeleteObjectCalls(stub func(string, string, *Options) error) {
 	fake.deleteObjectMutex.Lock()
 	defer fake.deleteObjectMutex.Unlock()
 	fake.DeleteObjectStub = stub
 }
 
-func (fake *FakeK8s) DeleteObjectArgsForCall(i int) (string, string, *K8sOptions) {
+func (fake *FakeK8s) DeleteObjectArgsForCall(i int) (string, string, *Options) {
 	fake.deleteObjectMutex.RLock()
 	defer fake.deleteObjectMutex.RUnlock()
 	argsForCall := fake.deleteObjectArgsForCall[i]
@@ -765,13 +765,13 @@ func (fake *FakeK8s) ForSubChartReturnsOnCall(i int, result1 K8s) {
 	}{result1}
 }
 
-func (fake *FakeK8s) Get(arg1 string, arg2 string, arg3 *K8sOptions) (*Object, error) {
+func (fake *FakeK8s) Get(arg1 string, arg2 string, arg3 *Options) (*Object, error) {
 	fake.getMutex.Lock()
 	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
 	fake.getArgsForCall = append(fake.getArgsForCall, struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("Get", []interface{}{arg1, arg2, arg3})
 	fake.getMutex.Unlock()
@@ -791,13 +791,13 @@ func (fake *FakeK8s) GetCallCount() int {
 	return len(fake.getArgsForCall)
 }
 
-func (fake *FakeK8s) GetCalls(stub func(string, string, *K8sOptions) (*Object, error)) {
+func (fake *FakeK8s) GetCalls(stub func(string, string, *Options) (*Object, error)) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = stub
 }
 
-func (fake *FakeK8s) GetArgsForCall(i int) (string, string, *K8sOptions) {
+func (fake *FakeK8s) GetArgsForCall(i int) (string, string, *Options) {
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
 	argsForCall := fake.getArgsForCall[i]
@@ -994,12 +994,12 @@ func (fake *FakeK8s) IsNotExistReturnsOnCall(i int, result1 bool) {
 	}{result1}
 }
 
-func (fake *FakeK8s) List(arg1 string, arg2 *K8sOptions, arg3 *ListOptions) (*Object, error) {
+func (fake *FakeK8s) List(arg1 string, arg2 *Options, arg3 *ListOptions) (*Object, error) {
 	fake.listMutex.Lock()
 	ret, specificReturn := fake.listReturnsOnCall[len(fake.listArgsForCall)]
 	fake.listArgsForCall = append(fake.listArgsForCall, struct {
 		arg1 string
-		arg2 *K8sOptions
+		arg2 *Options
 		arg3 *ListOptions
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("List", []interface{}{arg1, arg2, arg3})
@@ -1020,13 +1020,13 @@ func (fake *FakeK8s) ListCallCount() int {
 	return len(fake.listArgsForCall)
 }
 
-func (fake *FakeK8s) ListCalls(stub func(string, *K8sOptions, *ListOptions) (*Object, error)) {
+func (fake *FakeK8s) ListCalls(stub func(string, *Options, *ListOptions) (*Object, error)) {
 	fake.listMutex.Lock()
 	defer fake.listMutex.Unlock()
 	fake.ListStub = stub
 }
 
-func (fake *FakeK8s) ListArgsForCall(i int) (string, *K8sOptions, *ListOptions) {
+func (fake *FakeK8s) ListArgsForCall(i int) (string, *Options, *ListOptions) {
 	fake.listMutex.RLock()
 	defer fake.listMutex.RUnlock()
 	argsForCall := fake.listArgsForCall[i]
@@ -1059,11 +1059,11 @@ func (fake *FakeK8s) ListReturnsOnCall(i int, result1 *Object, result2 error) {
 	}{result1, result2}
 }
 
-func (fake *FakeK8s) Namespace(arg1 *K8sOptions) *string {
+func (fake *FakeK8s) Namespace(arg1 *Options) *string {
 	fake.namespaceMutex.Lock()
 	ret, specificReturn := fake.namespaceReturnsOnCall[len(fake.namespaceArgsForCall)]
 	fake.namespaceArgsForCall = append(fake.namespaceArgsForCall, struct {
-		arg1 *K8sOptions
+		arg1 *Options
 	}{arg1})
 	fake.recordInvocation("Namespace", []interface{}{arg1})
 	fake.namespaceMutex.Unlock()
@@ -1083,13 +1083,13 @@ func (fake *FakeK8s) NamespaceCallCount() int {
 	return len(fake.namespaceArgsForCall)
 }
 
-func (fake *FakeK8s) NamespaceCalls(stub func(*K8sOptions) *string) {
+func (fake *FakeK8s) NamespaceCalls(stub func(*Options) *string) {
 	fake.namespaceMutex.Lock()
 	defer fake.namespaceMutex.Unlock()
 	fake.NamespaceStub = stub
 }
 
-func (fake *FakeK8s) NamespaceArgsForCall(i int) *K8sOptions {
+func (fake *FakeK8s) NamespaceArgsForCall(i int) *Options {
 	fake.namespaceMutex.RLock()
 	defer fake.namespaceMutex.RUnlock()
 	argsForCall := fake.namespaceArgsForCall[i]
@@ -1119,7 +1119,7 @@ func (fake *FakeK8s) NamespaceReturnsOnCall(i int, result1 *string) {
 	}{result1}
 }
 
-func (fake *FakeK8s) Patch(arg1 string, arg2 string, arg3 types.PatchType, arg4 string, arg5 *K8sOptions) (*Object, error) {
+func (fake *FakeK8s) Patch(arg1 string, arg2 string, arg3 types.PatchType, arg4 string, arg5 *Options) (*Object, error) {
 	fake.patchMutex.Lock()
 	ret, specificReturn := fake.patchReturnsOnCall[len(fake.patchArgsForCall)]
 	fake.patchArgsForCall = append(fake.patchArgsForCall, struct {
@@ -1127,7 +1127,7 @@ func (fake *FakeK8s) Patch(arg1 string, arg2 string, arg3 types.PatchType, arg4 
 		arg2 string
 		arg3 types.PatchType
 		arg4 string
-		arg5 *K8sOptions
+		arg5 *Options
 	}{arg1, arg2, arg3, arg4, arg5})
 	fake.recordInvocation("Patch", []interface{}{arg1, arg2, arg3, arg4, arg5})
 	fake.patchMutex.Unlock()
@@ -1147,13 +1147,13 @@ func (fake *FakeK8s) PatchCallCount() int {
 	return len(fake.patchArgsForCall)
 }
 
-func (fake *FakeK8s) PatchCalls(stub func(string, string, types.PatchType, string, *K8sOptions) (*Object, error)) {
+func (fake *FakeK8s) PatchCalls(stub func(string, string, types.PatchType, string, *Options) (*Object, error)) {
 	fake.patchMutex.Lock()
 	defer fake.patchMutex.Unlock()
 	fake.PatchStub = stub
 }
 
-func (fake *FakeK8s) PatchArgsForCall(i int) (string, string, types.PatchType, string, *K8sOptions) {
+func (fake *FakeK8s) PatchArgsForCall(i int) (string, string, types.PatchType, string, *Options) {
 	fake.patchMutex.RLock()
 	defer fake.patchMutex.RUnlock()
 	argsForCall := fake.patchArgsForCall[i]
@@ -1217,13 +1217,13 @@ func (fake *FakeK8s) ProgressArgsForCall(i int) int {
 	return argsForCall.arg1
 }
 
-func (fake *FakeK8s) RolloutStatus(arg1 string, arg2 string, arg3 *K8sOptions) error {
+func (fake *FakeK8s) RolloutStatus(arg1 string, arg2 string, arg3 *Options) error {
 	fake.rolloutStatusMutex.Lock()
 	ret, specificReturn := fake.rolloutStatusReturnsOnCall[len(fake.rolloutStatusArgsForCall)]
 	fake.rolloutStatusArgsForCall = append(fake.rolloutStatusArgsForCall, struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("RolloutStatus", []interface{}{arg1, arg2, arg3})
 	fake.rolloutStatusMutex.Unlock()
@@ -1243,13 +1243,13 @@ func (fake *FakeK8s) RolloutStatusCallCount() int {
 	return len(fake.rolloutStatusArgsForCall)
 }
 
-func (fake *FakeK8s) RolloutStatusCalls(stub func(string, string, *K8sOptions) error) {
+func (fake *FakeK8s) RolloutStatusCalls(stub func(string, string, *Options) error) {
 	fake.rolloutStatusMutex.Lock()
 	defer fake.rolloutStatusMutex.Unlock()
 	fake.RolloutStatusStub = stub
 }
 
-func (fake *FakeK8s) RolloutStatusArgsForCall(i int) (string, string, *K8sOptions) {
+func (fake *FakeK8s) RolloutStatusArgsForCall(i int) (string, string, *Options) {
 	fake.rolloutStatusMutex.RLock()
 	defer fake.rolloutStatusMutex.RUnlock()
 	argsForCall := fake.rolloutStatusArgsForCall[i]
@@ -1362,14 +1362,14 @@ func (fake *FakeK8s) ToolReturnsOnCall(i int, result1 Tool) {
 	}{result1}
 }
 
-func (fake *FakeK8s) Wait(arg1 string, arg2 string, arg3 string, arg4 *K8sOptions) error {
+func (fake *FakeK8s) Wait(arg1 string, arg2 string, arg3 string, arg4 *Options) error {
 	fake.waitMutex.Lock()
 	ret, specificReturn := fake.waitReturnsOnCall[len(fake.waitArgsForCall)]
 	fake.waitArgsForCall = append(fake.waitArgsForCall, struct {
 		arg1 string
 		arg2 string
 		arg3 string
-		arg4 *K8sOptions
+		arg4 *Options
 	}{arg1, arg2, arg3, arg4})
 	fake.recordInvocation("Wait", []interface{}{arg1, arg2, arg3, arg4})
 	fake.waitMutex.Unlock()
@@ -1389,13 +1389,13 @@ func (fake *FakeK8s) WaitCallCount() int {
 	return len(fake.waitArgsForCall)
 }
 
-func (fake *FakeK8s) WaitCalls(stub func(string, string, string, *K8sOptions) error) {
+func (fake *FakeK8s) WaitCalls(stub func(string, string, string, *Options) error) {
 	fake.waitMutex.Lock()
 	defer fake.waitMutex.Unlock()
 	fake.WaitStub = stub
 }
 
-func (fake *FakeK8s) WaitArgsForCall(i int) (string, string, string, *K8sOptions) {
+func (fake *FakeK8s) WaitArgsForCall(i int) (string, string, string, *Options) {
 	fake.waitMutex.RLock()
 	defer fake.waitMutex.RUnlock()
 	argsForCall := fake.waitArgsForCall[i]
@@ -1425,13 +1425,13 @@ func (fake *FakeK8s) WaitReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeK8s) Watch(arg1 string, arg2 string, arg3 *K8sOptions) ObjectStream {
+func (fake *FakeK8s) Watch(arg1 string, arg2 string, arg3 *Options) ObjectStream {
 	fake.watchMutex.Lock()
 	ret, specificReturn := fake.watchReturnsOnCall[len(fake.watchArgsForCall)]
 	fake.watchArgsForCall = append(fake.watchArgsForCall, struct {
 		arg1 string
 		arg2 string
-		arg3 *K8sOptions
+		arg3 *Options
 	}{arg1, arg2, arg3})
 	fake.recordInvocation("Watch", []interface{}{arg1, arg2, arg3})
 	fake.watchMutex.Unlock()
@@ -1451,13 +1451,13 @@ func (fake *FakeK8s) WatchCallCount() int {
 	return len(fake.watchArgsForCall)
 }
 
-func (fake *FakeK8s) WatchCalls(stub func(string, string, *K8sOptions) ObjectStream) {
+func (fake *FakeK8s) WatchCalls(stub func(string, string, *Options) ObjectStream) {
 	fake.watchMutex.Lock()
 	defer fake.watchMutex.Unlock()
 	fake.WatchStub = stub
 }
 
-func (fake *FakeK8s) WatchArgsForCall(i int) (string, string, *K8sOptions) {
+func (fake *FakeK8s) WatchArgsForCall(i int) (string, string, *Options) {
 	fake.watchMutex.RLock()
 	defer fake.watchMutex.RUnlock()
 	argsForCall := fake.watchArgsForCall[i]

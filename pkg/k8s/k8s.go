@@ -28,8 +28,8 @@ import (
 
 //go:generate ./generate_fake.sh
 
-// K8sOptions common options for calls to k8s
-type K8sOptions struct {
+// Options common options for calls to k8s
+type Options struct {
 	ClusterScoped  bool
 	Namespace      string
 	Timeout        time.Duration
@@ -47,8 +47,8 @@ type ListOptions struct {
 // K8sReader kubernetes reader API
 type K8sReader interface {
 	Host() string
-	Get(kind string, name string, options *K8sOptions) (*Object, error)
-	List(kind string, options *K8sOptions, listOptions *ListOptions) (*Object, error)
+	Get(kind string, name string, options *Options) (*Object, error)
+	List(kind string, options *Options, listOptions *ListOptions) (*Object, error)
 	IsNotExist(err error) bool
 }
 
@@ -57,22 +57,22 @@ type K8s interface {
 	K8sReader
 	ForSubChart(namespace string, app string, version *semver.Version, children int) K8s
 	Inspect() string
-	Watch(kind string, name string, options *K8sOptions) ObjectStream
-	RolloutStatus(kind string, name string, options *K8sOptions) error
-	Wait(kind string, name string, condition string, options *K8sOptions) error
-	DeleteObject(kind string, name string, options *K8sOptions) error
-	Apply(output ObjectStream, options *K8sOptions) error
-	Delete(output ObjectStream, options *K8sOptions) error
-	Patch(kind string, name string, pt types.PatchType, patch string, options *K8sOptions) (*Object, error)
-	CreateOrUpdate(obj *Object, mutate func(obj *Object) error, options *K8sOptions) (*Object, error)
-	DeleteByName(kind string, name string, options *K8sOptions) error
+	Watch(kind string, name string, options *Options) ObjectStream
+	RolloutStatus(kind string, name string, options *Options) error
+	Wait(kind string, name string, condition string, options *Options) error
+	DeleteObject(kind string, name string, options *Options) error
+	Apply(output ObjectStream, options *Options) error
+	Delete(output ObjectStream, options *Options) error
+	Patch(kind string, name string, pt types.PatchType, patch string, options *Options) (*Object, error)
+	CreateOrUpdate(obj *Object, mutate func(obj *Object) error, options *Options) (*Object, error)
+	DeleteByName(kind string, name string, options *Options) error
 	ConfigContent() *string
 	ForConfig(config string) (K8s, error)
 	WithContext(ctx context.Context) K8s
 	Progress(progress int)
 	Tool() Tool
 	SetTool(tool Tool)
-	Namespace(options *K8sOptions) *string
+	Namespace(options *Options) *string
 }
 
 // ProgressSubscription -
@@ -134,8 +134,8 @@ func (r *regexpVar) Type() string {
 	return "regexp"
 }
 
-// K8sConfigs -
-type K8sConfigs struct {
+// Configs -
+type Configs struct {
 	tool                 Tool
 	progressSubscription ProgressSubscription
 	kubeConfig           string
@@ -143,34 +143,34 @@ type K8sConfigs struct {
 	verbose              int
 }
 
-// K8sConfig -
-type K8sConfig func(options *K8sConfigs) error
+// Config -
+type Config func(options *Configs) error
 
 // WithTool -
-func WithTool(value Tool) K8sConfig {
-	return func(options *K8sConfigs) error { options.tool = value; return nil }
+func WithTool(value Tool) Config {
+	return func(options *Configs) error { options.tool = value; return nil }
 }
 
 // WithProgressSubscription -
-func WithProgressSubscription(value ProgressSubscription) K8sConfig {
-	return func(options *K8sConfigs) error { options.progressSubscription = value; return nil }
+func WithProgressSubscription(value ProgressSubscription) Config {
+	return func(options *Configs) error { options.progressSubscription = value; return nil }
 }
 
 // WithVerbose -
-func WithVerbose(value int) K8sConfig {
-	return func(options *K8sConfigs) error { options.verbose = value; return nil }
+func WithVerbose(value int) Config {
+	return func(options *Configs) error { options.verbose = value; return nil }
 }
 
 // WithKubeConfigContent -
-func WithKubeConfigContent(value string) K8sConfig {
+func WithKubeConfigContent(value string) Config {
 	if value == "" {
-		return func(options *K8sConfigs) (err error) { return nil }
+		return func(options *Configs) (err error) { return nil }
 	}
-	return func(options *K8sConfigs) (err error) { options.kubeConfig, err = kubeConfigFromContent(value); return }
+	return func(options *Configs) (err error) { options.kubeConfig, err = kubeConfigFromContent(value); return }
 }
 
 // Progress -
-func (v *K8sConfigs) Progress(progress int) {
+func (v *Configs) Progress(progress int) {
 	if v.progressSubscription != nil {
 
 		progress = progress / 5 * 5
@@ -183,35 +183,35 @@ func (v *K8sConfigs) Progress(progress int) {
 }
 
 // Merge -
-func (v *K8sConfigs) Merge() K8sConfig {
-	return func(o *K8sConfigs) error {
+func (v *Configs) Merge() Config {
+	return func(o *Configs) error {
 		*o = *v
 		return nil
 	}
 }
 
 // Tool -
-func (v *K8sConfigs) Tool() Tool {
+func (v *Configs) Tool() Tool {
 	return v.tool
 }
 
 // SetTool -
-func (v *K8sConfigs) SetTool(tool Tool) {
+func (v *Configs) SetTool(tool Tool) {
 	v.tool = tool
 }
 
 // AddFlags -
-func (v *K8sConfigs) AddFlags(flagsSet *pflag.FlagSet) {
+func (v *Configs) AddFlags(flagsSet *pflag.FlagSet) {
 	flagsSet.VarP(&v.tool, "tool", "t", "Tool to do the installation. Possible values kubectl (default) and kapp")
 	flagsSet.IntVarP(&v.verbose, "verbose", "v", 0, "Set kubectl verbose level")
 }
 
 // NewK8s create new instance to interact with kubernetes
-func NewK8s(configs ...K8sConfig) (K8s, error) {
+func NewK8s(configs ...Config) (K8s, error) {
 	var err error
 	result := &k8sImpl{ctx: context.Background(), app: "root"}
 	for _, config := range configs {
-		if err = config(&result.K8sConfigs); err != nil {
+		if err = config(&result.Configs); err != nil {
 			return nil, err
 		}
 	}
@@ -240,7 +240,7 @@ func (k *k8sImpl) connect() (K8s, error) {
 
 // k8sImpl -
 type k8sImpl struct {
-	K8sConfigs
+	Configs
 	namespace        string
 	command          func(ctx context.Context, name string, arg ...string) *exec.Cmd
 	localProgress    int
@@ -277,7 +277,7 @@ func (k *k8sImpl) progressCb(matched int, count int) {
 }
 
 // Apply -
-func (k *k8sImpl) Apply(output ObjectStream, options *K8sOptions) (err error) {
+func (k *k8sImpl) Apply(output ObjectStream, options *Options) (err error) {
 	if k.tool == ToolKapp {
 		writer, stream := prepareKapp(output, false, k.objMapper(), k.progressCb)
 		err = runWithStdin(k.kapp("deploy", options, "-f", "-"), stream, writer, k.verbose)
@@ -310,7 +310,7 @@ func (k *k8sImpl) addProgressSubscription() ProgressSubscription {
 
 func (k *k8sImpl) clone() *k8sImpl {
 	return &k8sImpl{namespace: k.namespace, app: k.app, version: k.version, client: k.client, host: k.host, ctx: k.ctx,
-		K8sConfigs: K8sConfigs{
+		Configs: Configs{
 			progressSubscription: k.addProgressSubscription(),
 			kubeConfig:           k.kubeConfig,
 			tool:                 ToolKubectl,
@@ -333,7 +333,7 @@ func (k *k8sImpl) WithContext(ctx context.Context) K8s {
 }
 
 // Delete -
-func (k *k8sImpl) Delete(output ObjectStream, options *K8sOptions) (err error) {
+func (k *k8sImpl) Delete(output ObjectStream, options *Options) (err error) {
 	if k.tool == ToolKapp {
 		writer, _ := prepareKapp(output, false, k.objMapper(), k.progressCb)
 		err = runWithStdin(k.kapp("delete", options), func(w io.Writer) error { return nil }, writer, k.verbose)
@@ -367,12 +367,12 @@ func (k *k8sImpl) objMapper() func(obj *Object) *Object {
 }
 
 // Delete -
-func (k *k8sImpl) DeleteObject(kind string, name string, options *K8sOptions) error {
+func (k *k8sImpl) DeleteObject(kind string, name string, options *Options) error {
 	return run(k.kubectl("delete", options, kind, name, "--ignore-not-found"))
 }
 
 // RolloutStatus -
-func (k *k8sImpl) RolloutStatus(kind string, name string, options *K8sOptions) error {
+func (k *k8sImpl) RolloutStatus(kind string, name string, options *Options) error {
 	start := time.Now()
 	for {
 		err := run(k.kubectl("rollout", options, "status", kind, name))
@@ -391,7 +391,7 @@ func (k *k8sImpl) RolloutStatus(kind string, name string, options *K8sOptions) e
 	}
 }
 
-func (k *k8sImpl) Wait(kind string, name string, condition string, options *K8sOptions) error {
+func (k *k8sImpl) Wait(kind string, name string, condition string, options *Options) error {
 	return run(k.kubectl("wait", options, kind, name, "--for", condition))
 }
 
@@ -403,7 +403,7 @@ func wrapError(err error) error {
 	return err
 }
 
-func ignoreNotFound(obj *Object, err error, options *K8sOptions) (*Object, error) {
+func ignoreNotFound(obj *Object, err error, options *Options) (*Object, error) {
 	if err == nil {
 		return obj, nil
 	}
@@ -414,7 +414,7 @@ func ignoreNotFound(obj *Object, err error, options *K8sOptions) (*Object, error
 }
 
 // Get -
-func (k *k8sImpl) Get(kind string, name string, options *K8sOptions) (*Object, error) {
+func (k *k8sImpl) Get(kind string, name string, options *Options) (*Object, error) {
 	if k.client != nil {
 		obj, err := k.client.Get().Namespace(k.Namespace(options)).Resource(kind).Name(name).Do().Get()
 		if err == nil {
@@ -439,7 +439,7 @@ func (k *k8sImpl) Get(kind string, name string, options *K8sOptions) (*Object, e
 }
 
 // Patch -
-func (k *k8sImpl) Patch(kind string, name string, pt types.PatchType, patch string, options *K8sOptions) (*Object, error) {
+func (k *k8sImpl) Patch(kind string, name string, pt types.PatchType, patch string, options *Options) (*Object, error) {
 	if k.client == nil {
 		return nil, errors.New("Not connected")
 	}
@@ -459,7 +459,7 @@ func (k *k8sImpl) Patch(kind string, name string, pt types.PatchType, patch stri
 	return obj, nil
 }
 
-func (k *k8sImpl) CreateOrUpdate(obj *Object, mutate func(obj *Object) error, options *K8sOptions) (*Object, error) {
+func (k *k8sImpl) CreateOrUpdate(obj *Object, mutate func(obj *Object) error, options *Options) (*Object, error) {
 	if k.client == nil {
 		return nil, errors.New("Not connected")
 	}
@@ -486,7 +486,7 @@ func (k *k8sImpl) CreateOrUpdate(obj *Object, mutate func(obj *Object) error, op
 
 }
 
-func (k *k8sImpl) DeleteByName(kind string, name string, options *K8sOptions) error {
+func (k *k8sImpl) DeleteByName(kind string, name string, options *Options) error {
 	if k.client == nil {
 		return errors.New("Not connected")
 	}
@@ -501,7 +501,7 @@ func (k *k8sImpl) DeleteByName(kind string, name string, options *K8sOptions) er
 }
 
 // List -
-func (k *k8sImpl) List(kind string, options *K8sOptions, listOptions *ListOptions) (*Object, error) {
+func (k *k8sImpl) List(kind string, options *Options, listOptions *ListOptions) (*Object, error) {
 	flags := []string{kind, "-o", "json"}
 	if listOptions.AllNamespaces {
 		options.ClusterScoped = true
@@ -526,7 +526,7 @@ func (k *k8sImpl) List(kind string, options *K8sOptions, listOptions *ListOption
 }
 
 // Watch -
-func (k *k8sImpl) Watch(kind string, name string, options *K8sOptions) ObjectStream {
+func (k *k8sImpl) Watch(kind string, name string, options *Options) ObjectStream {
 	return func(writer ObjectConsumer) error {
 		cmd := k.kubectl("get", options, kind, name, "-o", "json", "--watch")
 		reader, w := io.Pipe()
@@ -576,7 +576,7 @@ func (k *k8sImpl) ConfigContent() *string {
 // ForConfig -
 func (k *k8sImpl) ForConfig(config string) (K8s, error) {
 	result := k.clone()
-	err := WithKubeConfigContent(config)(&result.K8sConfigs)
+	err := WithKubeConfigContent(config)(&result.Configs)
 	if err != nil {
 		return nil, err
 	}
@@ -594,7 +594,7 @@ func run(cmd *exec.Cmd) error {
 
 }
 
-func (k *k8sImpl) Namespace(options *K8sOptions) *string {
+func (k *k8sImpl) Namespace(options *Options) *string {
 	if options.ClusterScoped {
 		return nil
 	}
@@ -605,7 +605,7 @@ func (k *k8sImpl) Namespace(options *K8sOptions) *string {
 	return &namespace
 }
 
-func (k *k8sImpl) kubectl(command string, options *K8sOptions, flags ...string) *exec.Cmd {
+func (k *k8sImpl) kubectl(command string, options *Options, flags ...string) *exec.Cmd {
 	if len(k.kubeConfig) != 0 {
 		flags = append([]string{command, "--kubeconfig", k.kubeConfig}, flags...)
 	} else {
@@ -639,7 +639,7 @@ func (k *k8sImpl) kubectl(command string, options *K8sOptions, flags ...string) 
 	return cmd
 }
 
-func (k *k8sImpl) kapp(command string, options *K8sOptions, flags ...string) *exec.Cmd {
+func (k *k8sImpl) kapp(command string, options *Options, flags ...string) *exec.Cmd {
 	if len(k.kubeConfig) != 0 {
 		flags = append([]string{command, "--kubeconfig", k.kubeConfig}, flags...)
 	} else {

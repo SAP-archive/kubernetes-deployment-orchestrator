@@ -50,7 +50,7 @@ func helmApplyFunction(c *chartImpl) starlark.Callable {
 		if err != nil {
 			return starlark.None, err
 		}
-		return starlark.None, helm(c, k, &k8s.K8sOptions{}, "upgrade", "-i", c.GetName(), c.dir, "-f", filename)
+		return starlark.None, helm(c, k, &k8s.Options{}, "upgrade", "-i", c.GetName(), c.dir, "-f", filename)
 	})
 }
 
@@ -64,7 +64,7 @@ func helmTemplateFunction(c *chartImpl) starlark.Callable {
 		if err != nil {
 			return starlark.None, err
 		}
-		return starlark.String(""), helm(c, k, &k8s.K8sOptions{}, "template", c.dir, "-f", filename)
+		return starlark.String(""), helm(c, k, &k8s.Options{}, "template", c.dir, "-f", filename)
 	})
 }
 
@@ -74,12 +74,12 @@ func helmDeleteFunction(c *chartImpl) starlark.Callable {
 		if err := starlark.UnpackArgs("apply", args, kwargs, "k8s", &k); err != nil {
 			return nil, err
 		}
-		_ = helm(c, k, &k8s.K8sOptions{}, "uninstall", c.GetName())
+		_ = helm(c, k, &k8s.Options{}, "uninstall", c.GetName())
 		return starlark.None, nil
 	})
 }
 
-func helm(chart *chartImpl, k k8s.K8s, options *k8s.K8sOptions, flags ...string) error {
+func helm(chart *chartImpl, k k8s.K8s, options *k8s.Options, flags ...string) error {
 	namespace := k.Namespace(options)
 	if namespace != nil {
 		flags = append(flags, "-n", *namespace)
