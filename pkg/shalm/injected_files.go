@@ -7,6 +7,7 @@ import (
 
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 type injectedFiles struct {
@@ -18,6 +19,7 @@ type injectedFiles struct {
 type injectedContext []starlark.StringDict
 
 var _ starlark.Value = (*injectedFiles)(nil)
+var _ starutils.GoConvertible = (*injectedFiles)(nil)
 
 func (context injectedContext) module() starlark.StringDict {
 	return starlark.StringDict{"context": starlark.NewBuiltin("context", context.injectedValue)}
@@ -48,7 +50,7 @@ func (context *injectedContext) add(kwargs starlark.StringDict) string {
 
 func makeInjectedFiles(dir string) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 	return func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		result := &injectedFiles{dir: dir, kwargs: kwargsToStringDict(kwargs)}
+		result := &injectedFiles{dir: dir, kwargs: starutils.KwArgsToStringDict(kwargs)}
 		for i := 0; i < args.Len(); i++ {
 			result.files = append(result.files, args.Index(i).(starlark.String).GoString())
 		}
@@ -81,4 +83,9 @@ func (c *injectedFiles) Attr(name string) (starlark.Value, error) {
 // AttrNames -
 func (c *injectedFiles) AttrNames() []string {
 	return []string{}
+}
+
+// starutils.ToGo -
+func (c *injectedFiles) ToGo() interface{} {
+	return nil
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver/v3"
+	"github.com/wonderix/shalm/pkg/k8s"
+	"github.com/wonderix/shalm/pkg/starutils"
 
 	"github.com/k14s/starlark-go/starlark"
 )
@@ -20,6 +22,7 @@ type dependency struct {
 var _ starlark.HasAttrs = (*dependency)(nil)
 var _ starlark.HasSetField = (*dependency)(nil)
 var _ Property = (*dependency)(nil)
+var _ starutils.GoConvertible = (*dependency)(nil)
 
 func makeDependency(userBy func() string, repo Repo, namespace string) func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 
@@ -90,7 +93,7 @@ func (s *dependency) resolve(properties StructPropertyValue) error {
 	return nil
 }
 
-func (s *dependency) Apply(thread *starlark.Thread, k8s K8s) error {
+func (s *dependency) Apply(thread *starlark.Thread, k8s k8s.K8s) error {
 	_, ok := s.properties.(ChartValue)
 	if ok {
 		return nil
@@ -132,7 +135,7 @@ func (s *dependency) Apply(thread *starlark.Thread, k8s K8s) error {
 	return nil
 }
 
-func (s *dependency) Delete(thread *starlark.Thread, k8s K8s, deleteOptions *DeleteOptions) error {
+func (s *dependency) Delete(thread *starlark.Thread, k8s k8s.K8s, deleteOptions *DeleteOptions) error {
 	_, ok := s.properties.(ChartValue)
 	if ok {
 		return nil
@@ -154,5 +157,9 @@ func (s *dependency) Delete(thread *starlark.Thread, k8s K8s, deleteOptions *Del
 		}
 		return err
 	}
+	return nil
+}
+
+func (s *dependency) ToGo() interface{} {
 	return nil
 }

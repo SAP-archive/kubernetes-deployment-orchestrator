@@ -5,13 +5,14 @@ import (
 	"text/tabwriter"
 
 	"github.com/k14s/starlark-go/starlark"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm"
 
 	"github.com/spf13/cobra"
 )
 
 var listOptions = &shalm.RepoListOptions{}
-var listK8sArgs = &shalm.K8sConfigs{}
+var listK8sArgs = &k8s.K8sConfigs{}
 
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -19,7 +20,7 @@ var listCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		k8s, err := k8s(listK8sArgs.Merge())
+		k8s, err := newK8s(listK8sArgs.Merge())
 		if err != nil {
 			exit(err)
 		}
@@ -27,13 +28,13 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func list(k8s shalm.K8s, listOptions *shalm.RepoListOptions) error {
+func list(k k8s.K8s, listOptions *shalm.RepoListOptions) error {
 	repo, err := repo()
 	if err != nil {
 		return err
 	}
 	thread := &starlark.Thread{Name: "main", Load: rootExecuteOptions.load}
-	charts, err := repo.List(thread, k8s, listOptions)
+	charts, err := repo.List(thread, k, listOptions)
 	if err != nil {
 		return err
 	}

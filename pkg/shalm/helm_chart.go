@@ -1,6 +1,7 @@
 package shalm
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -11,6 +12,8 @@ import (
 	"strings"
 
 	"github.com/k14s/starlark-go/starlark"
+	"github.com/wonderix/shalm/pkg/k8s"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 // NewHelmChartFunction -
@@ -39,7 +42,7 @@ func NewHelmChartFunction(repo Repo, dir string, options ...ChartOption) func(th
 
 func helmApplyFunction(c *chartImpl) starlark.Callable {
 	return c.builtin("apply", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
+		var k k8s.K8sValue
 		if err := starlark.UnpackArgs("apply", args, kwargs, "k8s", &k); err != nil {
 			return nil, err
 		}
@@ -47,13 +50,13 @@ func helmApplyFunction(c *chartImpl) starlark.Callable {
 		if err != nil {
 			return starlark.None, err
 		}
-		return starlark.None, helm(c, k.(*k8sValueImpl).K8s.(*k8sImpl), &K8sOptions{}, "upgrade", "-i", c.GetName(), c.dir, "-f", filename)
+		return starlark.None, helm(c, k, &k8s.K8sOptions{}, "upgrade", "-i", c.GetName(), c.dir, "-f", filename)
 	})
 }
 
 func helmTemplateFunction(c *chartImpl) starlark.Callable {
 	return c.builtin("template", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
+		var k k8s.K8sValue
 		if err := starlark.UnpackArgs("template", args, kwargs, "k8s", &k); err != nil {
 			return starlark.None, err
 		}
@@ -61,37 +64,30 @@ func helmTemplateFunction(c *chartImpl) starlark.Callable {
 		if err != nil {
 			return starlark.None, err
 		}
-		return starlark.String(""), helm(c, k.(*k8sValueImpl).K8s.(*k8sImpl), &K8sOptions{}, "template", c.dir, "-f", filename)
+		return starlark.String(""), helm(c, k, &k8s.K8sOptions{}, "template", c.dir, "-f", filename)
 	})
 }
 
 func helmDeleteFunction(c *chartImpl) starlark.Callable {
 	return c.builtin("apply", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
+		var k k8s.K8sValue
 		if err := starlark.UnpackArgs("apply", args, kwargs, "k8s", &k); err != nil {
 			return nil, err
 		}
-		_ = helm(c, k.(*k8sValueImpl).K8s.(*k8sImpl), &K8sOptions{}, "uninstall", c.GetName())
+		_ = helm(c, k, &k8s.K8sOptions{}, "uninstall", c.GetName())
 		return starlark.None, nil
 	})
 }
 
-func helm(chart *chartImpl, k *k8sImpl, options *K8sOptions, flags ...string) error {
-	namespace := k.ns(options)
+func helm(chart *chartImpl, k k8s.K8s, options *k8s.K8sOptions, flags ...string) error {
+	namespace := k.Namespace(options)
 	if namespace != nil {
 		flags = append(flags, "-n", *namespace)
 	}
 	if options.Timeout > 0 {
 		flags = append(flags, "--timeout", fmt.Sprintf("%.0fs", options.Timeout.Seconds()))
 	}
-	if k.verbose != 0 {
-		flags = append(flags, fmt.Sprintf("-v=%d", k.verbose))
-	}
-	c := k.command
-	if c == nil {
-		c = exec.CommandContext
-	}
-	cmd := c(k.ctx, "helm", flags...)
+	cmd := exec.CommandContext(context.TODO(), "helm", flags...)
 	if !options.Quiet {
 		fmt.Println(cmd.String())
 	}
@@ -102,7 +98,7 @@ func helm(chart *chartImpl, k *k8sImpl, options *K8sOptions, flags ...string) er
 
 func values(c *chartImpl) (string, error) {
 	filename := "/tmp/values"
-	data, err := json.Marshal(toGo(c.GetValue()))
+	data, err := json.Marshal(starutils.ToGo(c.GetValue()))
 	if err != nil {
 		return filename, err
 	}

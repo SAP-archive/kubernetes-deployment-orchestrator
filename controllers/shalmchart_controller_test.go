@@ -14,6 +14,7 @@ import (
 	"time"
 
 	semver "github.com/Masterminds/semver/v3"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,8 +50,8 @@ var _ = Describe("ShalmChartReconciler", func() {
 			chart      *shalmv1a2.ShalmChart
 			buffer     *bytes.Buffer
 			reconciler *ShalmChartReconciler
-			k8s        *FakeK8s
-			k8sConfigs shalm.K8sConfigs
+			k          *k8s.FakeK8s
+			k8sConfigs k8s.K8sConfigs
 			recorder   *record.FakeRecorder
 		)
 
@@ -59,22 +60,22 @@ var _ = Describe("ShalmChartReconciler", func() {
 			repo, err := shalm.NewRepo()
 			Expect(err).NotTo(HaveOccurred())
 
-			k8s = &FakeK8s{
-				ApplyStub: func(cb shalm.ObjectStream, options *shalm.K8sOptions) error {
+			k = &k8s.FakeK8s{
+				ApplyStub: func(cb k8s.ObjectStream, options *k8s.K8sOptions) error {
 					return cb.Encode()(buffer)
 				},
-				DeleteStub: func(cb shalm.ObjectStream, options *shalm.K8sOptions) error {
+				DeleteStub: func(cb k8s.ObjectStream, options *k8s.K8sOptions) error {
 					return cb.Encode()(buffer)
 				},
 			}
-			k8s.ForSubChartStub = func(s string, app string, version *semver.Version, children int) shalm.K8s {
-				return k8s
+			k.ForSubChartStub = func(s string, app string, version *semver.Version, children int) k8s.K8s {
+				return k
 			}
-			k8s.WithContextStub = func(ctx context.Context) shalm.K8s {
-				return k8s
+			k.WithContextStub = func(ctx context.Context) k8s.K8s {
+				return k
 			}
-			k8s.GetStub = func(s string, s2 string, options *shalm.K8sOptions) (*shalm.Object, error) {
-				return &shalm.Object{}, nil
+			k.GetStub = func(s string, s2 string, options *k8s.K8sOptions) (*k8s.Object, error) {
+				return &k8s.Object{}, nil
 			}
 
 			clnt := &FakeClient{
@@ -103,11 +104,11 @@ var _ = Describe("ShalmChartReconciler", func() {
 				Log:    ctrl.Log.WithName("reconciler"),
 				Scheme: nil,
 				Repo:   repo,
-				K8s: func(configs ...shalm.K8sConfig) (shalm.K8s, error) {
+				K8s: func(configs ...k8s.K8sConfig) (k8s.K8s, error) {
 					for _, config := range configs {
 						config(&k8sConfigs)
 					}
-					return k8s, nil
+					return k, nil
 				},
 				Recorder: recorder,
 			}
@@ -127,7 +128,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			Expect(buffer.String()).To(ContainSubstring(`"serviceName":"mariadb-master"`))
 			Expect(chart.ObjectMeta.Finalizers).To(ContainElement("controller.shalm.wonderix.github.com"))
 			Expect(chart.Status.LastOp.Progress).To(Equal(100))
-			Expect(k8s.ApplyCallCount()).To(Equal(1))
+			Expect(k.ApplyCallCount()).To(Equal(1))
 		})
 
 		It("handles error correct during apply", func() {
@@ -136,7 +137,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 					ChartTgz: chartTgz,
 				},
 			}
-			k8s.ApplyStub = func(cb shalm.ObjectStream, options *shalm.K8sOptions) error {
+			k.ApplyStub = func(cb k8s.ObjectStream, options *k8s.K8sOptions) error {
 				return fmt.Errorf("Apply error")
 			}
 			_, err := reconciler.Reconcile(ctrl.Request{})
@@ -163,7 +164,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			_, err := reconciler.Reconcile(ctrl.Request{})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(chart.ObjectMeta.Finalizers).NotTo(ContainElement("controller.shalm.wonderix.github.com"))
-			Expect(k8s.DeleteCallCount()).To(Equal(1))
+			Expect(k.DeleteCallCount()).To(Equal(1))
 			Expect(buffer.String()).To(ContainSubstring(`"serviceName":"mariadb-master"`))
 		})
 		It("handles error correct during delete", func() {
@@ -177,7 +178,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 					ChartTgz: chartTgz,
 				},
 			}
-			k8s.DeleteStub = func(cb shalm.ObjectStream, options *shalm.K8sOptions) error {
+			k.DeleteStub = func(cb k8s.ObjectStream, options *k8s.K8sOptions) error {
 				return fmt.Errorf("delete error")
 			}
 			_, err := reconciler.Reconcile(ctrl.Request{})

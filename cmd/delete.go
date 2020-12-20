@@ -4,13 +4,14 @@ import (
 	"fmt"
 
 	"github.com/k14s/starlark-go/starlark"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm"
 
 	"github.com/spf13/cobra"
 )
 
 var deleteChartArgs = shalm.ChartOptions{}
-var deleteK8sArgs = shalm.K8sConfigs{}
+var deleteK8sArgs = k8s.K8sConfigs{}
 var deleteOptions = shalm.DeleteOptions{}
 
 var deleteCmd = &cobra.Command{
@@ -19,7 +20,7 @@ var deleteCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		k8s, err := k8s(deleteK8sArgs.Merge(), shalm.WithProgressSubscription(func(progress int) {
+		k8s, err := newK8s(deleteK8sArgs.Merge(), k8s.WithProgressSubscription(func(progress int) {
 			fmt.Printf("Progress  %d%%\n", progress)
 		}))
 		if err != nil {
@@ -29,7 +30,7 @@ var deleteCmd = &cobra.Command{
 	},
 }
 
-func delete(url string, k shalm.K8s, deleteOpt *shalm.DeleteOptions, opts ...shalm.ChartOption) error {
+func delete(url string, k k8s.K8s, deleteOpt *shalm.DeleteOptions, opts ...shalm.ChartOption) error {
 	repo, err := repo()
 	if err != nil {
 		return err

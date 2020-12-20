@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/k14s/starlark-go/starlark"
+	"github.com/wonderix/shalm/pkg/k8s"
+	"github.com/wonderix/shalm/pkg/starutils"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -44,8 +46,8 @@ const stateLoaded = 1
 const stateReady = 2
 
 type vaultK8s struct {
-	k8s          K8sReader
-	objectWriter ObjectWriter
+	k8s          k8s.K8sReader
+	objectWriter k8s.ObjectWriter
 	namespace    string
 }
 
@@ -61,10 +63,10 @@ func (v *vaultK8s) Write(name string, data map[string][]byte) error {
 	if err != nil {
 		return err
 	}
-	return v.objectWriter(&Object{
+	return v.objectWriter(&k8s.Object{
 		APIVersion: corev1.SchemeGroupVersion.String(),
 		Kind:       "Secret",
-		MetaData: MetaData{
+		MetaData: k8s.MetaData{
 			Name:      name,
 			Namespace: v.namespace,
 		},
@@ -76,7 +78,7 @@ func (v *vaultK8s) Write(name string, data map[string][]byte) error {
 }
 
 func (v *vaultK8s) Read(name string) (map[string][]byte, error) {
-	obj, err := v.k8s.Get("secret", name, &K8sOptions{})
+	obj, err := v.k8s.Get("secret", name, &k8s.K8sOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +104,8 @@ type jewel struct {
 }
 
 var (
-	_ starlark.Value = (*jewel)(nil)
+	_ starlark.Value          = (*jewel)(nil)
+	_ starutils.GoConvertible = (*jewel)(nil)
 )
 
 // NewJewel -
@@ -238,4 +241,10 @@ func (c *jewel) AttrNames() []string {
 		result = append(result, k)
 	}
 	return result
+}
+
+// starutils.ToGo -
+
+func (c *jewel) ToGo() interface{} {
+	return c.templateValues()
 }

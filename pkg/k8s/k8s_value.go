@@ -1,4 +1,4 @@
-package shalm
+package k8s
 
 import (
 	"encoding/json"
@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/k14s/starlark-go/starlark"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 // K8sValue -
@@ -49,7 +50,8 @@ var (
 	_ starlark.HasSetField = (*k8sValueImpl)(nil)
 )
 
-func makeK8sValue(k8s K8s, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
+// MakeK8sValue -
+func MakeK8sValue(k8s K8s, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 	var kubeconfig string
 	if err := starlark.UnpackArgs("k8s", args, kwargs, "kubeconfig", &kubeconfig); err != nil {
 		return starlark.None, err
@@ -84,12 +86,12 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 			return starlark.NewBuiltin("rollout_status", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 				var kind string
 				var name string
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("rollout_status", args, parser.Parse(),
-					"kind", &kind, "name", &name); err != nil {
+				k8sOptions := &K8sOptions{}
+				options, done := k8sOptions.Args()
+				if err := starlark.UnpackArgs("rollout_status", args, kwargs, append([]interface{}{"kind", &kind, "name", &name}, options...)...); err != nil {
 					return nil, err
 				}
+				done()
 				return starlark.None, k.RolloutStatus(kind, name, k8sOptions)
 			}), nil
 		}
@@ -99,12 +101,13 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 				var kind string
 				var name string
 				var condition string
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("wait", args, parser.Parse(),
-					"kind", &kind, "name", &name, "condition", &condition); err != nil {
+				k8sOptions := &K8sOptions{}
+				options, done := k8sOptions.Args()
+				if err := starlark.UnpackArgs("wait", args, kwargs,
+					append([]interface{}{"kind", &kind, "name", &name, "condition", &condition}, options...)...); err != nil {
 					return nil, err
 				}
+				done()
 				return starlark.None, k.Wait(kind, name, condition, k8sOptions)
 			}), nil
 		}
@@ -113,12 +116,13 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 			return starlark.NewBuiltin("delete", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 				var kind string
 				var name string
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("delete", args, parser.Parse(),
-					"kind", &kind, "name?", &name); err != nil {
+				k8sOptions := &K8sOptions{}
+				options, done := k8sOptions.Args()
+				if err := starlark.UnpackArgs("delete", args, kwargs,
+					append([]interface{}{"kind", &kind, "name?", &name}, options...)...); err != nil {
 					return nil, err
 				}
+				done()
 				if name == "" {
 					return starlark.None, errors.New("no parameter name given")
 				}
@@ -129,19 +133,20 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 		{
 			return starlark.NewBuiltin("apply", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
 				var value starlark.Value
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("apply", args, parser.Parse(), "value", &value); err != nil {
+				k8sOptions := &K8sOptions{}
+				options, done := k8sOptions.Args()
+				if err := starlark.UnpackArgs("apply", args, kwargs, append([]interface{}{"value", &value}, options...)...); err != nil {
 					return nil, err
 				}
+				done()
 				var os func(w ObjectWriter) error
-				s, ok := value.(*stream)
+				s, ok := value.(*streamValue)
 				if ok {
-					os = decode(s.Stream)
+					os = Decode(s.Stream)
 				} else {
 					os = func(w ObjectWriter) error {
 						var o Object
-						data, err := json.Marshal(toGo(value))
+						data, err := json.Marshal(starutils.ToGo(value))
 						if err != nil {
 							return err
 						}
@@ -159,12 +164,13 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 			return starlark.NewBuiltin("get", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 				var kind string
 				var name string
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("get", args, parser.Parse(),
-					"kind", &kind, "name", &name); err != nil {
+				k8sOptions := &K8sOptions{}
+				options, done := k8sOptions.Args()
+				if err := starlark.UnpackArgs("get", args, kwargs,
+					append([]interface{}{"kind", &kind, "name", &name}, options...)...); err != nil {
 					return nil, err
 				}
+				done()
 				if name == "" {
 					return starlark.None, errors.New("no parameter name given")
 				}
@@ -175,7 +181,7 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 				if obj == nil {
 					return starlark.None, nil
 				}
-				return WrapDict(ToStarlark(obj)), nil
+				return starutils.WrapDict(starutils.ToStarlark(obj)), nil
 			}), nil
 		}
 	case "patch":
@@ -185,12 +191,13 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 				var name string
 				typ := string(types.JSONPatchType)
 				var patch string
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("get", args, parser.Parse(),
-					"kind", &kind, "name", &name, "patch", &patch, "type?", &typ); err != nil {
+				k8sOptions := &K8sOptions{}
+				options, done := k8sOptions.Args()
+				if err := starlark.UnpackArgs("get", args, kwargs,
+					append([]interface{}{"kind", &kind, "name", &name, "patch", &patch, "type?", &typ}, options...)...); err != nil {
 					return nil, err
 				}
+				done()
 				if name == "" {
 					return starlark.None, errors.New("no parameter name given")
 				}
@@ -198,24 +205,25 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 				if err != nil {
 					return starlark.None, err
 				}
-				return WrapDict(ToStarlark(obj)), nil
+				return starutils.WrapDict(starutils.ToStarlark(obj)), nil
 			}), nil
 		}
 	case "list":
 		{
 			return starlark.NewBuiltin("list", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 				var kind string
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("list", args, parser.Parse(),
-					"kind", &kind); err != nil {
+				k8sOptions := &K8sOptions{}
+				options, done := k8sOptions.Args()
+				if err := starlark.UnpackArgs("list", args, kwargs,
+					append([]interface{}{"kind", &kind}, options...)...); err != nil {
 					return nil, err
 				}
+				done()
 				obj, err := k.List(kind, k8sOptions, &ListOptions{})
 				if err != nil {
 					return starlark.None, err
 				}
-				return WrapDict(ToStarlark(obj)), nil
+				return starutils.WrapDict(starutils.ToStarlark(obj)), nil
 			}), nil
 		}
 	case "watch":
@@ -223,12 +231,13 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 			return starlark.NewBuiltin("watch", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 				var kind string
 				var name string
-				parser := &kwargsParser{kwargs: kwargs}
-				k8sOptions := unpackK8sOptions(parser)
-				if err := starlark.UnpackArgs("get", args, parser.Parse(),
-					"kind", &kind, "name", &name); err != nil {
+				k8sOptions := &K8sOptions{}
+				options, done := k8sOptions.Args()
+				if err := starlark.UnpackArgs("get", args, kwargs,
+					append([]interface{}{"kind", &kind, "name", &name}, options...)...); err != nil {
 					return nil, err
 				}
+				done()
 				if name == "" {
 					return starlark.None, errors.New("no parameter name given")
 				}
@@ -238,7 +247,7 @@ func (k *k8sValueImpl) Attr(name string) (starlark.Value, error) {
 	case "for_config":
 		{
 			return starlark.NewBuiltin("for_config", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-				return makeK8sValue(k, args, kwargs)
+				return MakeK8sValue(k, args, kwargs)
 			}), nil
 
 		}
@@ -284,24 +293,14 @@ func (k *k8sValueImpl) AttrNames() []string {
 	return []string{"rollout_status", "delete", "get", "wait", "for_config", "host", "tool"}
 }
 
-func unpackK8sOptions(parser *kwargsParser) *K8sOptions {
-	result := &K8sOptions{}
-	parser.Arg("namespaced", func(value starlark.Value) {
-		result.ClusterScoped = !bool(value.(starlark.Bool))
-	})
-	parser.Arg("ignore_not_found", func(value starlark.Value) {
-		result.IgnoreNotFound = bool(value.(starlark.Bool))
-	})
-	parser.Arg("namespace", func(value starlark.Value) {
-		result.Namespace = value.(starlark.String).GoString()
-	})
-	parser.Arg("timeout", func(value starlark.Value) {
-		timeout, ok := value.(starlark.Int).Int64()
-		if ok {
-			result.Timeout = time.Duration(timeout) * time.Second
-		}
-	})
-	return result
+// Args -
+func (k *K8sOptions) Args() ([]interface{}, func()) {
+	namespaced := false
+	timeout := 0
+	return []interface{}{"namespaced?", &namespaced, "ignore_not_found?", &k.IgnoreNotFound, "namespace?", &k.Namespace, "timeout?", &timeout}, func() {
+		k.ClusterScoped = !namespaced
+		k.Timeout = time.Duration(timeout) * time.Second
+	}
 }
 
 func (w *k8sWatcher) Freeze()               {}
@@ -328,7 +327,7 @@ func (w *k8sWatcher) Iterate() starlark.Iterator {
 
 func (i *k8sWatcherIterator) Next(p *starlark.Value) bool {
 	obj := <-i.next
-	*p = WrapDict(ToStarlark(obj))
+	*p = starutils.WrapDict(starutils.ToStarlark(obj))
 	return true
 }
 

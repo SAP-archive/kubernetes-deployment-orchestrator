@@ -26,7 +26,9 @@ import (
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm/renderer"
+	"github.com/wonderix/shalm/pkg/starutils"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 )
@@ -45,7 +47,7 @@ type Repo interface {
 	// GetFromSpec -
 	GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpec, options ...ChartOption) (ChartValue, error)
 	// List -
-	List(thread *starlark.Thread, k8s K8s, listOptions *RepoListOptions) ([]ChartValue, error)
+	List(thread *starlark.Thread, k8s k8s.K8s, listOptions *RepoListOptions) ([]ChartValue, error)
 }
 
 type repoImpl struct {
@@ -208,7 +210,7 @@ func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpe
 	if err != nil {
 		return nil, err
 	}
-	options = append(options, WithNamespace(spec.Namespace), WithSuffix(spec.Suffix), WithArgs(ToStarlark(spec.Args).(starlark.Tuple)), WithValues(values), WithValues(kwargs))
+	options = append(options, WithNamespace(spec.Namespace), WithSuffix(spec.Suffix), WithArgs(starutils.ToStarlark(spec.Args).(starlark.Tuple)), WithValues(values), WithValues(kwargs))
 	if spec.ChartURL != "" {
 		chart, err := r.Get(thread, spec.ChartURL, options...)
 		if err != nil {
@@ -224,7 +226,7 @@ func (r *repoImpl) GetFromSpec(thread *starlark.Thread, spec *shalmv1a2.ChartSpe
 	return c, nil
 }
 
-func newChartFromConfigMap(thread *starlark.Thread, r *repoImpl, configMap Object) (ChartValue, error) {
+func newChartFromConfigMap(thread *starlark.Thread, r *repoImpl, configMap k8s.Object) (ChartValue, error) {
 	dataJSON, ok := configMap.Additional["data"]
 	if !ok {
 		return nil, fmt.Errorf("Invalid config map")
@@ -248,12 +250,12 @@ func newChartFromConfigMap(thread *starlark.Thread, r *repoImpl, configMap Objec
 	return newChartFromReader(thread, r, r.cacheDirForChart(tgz), bytes.NewReader(tgz), gv.AsOptions()...)
 }
 
-func (r *repoImpl) List(thread *starlark.Thread, k8s K8s, repoListOptions *RepoListOptions) ([]ChartValue, error) {
+func (r *repoImpl) List(thread *starlark.Thread, k k8s.K8s, repoListOptions *RepoListOptions) ([]ChartValue, error) {
 	requirement, err := labels.NewRequirement("shalm.wonderix.github.com/chart", selection.Equals, []string{"true"})
 	if err != nil {
 		return nil, err
 	}
-	listOptions := &ListOptions{
+	listOptions := &k8s.ListOptions{
 		LabelSelector: labels.NewSelector().Add(*requirement),
 		AllNamespaces: repoListOptions.allNamespaces,
 	}
@@ -264,13 +266,13 @@ func (r *repoImpl) List(thread *starlark.Thread, k8s K8s, repoListOptions *RepoL
 		}
 		listOptions.LabelSelector = listOptions.LabelSelector.Add(*requirement)
 	}
-	k8sOptions := &K8sOptions{Quiet: true, Namespace: repoListOptions.namespace, ClusterScoped: repoListOptions.allNamespaces}
-	obj, err := k8s.List("configmaps", k8sOptions, listOptions)
+	k8sOptions := &k8s.K8sOptions{Quiet: true, Namespace: repoListOptions.namespace, ClusterScoped: repoListOptions.allNamespaces}
+	obj, err := k.List("configmaps", k8sOptions, listOptions)
 	if err != nil {
 		return nil, err
 	}
 	itemsJSON := obj.Additional["items"]
-	var items []Object
+	var items []k8s.Object
 	err = json.Unmarshal(itemsJSON, &items)
 	if err != nil {
 		return nil, err

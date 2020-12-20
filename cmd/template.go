@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm"
 
 	"github.com/k14s/starlark-go/starlark"
@@ -12,7 +13,7 @@ import (
 )
 
 var templateChartArgs = shalm.ChartOptions{}
-var templateK8sArgs = shalm.K8sConfigs{}
+var templateK8sArgs = k8s.K8sConfigs{}
 
 var templateCmd = &cobra.Command{
 	Use:   "template [chart]",
@@ -20,7 +21,7 @@ var templateCmd = &cobra.Command{
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		k8s, err := k8s(applyK8sArgs.Merge(), shalm.WithProgressSubscription(func(progress int) {
+		k8s, err := newK8s(applyK8sArgs.Merge(), k8s.WithProgressSubscription(func(progress int) {
 			fmt.Printf("Progress  %d%%\n", progress)
 		}))
 		if err != nil {
@@ -30,17 +31,17 @@ var templateCmd = &cobra.Command{
 	},
 }
 
-func template(url string, k shalm.K8s) shalm.Stream {
+func template(url string, k k8s.K8s) k8s.Stream {
 
 	thread := &starlark.Thread{Name: "main", Load: rootExecuteOptions.load}
 	repo, err := repo()
 	if err != nil {
-		return shalm.ErrorStream(err)
+		return k8s.ErrorStream(err)
 	}
 	c, err := repo.Get(thread, url, templateChartArgs.Merge())
 
 	if err != nil {
-		return shalm.ErrorStream(err)
+		return k8s.ErrorStream(err)
 	}
 	return c.Template(thread, k)
 

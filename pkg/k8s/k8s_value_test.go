@@ -1,4 +1,4 @@
-package shalm
+package k8s
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 var _ = Describe("K8sValue", func() {
@@ -134,7 +135,7 @@ var _ = Describe("K8sValue", func() {
 		found := iterator.Next(&obj)
 		Expect(found).To(BeTrue())
 		Expect(fake.WatchCallCount()).To(Equal(1))
-		dict := UnwrapDict(obj).(*starlark.Dict)
+		dict := starutils.UnwrapDict(obj).(*starlark.Dict)
 		val, found, err := dict.Get(starlark.String("key"))
 		Expect(found).To(BeTrue())
 		Expect(val).To(Equal(starlark.String("value")))
@@ -156,7 +157,7 @@ var _ = Describe("K8sValue", func() {
 		o := Object{MetaData: MetaData{
 			Name: "test",
 		}}
-		_, err = starlark.Call(thread, watch, starlark.Tuple{ToStarlark(o)}, nil)
+		_, err = starlark.Call(thread, watch, starlark.Tuple{starutils.ToStarlark(o)}, nil)
 
 		Expect(err).NotTo(HaveOccurred())
 		Expect(appliedObject.MetaData.Name).To(Equal(o.MetaData.Name))
@@ -178,7 +179,7 @@ var _ = Describe("K8sValue", func() {
 		o := Object{MetaData: MetaData{
 			Name: "test",
 		}}
-		_, err = starlark.Call(thread, watch, starlark.Tuple{&stream{Stream: func(w io.Writer) error {
+		_, err = starlark.Call(thread, watch, starlark.Tuple{&streamValue{Stream: func(w io.Writer) error {
 			_, err := w.Write([]byte("metadata:\n  name: test\n"))
 			return err
 		}}}, nil)

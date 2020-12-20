@@ -10,7 +10,9 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm/renderer"
+	"github.com/wonderix/shalm/pkg/starutils"
 
 	"github.com/k14s/starlark-go/starlark"
 	cmdcore "github.com/k14s/ytt/pkg/cmd/core"
@@ -63,20 +65,20 @@ type capabilities struct {
 	KubeVersion kubeVersions
 }
 
-func (c *chartImpl) Template(thread *starlark.Thread, k8s K8s) Stream {
-	streams := []Stream{}
+func (c *chartImpl) Template(thread *starlark.Thread, k k8s.K8s) k8s.Stream {
+	streams := []k8s.Stream{}
 	err := c.eachSubChart(func(subChart *chartImpl) error {
-		streams = append(streams, subChart.template(thread, "", k8s))
+		streams = append(streams, subChart.template(thread, "", k))
 		return nil
 	})
 	if err != nil {
-		return ErrorStream(err)
+		return k8s.ErrorStream(err)
 	}
-	streams = append(streams, c.template(thread, "", k8s))
-	return yamlConcat(streams...)
+	streams = append(streams, c.template(thread, "", k))
+	return k8s.YamlConcat(streams...)
 }
 
-func (c *chartImpl) template(thread *starlark.Thread, glob string, k K8s) Stream {
+func (c *chartImpl) template(thread *starlark.Thread, glob string, k k8s.K8s) k8s.Stream {
 	kwargs := []starlark.Tuple{}
 	template := c.methods["template"]
 	templateFunction, ok := template.(*chartMethod)
@@ -86,26 +88,26 @@ func (c *chartImpl) template(thread *starlark.Thread, glob string, k K8s) Stream
 	}
 	switch numArgs {
 	case 3:
-		kwargs = append(kwargs, starlark.Tuple{starlark.String("k8s"), NewK8sValue(k)})
+		kwargs = append(kwargs, starlark.Tuple{starlark.String("k8s"), k8s.NewK8sValue(k)})
 		fallthrough
 	case 2:
 		if glob != "" {
 			kwargs = append(kwargs, starlark.Tuple{starlark.String("glob"), starlark.String(glob)})
 		}
 	}
-	return yamlConcat(c.jewelStream().Encode(), toStream(starlark.Call(thread, template, nil, kwargs)))
+	return k8s.YamlConcat(c.jewelStream().Encode(), k8s.ToStream(starlark.Call(thread, template, nil, kwargs)))
 }
 
 func (c *chartImpl) helmTemplateFunction() starlark.Callable {
 	return c.builtin("helm", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
 		var glob string
 		var dir string
-		var k8s starlark.Value
-		if err := starlark.UnpackArgs("helm", args, kwargs, "dir", &dir, "glob?", &glob, "k8s?", &k8s); err != nil {
+		var k starlark.Value
+		if err := starlark.UnpackArgs("helm", args, kwargs, "dir", &dir, "glob?", &glob, "k8s?", &k); err != nil {
 			return nil, err
 		}
-		s := c.helmTemplate(thread, dir, glob, k8sFromValue(k8s))
-		return &stream{Stream: s}, nil
+		s := c.helmTemplate(thread, dir, glob, k8sFromValue(k))
+		return k8s.NewStreamValue(s), nil
 	})
 }
 
@@ -116,23 +118,23 @@ func (c *chartImpl) templateFunction() starlark.Callable {
 		if err := starlark.UnpackArgs("template", args, kwargs, "glob?", &glob, "k8s?", &v); err != nil {
 			return nil, err
 		}
-		k8s := k8sFromValue(v)
-		s := c.helmTemplate(thread, "templates", glob, k8s)
+		k := k8sFromValue(v)
+		s := c.helmTemplate(thread, "templates", glob, k)
 		yttTemplateDir := path.Join(c.dir, "ytt-templates")
 		if _, err := os.Stat(yttTemplateDir); err == nil {
-			s = yamlConcat(s, c.yttTemplate(thread, starlark.Tuple{
+			s = k8s.YamlConcat(s, c.yttTemplate(thread, starlark.Tuple{
 				&injectedFiles{
 					dir:    c.dir,
 					files:  []string{"ytt-templates"},
-					kwargs: starlark.StringDict{"self": c, "k8s": NewK8sValue(k8s)},
+					kwargs: starlark.StringDict{"self": c, "k8s": k8s.NewK8sValue(k)},
 				}}))
 		}
-		return &stream{Stream: s}, nil
+		return k8s.NewStreamValue(s), nil
 	})
 }
 
-func (c *chartImpl) helmTemplate(thread *starlark.Thread, dir string, glob string, k8s K8s) Stream {
-	values := stringDictToGo(c.values)
+func (c *chartImpl) helmTemplate(thread *starlark.Thread, dir string, glob string, k k8s.K8s) k8s.Stream {
+	values := starutils.StringDictToGo(c.values)
 	methods := make(map[string]interface{})
 	for k, f := range c.methods {
 		method := f
@@ -149,7 +151,7 @@ func (c *chartImpl) helmTemplate(thread *starlark.Thread, dir string, glob strin
 		Files        renderer.Files
 		Template     templateSpec
 		Capabilities capabilities
-		K8s          K8s
+		K8s          k8s.K8s
 	}{
 		Values:  values,
 		Methods: methods,
@@ -179,7 +181,7 @@ func (c *chartImpl) helmTemplate(thread *starlark.Thread, dir string, glob strin
 			},
 		},
 		Files: renderer.Files{Dir: c.dir},
-		K8s:   k8s,
+		K8s:   k,
 	})
 
 	return func(writer io.Writer) error {
@@ -193,7 +195,7 @@ func (c *chartImpl) helmTemplate(thread *starlark.Thread, dir string, glob strin
 	}
 }
 
-func (c *chartImpl) yttTemplate(thread *starlark.Thread, fileTuple starlark.Tuple) Stream {
+func (c *chartImpl) yttTemplate(thread *starlark.Thread, fileTuple starlark.Tuple) k8s.Stream {
 	return func(writer io.Writer) error {
 		context := injectedContext{}
 		o := &template.TemplateOptions{Extender: func(l workspace.ModuleLoader) workspace.ModuleLoader {
@@ -214,22 +216,6 @@ func (c *chartImpl) yttTemplate(thread *starlark.Thread, fileTuple starlark.Tupl
 		}()
 		for _, arg := range fileTuple {
 			switch arg := arg.(type) {
-			case *stream:
-				f, err := ioutil.TempFile("", "shalm*.yml")
-				tempFiles = append(tempFiles, f.Name())
-				if err != nil {
-					return errors.Wrapf(err, "Error saving stream to file in ytt")
-				}
-				err = arg.Stream(f)
-				if err != nil {
-					return errors.Wrapf(err, "Error saving stream to file in ytt")
-				}
-				f.Close()
-				fs, err := files.NewFileFromSource(files.NewLocalSource(f.Name(), ""))
-				if err != nil {
-					return err
-				}
-				filesToProcess = append(filesToProcess, fs)
 			case *injectedFiles:
 				prefix := context.add(arg.kwargs)
 				for _, file := range arg.files {
@@ -259,7 +245,22 @@ func (c *chartImpl) yttTemplate(thread *starlark.Thread, fileTuple starlark.Tupl
 				}
 				filesToProcess = append(filesToProcess, fs...)
 			default:
-				return fmt.Errorf("Invalid type passed to ytt")
+				stream := k8s.ToStream(arg, nil)
+				f, err := ioutil.TempFile("", "shalm*.yml")
+				tempFiles = append(tempFiles, f.Name())
+				if err != nil {
+					return errors.Wrapf(err, "Error saving stream to file in ytt")
+				}
+				err = stream(f)
+				if err != nil {
+					return errors.Wrapf(err, "Error saving stream to file in ytt")
+				}
+				f.Close()
+				fs, err := files.NewFileFromSource(files.NewLocalSource(f.Name(), ""))
+				if err != nil {
+					return err
+				}
+				filesToProcess = append(filesToProcess, fs)
 			}
 
 		}
@@ -311,12 +312,12 @@ func (s *chartSource) Bytes() ([]byte, error) {
 
 func (c *chartImpl) yttTemplateFunction() starlark.Callable {
 	return c.builtin("ytt", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (starlark.Value, error) {
-		return &stream{Stream: c.yttTemplate(thread, args)}, nil
+		return k8s.NewStreamValue(c.yttTemplate(thread, args)), nil
 	})
 }
 
-func (c *chartImpl) jewelStream() ObjectStream {
-	return func(w ObjectWriter) error {
+func (c *chartImpl) jewelStream() k8s.ObjectStream {
+	return func(w k8s.ObjectWriter) error {
 		vault := &vaultK8s{objectWriter: w, namespace: c.namespace}
 		return c.eachJewel(func(v *jewel) error {
 			return v.write(vault)
@@ -324,10 +325,10 @@ func (c *chartImpl) jewelStream() ObjectStream {
 	}
 }
 
-func k8sFromValue(v starlark.Value) K8s {
-	result, ok := v.(K8sValue)
+func k8sFromValue(v starlark.Value) k8s.K8s {
+	result, ok := v.(k8s.K8sValue)
 	if ok {
 		return result
 	}
-	return NewK8sInMemoryEmpty()
+	return k8s.NewK8sInMemoryEmpty()
 }

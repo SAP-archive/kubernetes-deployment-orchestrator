@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/k14s/starlark-go/starlark"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 type structProperty struct {
@@ -19,6 +20,7 @@ type StructPropertyValue interface {
 
 var _ starlark.HasSetKey = (*structProperty)(nil)
 var _ StructPropertyValue = (*structProperty)(nil)
+var _ starutils.GoConvertible = (*structProperty)(nil)
 
 func newStructProperty(additionalProperties bool) *structProperty {
 	return &structProperty{properties: make(map[string]PropertyValue), additionalProperties: additionalProperties}
@@ -168,4 +170,9 @@ func (s *structProperty) AttrNames() []string {
 		keys = append(keys, k)
 	}
 	return keys
+}
+
+// starutils.ToGo -
+func (s *structProperty) ToGo() interface{} {
+	return starutils.ToGo(s.GetValueOrDefault())
 }

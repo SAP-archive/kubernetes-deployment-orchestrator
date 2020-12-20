@@ -12,6 +12,7 @@ import (
 	"github.com/k14s/starlark-go/starlarkstruct"
 	"github.com/spf13/pflag"
 	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/wonderix/shalm/pkg/starutils"
 	osb "sigs.k8s.io/go-open-service-broker-client/v2"
 )
 
@@ -96,7 +97,7 @@ func (v *osbBindingBackend) Keys() map[string]shalm.JewelValue {
 			if err != nil {
 				return starlark.None, err
 			}
-			return shalm.ToStarlark(credentials), nil
+			return starutils.ToStarlark(credentials), nil
 		}},
 	}
 }
@@ -285,10 +286,10 @@ func makeOsbBindung(clientFactory osbClientFactory) func(thread *starlark.Thread
 			return nil, err
 		}
 		if parameters != nil {
-			c.parameters = shalm.ToGoMap(parameters)
+			c.parameters = starutils.ToGoMap(parameters)
 		}
 		if bindingParameters != nil {
-			c.bindingParameters = shalm.ToGoMap(bindingParameters)
+			c.bindingParameters = starutils.ToGoMap(bindingParameters)
 		}
 		return shalm.NewJewel(c, name)
 	}

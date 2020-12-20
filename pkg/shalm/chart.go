@@ -17,6 +17,8 @@ import (
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
 	gitignore "github.com/sabhiram/go-gitignore"
+	"github.com/wonderix/shalm/pkg/k8s"
+	"github.com/wonderix/shalm/pkg/starutils"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -26,12 +28,12 @@ type Chart interface {
 	GetName() string
 	GetVersion() *semver.Version
 	GetNamespace() string
-	Apply(thread *starlark.Thread, k K8s) error
-	Delete(thread *starlark.Thread, k K8s, options *DeleteOptions) error
-	Template(thread *starlark.Thread, k K8s) Stream
+	Apply(thread *starlark.Thread, k k8s.K8s) error
+	Delete(thread *starlark.Thread, k k8s.K8s, options *DeleteOptions) error
+	Template(thread *starlark.Thread, k k8s.K8s) k8s.Stream
 	Package(writer io.Writer, helmFormat bool) error
-	AddUsedBy(reference string, k K8s) (int, error)
-	RemoveUsedBy(reference string, k K8s) (int, error)
+	AddUsedBy(reference string, k k8s.K8s) (int, error)
+	RemoveUsedBy(reference string, k k8s.K8s) (int, error)
 }
 
 // ChartValue -
@@ -52,8 +54,9 @@ type chartImpl struct {
 }
 
 var (
-	_ ChartValue         = (*chartImpl)(nil)
-	_ starlark.HasSetKey = (*chartImpl)(nil)
+	_ ChartValue              = (*chartImpl)(nil)
+	_ starlark.HasSetKey      = (*chartImpl)(nil)
+	_ starutils.GoConvertible = (*chartImpl)(nil)
 )
 
 func newChart(thread *starlark.Thread, repo Repo, dir string, opts ...ChartOption) (*chartImpl, error) {
@@ -222,7 +225,7 @@ func (c *chartImpl) Attr(name string) (starlark.Value, error) {
 	if ok {
 		value = property.GetValueOrDefault()
 	}
-	return WrapDict(value), nil
+	return starutils.WrapDict(value), nil
 }
 
 // AttrNames returns a new sorted list of the struct fields.
@@ -237,7 +240,7 @@ func (c *chartImpl) AttrNames() []string {
 
 // SetField -
 func (c *chartImpl) SetField(name string, val starlark.Value) error {
-	val = UnwrapDict(val)
+	val = starutils.UnwrapDict(val)
 	existing, ok := c.values[name]
 	if ok {
 		property, ok := existing.(PropertyValue)
@@ -266,17 +269,17 @@ func (c *chartImpl) Get(name starlark.Value) (starlark.Value, bool, error) {
 	if ok {
 		value = property.GetValueOrDefault()
 	}
-	return WrapDict(value), true, nil
+	return starutils.WrapDict(value), true, nil
 }
 
 func (c *chartImpl) SetKey(name, value starlark.Value) error {
-	c.values[name.(starlark.String).GoString()] = UnwrapDict(value)
+	c.values[name.(starlark.String).GoString()] = starutils.UnwrapDict(value)
 	return nil
 }
 
 func (c *chartImpl) applyFunction() starlark.Callable {
 	return c.builtin("apply", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
+		var k k8s.K8sValue
 		if err := starlark.UnpackArgs("apply", args, kwargs, "k8s", &k); err != nil {
 			return nil, err
 		}
@@ -284,8 +287,8 @@ func (c *chartImpl) applyFunction() starlark.Callable {
 	})
 }
 
-func (c *chartImpl) Apply(thread *starlark.Thread, k K8s) error {
-	_, err := starlark.Call(thread, c.methods["apply"], starlark.Tuple{NewK8sValue(k)}, nil)
+func (c *chartImpl) Apply(thread *starlark.Thread, k k8s.K8s) error {
+	_, err := starlark.Call(thread, c.methods["apply"], starlark.Tuple{k8s.NewK8sValue(k)}, nil)
 	if err != nil {
 		return err
 	}
@@ -293,7 +296,7 @@ func (c *chartImpl) Apply(thread *starlark.Thread, k K8s) error {
 	return nil
 }
 
-func (c *chartImpl) apply(thread *starlark.Thread, k K8sValue) error {
+func (c *chartImpl) apply(thread *starlark.Thread, k k8s.K8sValue) error {
 	err := c.eachSubChart(func(subChart *chartImpl) error {
 		_, err := starlark.Call(thread, subChart.methods["apply"], starlark.Tuple{k}, nil)
 		return err
@@ -301,23 +304,24 @@ func (c *chartImpl) apply(thread *starlark.Thread, k K8sValue) error {
 	if err != nil {
 		return err
 	}
-	return c.applyLocal(thread, k, &K8sOptions{ClusterScoped: true}, "")
+	return c.applyLocal(thread, k, &k8s.K8sOptions{ClusterScoped: true}, "")
 }
 
 func (c *chartImpl) applyLocalFunction() starlark.Callable {
 	return c.builtin("__apply", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
-		parser := &kwargsParser{kwargs: kwargs}
+		var k k8s.K8sValue
 		var glob string
-		k8sOptions := unpackK8sOptions(parser)
-		if err := starlark.UnpackArgs("__apply", args, parser.Parse(), "k8s", &k, "glob?", &glob); err != nil {
+		k8sOptions := &k8s.K8sOptions{}
+		options, done := k8sOptions.Args()
+		if err := starlark.UnpackArgs("__apply", args, kwargs, append([]interface{}{"k8s", &k, "glob?", &glob}, options...)...); err != nil {
 			return nil, err
 		}
+		done()
 		return starlark.None, c.applyLocal(thread, k, k8sOptions, glob)
 	})
 }
 
-func (c *chartImpl) applyLocal(thread *starlark.Thread, k K8sValue, k8sOptions *K8sOptions, glob string) error {
+func (c *chartImpl) applyLocal(thread *starlark.Thread, k k8s.K8sValue, k8sOptions *k8s.K8sOptions, glob string) error {
 	vault := &vaultK8s{k8s: k, namespace: c.namespace}
 	err := c.eachJewel(func(v *jewel) error {
 		return v.read(vault)
@@ -329,18 +333,18 @@ func (c *chartImpl) applyLocal(thread *starlark.Thread, k K8sValue, k8sOptions *
 		return nil
 	}
 	k8sOptions.ClusterScoped = true
-	return k.Apply(decode(c.template(thread, glob, k)), k8sOptions)
+	return k.Apply(k8s.Decode(c.template(thread, glob, k)), k8sOptions)
 }
 
 func (c *chartImpl) objName() string {
 	return "shalm." + c.GetGenus()
 }
 
-func (c *chartImpl) configMap() *Object {
-	return &Object{
+func (c *chartImpl) configMap() *k8s.Object {
+	return &k8s.Object{
 		APIVersion: corev1.SchemeGroupVersion.String(),
 		Kind:       "ConfigMap",
-		MetaData: MetaData{
+		MetaData: k8s.MetaData{
 			Name:      c.objName(),
 			Namespace: c.namespace,
 			Labels: map[string]string{
@@ -355,11 +359,11 @@ func (c *chartImpl) configMap() *Object {
 	}
 }
 
-func (c *chartImpl) secret() *Object {
-	return &Object{
+func (c *chartImpl) secret() *k8s.Object {
+	return &k8s.Object{
 		APIVersion: corev1.SchemeGroupVersion.String(),
 		Kind:       "Secret",
-		MetaData: MetaData{
+		MetaData: k8s.MetaData{
 			Name:      c.objName(),
 			Namespace: c.namespace,
 			Labels: map[string]string{
@@ -374,7 +378,7 @@ func (c *chartImpl) secret() *Object {
 	}
 }
 
-func (c *chartImpl) modifyConfigMap(obj *Object) error {
+func (c *chartImpl) modifyConfigMap(obj *k8s.Object) error {
 	buffer := &bytes.Buffer{}
 	if err := c.Package(buffer, false); err != nil {
 		return err
@@ -392,11 +396,11 @@ func (c *chartImpl) modifyConfigMap(obj *Object) error {
 	}
 	return nil
 }
-func (c *chartImpl) modifySecret(obj *Object) error {
+func (c *chartImpl) modifySecret(obj *k8s.Object) error {
 	byteData := map[string][]byte{}
 	// only persist properties
 	for _, t := range c.GetValue().(starlark.IterableMapping).Items() {
-		j, err := json.Marshal(toGo(t.Index(1)))
+		j, err := json.Marshal(starutils.ToGo(t.Index(1)))
 		if err != nil {
 			return err
 		}
@@ -412,9 +416,9 @@ func (c *chartImpl) modifySecret(obj *Object) error {
 	return nil
 }
 
-func (c *chartImpl) Delete(thread *starlark.Thread, k K8s, options *DeleteOptions) error {
+func (c *chartImpl) Delete(thread *starlark.Thread, k k8s.K8s, options *DeleteOptions) error {
 	thread.SetLocal("delete-options", options)
-	_, err := starlark.Call(thread, c.methods["delete"], starlark.Tuple{NewK8sValue(k)}, nil)
+	_, err := starlark.Call(thread, c.methods["delete"], starlark.Tuple{k8s.NewK8sValue(k)}, nil)
 	if err != nil {
 		return err
 	}
@@ -424,7 +428,7 @@ func (c *chartImpl) Delete(thread *starlark.Thread, k K8s, options *DeleteOption
 
 func (c *chartImpl) deleteFunction() starlark.Callable {
 	return c.builtin("delete", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
+		var k k8s.K8sValue
 		if err := starlark.UnpackArgs("delete", args, kwargs, "k8s", &k); err != nil {
 			return nil, err
 		}
@@ -432,7 +436,7 @@ func (c *chartImpl) deleteFunction() starlark.Callable {
 	})
 }
 
-func (c *chartImpl) delete(thread *starlark.Thread, k K8sValue) error {
+func (c *chartImpl) delete(thread *starlark.Thread, k k8s.K8sValue) error {
 	err := c.eachSubChart(func(subChart *chartImpl) error {
 		_, err := starlark.Call(thread, subChart.methods["delete"], starlark.Tuple{k}, nil)
 		return err
@@ -440,28 +444,29 @@ func (c *chartImpl) delete(thread *starlark.Thread, k K8sValue) error {
 	if err != nil {
 		return err
 	}
-	return c.deleteLocal(thread, k, &K8sOptions{ClusterScoped: true}, "")
+	return c.deleteLocal(thread, k, &k8s.K8sOptions{ClusterScoped: true}, "")
 }
 
 func (c *chartImpl) deleteLocalFunction() starlark.Callable {
 	return c.builtin("__delete", func(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwargs []starlark.Tuple) (value starlark.Value, e error) {
-		var k K8sValue
+		var k k8s.K8sValue
 		var glob string
-		parser := &kwargsParser{kwargs: kwargs}
-		k8sOptions := unpackK8sOptions(parser)
-		if err := starlark.UnpackArgs("__delete", args, parser.Parse(), "k8s", &k, "glob?", &glob); err != nil {
+		k8sOptions := &k8s.K8sOptions{}
+		options, done := k8sOptions.Args()
+		if err := starlark.UnpackArgs("__delete", args, kwargs, append([]interface{}{"k8s", &k, "glob?", &glob}, options...)...); err != nil {
 			return nil, err
 		}
+		done()
 		return starlark.None, c.deleteLocal(thread, k, k8sOptions, glob)
 	})
 }
 
-func (c *chartImpl) deleteLocal(thread *starlark.Thread, k K8sValue, k8sOptions *K8sOptions, glob string) error {
+func (c *chartImpl) deleteLocal(thread *starlark.Thread, k k8s.K8sValue, k8sOptions *k8s.K8sOptions, glob string) error {
 	if c.readOnly {
 		return nil
 	}
 	k8sOptions.ClusterScoped = true
-	err := k.Delete(decode(c.template(thread, glob, k)), k8sOptions)
+	err := k.Delete(k8s.Decode(c.template(thread, glob, k)), k8sOptions)
 	if err != nil {
 		return err
 	}
@@ -489,7 +494,7 @@ func (c *chartImpl) wrapApply(callable starlark.Callable) starlark.Callable {
 		if len(args) == 0 {
 			return nil, fmt.Errorf("Missing first argument k8s")
 		}
-		k, ok := args[0].(K8sValue)
+		k, ok := args[0].(k8s.K8sValue)
 		if !ok {
 			return nil, fmt.Errorf("Invalid first argument to %s", callable.Name())
 		}
@@ -507,11 +512,11 @@ func (c *chartImpl) wrapApply(callable starlark.Callable) starlark.Callable {
 			return value, err
 		}
 		if !c.skipChart {
-			_, err = k.CreateOrUpdate(c.configMap(), c.modifyConfigMap, &K8sOptions{Quiet: true})
+			_, err = k.CreateOrUpdate(c.configMap(), c.modifyConfigMap, &k8s.K8sOptions{Quiet: true})
 			if err != nil {
 				return starlark.None, nil
 			}
-			_, err = k.CreateOrUpdate(c.secret(), c.modifySecret, &K8sOptions{Quiet: true})
+			_, err = k.CreateOrUpdate(c.secret(), c.modifySecret, &k8s.K8sOptions{Quiet: true})
 			if err != nil {
 				return starlark.None, nil
 			}
@@ -533,12 +538,12 @@ func (c *chartImpl) wrapDelete(callable starlark.Callable) starlark.Callable {
 		if len(args) == 0 {
 			return starlark.None, fmt.Errorf("Missing first argument k8s")
 		}
-		k, ok := args[0].(K8sValue)
+		k, ok := args[0].(k8s.K8sValue)
 		if !ok {
 			return starlark.None, fmt.Errorf("Invalid first argument to %s", callable.Name())
 		}
 		if !deleteOptions.force {
-			obj, err := k.Get("configmap", c.objName(), &K8sOptions{IgnoreNotFound: true, Quiet: true})
+			obj, err := k.Get("configmap", c.objName(), &k8s.K8sOptions{IgnoreNotFound: true, Quiet: true})
 			if err != nil {
 				return starlark.None, err
 			}
@@ -549,8 +554,8 @@ func (c *chartImpl) wrapDelete(callable starlark.Callable) starlark.Callable {
 			}
 		}
 		if !c.skipChart {
-			for _, obj := range []*Object{c.configMap(), c.secret()} {
-				err := k.DeleteByName(obj.Kind, obj.MetaData.Name, &K8sOptions{IgnoreNotFound: true, Quiet: true})
+			for _, obj := range []*k8s.Object{c.configMap(), c.secret()} {
+				err := k.DeleteByName(obj.Kind, obj.MetaData.Name, &k8s.K8sOptions{IgnoreNotFound: true, Quiet: true})
 				if err != nil {
 					return starlark.None, err
 				}
@@ -587,12 +592,6 @@ func (c *chartImpl) eachJewel(block func(x *jewel) error) error {
 		}
 	}
 	return nil
-}
-
-func (c *chartImpl) mergeValues(values map[string]interface{}) {
-	for k, v := range values {
-		c.values[k] = merge(c.values[k], ToStarlark(v))
-	}
 }
 
 func (c *chartImpl) getValue(getter func(ReadProperty) starlark.Value) *starlark.Dict {
@@ -639,7 +638,7 @@ func (c *chartImpl) SetValue(value starlark.Value) error {
 
 }
 
-func remainingReferences(obj *Object) int {
+func remainingReferences(obj *k8s.Object) int {
 	counter := 0
 	if obj == nil {
 		return 0
@@ -653,23 +652,27 @@ func remainingReferences(obj *Object) int {
 }
 
 func usedByAnnotation(reference string) string {
-	return "shalm-usedby-" + invalidValueRegex.ReplaceAllString(reference, "-")
+	return "shalm-usedby-" + k8s.FixLabelValue(reference)
 }
 
-func (c *chartImpl) AddUsedBy(reference string, k K8s) (int, error) {
+func (c *chartImpl) AddUsedBy(reference string, k k8s.K8s) (int, error) {
 	patch := fmt.Sprintf(`[{"op": "add", "path": "/metadata/annotations/%s", "value" : "True"}]`, usedByAnnotation(reference))
-	obj, err := k.Patch("configmap", c.objName(), types.JSONPatchType, patch, &K8sOptions{Namespace: c.namespace})
+	obj, err := k.Patch("configmap", c.objName(), types.JSONPatchType, patch, &k8s.K8sOptions{Namespace: c.namespace})
 	if err != nil {
 		return 0, fmt.Errorf("can't add reference to configmap %s in namespace %s: %v %v. error during application of patch `%s`", c.objName(), c.namespace, err, obj, patch)
 	}
 	return remainingReferences(obj), nil
 }
 
-func (c *chartImpl) RemoveUsedBy(reference string, k K8s) (int, error) {
+func (c *chartImpl) RemoveUsedBy(reference string, k k8s.K8s) (int, error) {
 	patch := fmt.Sprintf(`[{"op": "remove", "path": "/metadata/annotations/%s"}]`, usedByAnnotation(reference))
-	obj, err := k.Patch("configmap", c.objName(), types.JSONPatchType, patch, &K8sOptions{Namespace: c.namespace, IgnoreNotFound: true})
+	obj, err := k.Patch("configmap", c.objName(), types.JSONPatchType, patch, &k8s.K8sOptions{Namespace: c.namespace, IgnoreNotFound: true})
 	if err != nil {
 		return 0, fmt.Errorf("can't remove reference from configmap %s in namespace %s: %verror during application of patch `%s`", c.objName(), c.namespace, err, patch)
 	}
 	return remainingReferences(obj), nil
+}
+
+func (c *chartImpl) ToGo() interface{} {
+	return starutils.StringDictToGo(c.values)
 }

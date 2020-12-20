@@ -1,13 +1,13 @@
 package shalm
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/wonderix/shalm/pkg/k8s"
 )
 
 type testBackend struct {
@@ -74,14 +74,7 @@ var _ = Describe("generic jewel", func() {
 		})
 
 		It("reads values from k8s", func() {
-			k8s := &FakeK8s{
-				GetStub: func(kind string, name string, k8s *K8sOptions) (*Object, error) {
-					return nil, errors.New("NotFound")
-				},
-				IsNotExistStub: func(err error) bool {
-					return true
-				},
-			}
+			k8s := k8s.NewK8sInMemoryEmpty()
 			err := jewel.read(&vaultK8s{k8s: k8s})
 			Expect(err).NotTo(HaveOccurred())
 

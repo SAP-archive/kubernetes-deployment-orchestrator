@@ -1,4 +1,4 @@
-package shalm
+package k8s
 
 import (
 	"encoding/json"

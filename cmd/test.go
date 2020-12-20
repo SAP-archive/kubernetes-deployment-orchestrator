@@ -15,6 +15,7 @@ import (
 
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/k14s/starlark-go/starlarktest"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm"
 
 	"github.com/spf13/cobra"
@@ -26,8 +27,8 @@ const maxDepth = 10
 
 const namespace = "default"
 
-var testK8s = func(configs ...shalm.K8sConfig) (shalm.K8s, error) {
-	return shalm.NewK8sInMemory(namespace), nil
+var testK8s = func(configs ...k8s.K8sConfig) (k8s.K8s, error) {
+	return k8s.NewK8sInMemory(namespace), nil
 }
 
 var testCmd = &cobra.Command{
@@ -35,7 +36,7 @@ var testCmd = &cobra.Command{
 	Short: "test shalm charts",
 	Long:  `test shalm charts using starlark`,
 	Run: func(cmd *cobra.Command, args []string) {
-		exit(test(args, shalm.NewK8sInMemory("test")))
+		exit(test(args, k8s.NewK8sInMemory("test")))
 	},
 }
 
@@ -48,7 +49,7 @@ func env(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tuple, kwa
 	return starlark.String(os.Getenv(name)), nil
 }
 
-func test(files []string, k shalm.K8s) error {
+func test(files []string, k k8s.K8s) error {
 	t := &testing.T{}
 	repo, _ := repo()
 	thread := &starlark.Thread{Name: "main", Load: rootExecuteOptions.load}
@@ -59,14 +60,14 @@ func test(files []string, k shalm.K8s) error {
 	testRed := color.New(color.FgRed, color.Bold)
 
 	for _, file := range files {
-		k8s, err := testK8s()
+		k, err := testK8s()
 		if err != nil {
 			return err
 		}
 		predeclared := starlark.StringDict{
 			"env":    starlark.NewBuiltin("env", env),
 			"chart":  starlark.NewBuiltin("chart", shalm.NewChartFunction(repo, path.Dir(file), nil, shalm.WithNamespace(namespace))),
-			"k8s":    shalm.NewK8sValue(k8s),
+			"k8s":    k8s.NewK8sValue(k),
 			"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
 			"assert": &starlarkstruct.Module{
 				Name: "assert",

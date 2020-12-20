@@ -24,6 +24,7 @@ import (
 
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm"
 
 	"github.com/go-logr/logr"
@@ -51,7 +52,7 @@ type ShalmChartReconciler struct {
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
 	Repo     shalm.Repo
-	K8s      func(configs ...shalm.K8sConfig) (shalm.K8s, error)
+	K8s      func(configs ...k8s.K8sConfig) (k8s.K8s, error)
 	Load     func(thread *starlark.Thread, module string) (dict starlark.StringDict, err error)
 	Recorder record.EventRecorder
 }
@@ -122,14 +123,14 @@ func (r *ShalmChartReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 
 }
 
-func (r *ShalmChartReconciler) apply(spec *shalmv1a2.ChartSpec, progressCb shalm.ProgressSubscription) error {
-	var tool shalm.Tool
+func (r *ShalmChartReconciler) apply(spec *shalmv1a2.ChartSpec, progressCb k8s.ProgressSubscription) error {
+	var tool k8s.Tool
 	if err := tool.Set(spec.Tool); err != nil {
 		return err
 	}
-	k8s, err := r.K8s(shalm.WithKubeConfigContent(spec.KubeConfig),
-		shalm.WithProgressSubscription(progressCb),
-		shalm.WithTool(tool))
+	k8s, err := r.K8s(k8s.WithKubeConfigContent(spec.KubeConfig),
+		k8s.WithProgressSubscription(progressCb),
+		k8s.WithTool(tool))
 	if err != nil {
 		return err
 	}
@@ -143,14 +144,14 @@ func (r *ShalmChartReconciler) apply(spec *shalmv1a2.ChartSpec, progressCb shalm
 	return chart.Apply(thread, k8s.WithContext(ctx))
 }
 
-func (r *ShalmChartReconciler) delete(spec *shalmv1a2.ChartSpec, progressCb shalm.ProgressSubscription) error {
-	var tool shalm.Tool
+func (r *ShalmChartReconciler) delete(spec *shalmv1a2.ChartSpec, progressCb k8s.ProgressSubscription) error {
+	var tool k8s.Tool
 	if err := tool.Set(spec.Tool); err != nil {
 		return err
 	}
-	k8s, err := r.K8s(shalm.WithKubeConfigContent(spec.KubeConfig),
-		shalm.WithProgressSubscription(progressCb),
-		shalm.WithTool(tool))
+	k8s, err := r.K8s(k8s.WithKubeConfigContent(spec.KubeConfig),
+		k8s.WithProgressSubscription(progressCb),
+		k8s.WithTool(tool))
 	if err != nil {
 		return err
 	}

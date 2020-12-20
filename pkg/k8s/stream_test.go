@@ -1,4 +1,4 @@
-package shalm
+package k8s
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ var _ = Describe("Stream", func() {
 
 	Context("stream", func() {
 		It("behaves like starlark value", func() {
-			s := &stream{Stream: func(w io.Writer) error { _, err := w.Write([]byte("test")); return err }}
+			s := &streamValue{Stream: func(w io.Writer) error { _, err := w.Write([]byte("test")); return err }}
 			Expect(s.String()).To(ContainSubstring("test"))
 			Expect(s.Type()).To(Equal("stream"))
 			Expect(func() { s.Hash() }).Should(Panic())

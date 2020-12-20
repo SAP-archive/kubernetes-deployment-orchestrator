@@ -1,4 +1,4 @@
-package shalm
+package k8s
 
 import (
 	"bytes"
@@ -8,16 +8,18 @@ import (
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
 	"github.com/wonderix/shalm/pkg/shalm/renderer"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 // Stream -
 type Stream = func(io.Writer) error
 
-type stream struct {
+type streamValue struct {
 	Stream
 }
 
-var _ starlark.Value = (*stream)(nil)
+var _ starlark.Value = (*streamValue)(nil)
+var _ starutils.GoConvertible = (*streamValue)(nil)
 
 // ErrorStream -
 func ErrorStream(err error) Stream {
@@ -33,12 +35,18 @@ func ObjectErrorStream(err error) ObjectStream {
 	}
 }
 
-func toStream(v starlark.Value, err error) Stream {
+// NewStreamValue -
+func NewStreamValue(s Stream) starlark.Value {
+	return &streamValue{Stream: s}
+}
+
+// ToStream -
+func ToStream(v starlark.Value, err error) Stream {
 	if err != nil {
 		return ErrorStream(err)
 	}
 	switch v := v.(type) {
-	case *stream:
+	case *streamValue:
 		return v.Stream
 	case starlark.String:
 		return func(writer io.Writer) error {
@@ -49,7 +57,8 @@ func toStream(v starlark.Value, err error) Stream {
 	return ErrorStream(errors.New("Invalid return code from template"))
 }
 
-func yamlConcat(streams ...Stream) Stream {
+// YamlConcat -
+func YamlConcat(streams ...Stream) Stream {
 	return func(in io.Writer) error {
 
 		for _, s := range streams {
@@ -74,7 +83,7 @@ func (w *writeCounter) Write(data []byte) (int, error) {
 }
 
 // String -
-func (c *stream) String() string {
+func (c *streamValue) String() string {
 	buf := &bytes.Buffer{}
 	err := c.Stream(buf)
 	if err != nil {
@@ -84,23 +93,29 @@ func (c *stream) String() string {
 }
 
 // Type -
-func (c *stream) Type() string { return "stream" }
+func (c *streamValue) Type() string { return "stream" }
 
 // Freeze -
-func (c *stream) Freeze() {}
+func (c *streamValue) Freeze() {}
 
 // Truth -
-func (c *stream) Truth() starlark.Bool { return true }
+func (c *streamValue) Truth() starlark.Bool { return true }
 
 // Hash -
-func (c *stream) Hash() (uint32, error) { panic("implement me") }
+func (c *streamValue) Hash() (uint32, error) { panic("implement me") }
 
 // Attr -
-func (c *stream) Attr(name string) (starlark.Value, error) {
+func (c *streamValue) Attr(name string) (starlark.Value, error) {
 	return starlark.None, starlark.NoSuchAttrError(fmt.Sprintf("stream has no .%s attribute", name))
 }
 
 // AttrNames -
-func (c *stream) AttrNames() []string {
+func (c *streamValue) AttrNames() []string {
 	return []string{}
+}
+
+// starutils.ToGo -
+
+func (c *streamValue) ToGo() interface{} {
+	return nil
 }

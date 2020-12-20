@@ -7,6 +7,7 @@ import (
 	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/wonderix/shalm/pkg/k8s"
 )
 
 var _ = Describe("userCredentials", func() {
@@ -19,10 +20,10 @@ var _ = Describe("userCredentials", func() {
 			}
 			user.Username = []byte("username1")
 			user.Password = []byte("password1")
-			k8s := FakeK8s{
-				GetStub: func(kind string, name string, k8s *K8sOptions) (*Object, error) {
+			k := k8s.FakeK8s{
+				GetStub: func(kind string, name string, ko *k8s.K8sOptions) (*k8s.Object, error) {
 					data, _ := json.Marshal(user)
-					return &Object{
+					return &k8s.Object{
 						Additional: map[string]json.RawMessage{
 							"data": json.RawMessage(data),
 						},
@@ -31,7 +32,7 @@ var _ = Describe("userCredentials", func() {
 			}
 			u, _ := makeUserCredential(nil, nil, starlark.Tuple{starlark.String("test")}, nil)
 			userCred := u.(*jewel)
-			err := userCred.read(&vaultK8s{k8s: &k8s})
+			err := userCred.read(&vaultK8s{k8s: &k})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(attValue(userCred, "username")).To(Equal(string(user.Username)))
 			Expect(attValue(userCred, "password")).To(Equal(string(user.Password)))
@@ -39,8 +40,8 @@ var _ = Describe("userCredentials", func() {
 		})
 
 		It("creates new random username and password if user_credential doesn't exist", func() {
-			k8s := FakeK8s{
-				GetStub: func(kind string, name string, k8s *K8sOptions) (*Object, error) {
+			k := k8s.FakeK8s{
+				GetStub: func(kind string, name string, k8s *k8s.K8sOptions) (*k8s.Object, error) {
 					return nil, errors.New("NotFound")
 				},
 				IsNotExistStub: func(err error) bool {
@@ -49,7 +50,7 @@ var _ = Describe("userCredentials", func() {
 			}
 			u, _ := makeUserCredential(nil, nil, starlark.Tuple{starlark.String("test")}, nil)
 			userCred := u.(*jewel)
-			err := userCred.read(&vaultK8s{k8s: &k8s})
+			err := userCred.read(&vaultK8s{k8s: &k})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(attValue(userCred, "username")).To(HaveLen(16))
 			Expect(attValue(userCred, "password")).To(HaveLen(16))

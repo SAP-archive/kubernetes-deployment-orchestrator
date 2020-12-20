@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/k14s/starlark-go/starlark"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 // ReadProperty -
@@ -32,6 +33,7 @@ type property struct {
 }
 
 var _ PropertyValue = (*property)(nil)
+var _ starutils.GoConvertible = (*property)(nil)
 
 func newProperty(dflt starlark.Value) *property {
 	return &property{value: starlark.None, typ: "string", dflt: dflt}
@@ -91,4 +93,9 @@ func (s *property) GetValueOrDefault() starlark.Value {
 
 func (s *property) AttrNames() []string {
 	return []string{}
+}
+
+// starutils.ToGo -
+func (s *property) ToGo() interface{} {
+	return starutils.ToGo(s.GetValueOrDefault())
 }

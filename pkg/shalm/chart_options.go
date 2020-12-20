@@ -10,6 +10,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/spf13/pflag"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 // Properties -
@@ -71,7 +72,7 @@ func (p *Properties) set(key string, value starlark.Value) {
 
 func (p *Properties) setWithMap(values map[string]interface{}) {
 	for k, v := range values {
-		p.set(k, ToStarlark(v))
+		p.set(k, starutils.ToStarlark(v))
 	}
 }
 
@@ -112,7 +113,7 @@ func (p *propertiesYamlVar) Set(val string) error {
 		if err != nil {
 			return err
 		}
-		p.properties.set(key, ToStarlark(v))
+		p.properties.set(key, starutils.ToStarlark(v))
 		return nil
 	})
 }

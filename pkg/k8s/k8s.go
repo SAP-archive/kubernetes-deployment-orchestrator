@@ -1,4 +1,4 @@
-package shalm
+package k8s
 
 import (
 	"bytes"
@@ -72,6 +72,7 @@ type K8s interface {
 	Progress(progress int)
 	Tool() Tool
 	SetTool(tool Tool)
+	Namespace(options *K8sOptions) *string
 }
 
 // ProgressSubscription -
@@ -348,14 +349,19 @@ func (k *k8sImpl) Delete(output ObjectStream, options *K8sOptions) (err error) {
 
 var invalidValueRegex = regexp.MustCompile("[^a-zA-Z0-9\\-_\\.]")
 
+// FixLabelValue -
+func FixLabelValue(value string) string {
+	return invalidValueRegex.ReplaceAllString(value, "-")
+}
+
 func (k *k8sImpl) objMapper() func(obj *Object) *Object {
 	return func(obj *Object) *Object {
 		obj.setDefaultNamespace(k.namespace)
 		if obj.MetaData.Labels == nil {
 			obj.MetaData.Labels = make(map[string]string)
 		}
-		obj.MetaData.Labels["shalm.wonderix.github.com/app"] = invalidValueRegex.ReplaceAllString(k.app, "")
-		obj.MetaData.Labels["shalm.wonderix.github.com/version"] = invalidValueRegex.ReplaceAllString(k.version.String(), "")
+		obj.MetaData.Labels["shalm.wonderix.github.com/app"] = FixLabelValue(k.app)
+		obj.MetaData.Labels["shalm.wonderix.github.com/version"] = FixLabelValue(k.version.String())
 		return obj
 	}
 }
@@ -410,7 +416,7 @@ func ignoreNotFound(obj *Object, err error, options *K8sOptions) (*Object, error
 // Get -
 func (k *k8sImpl) Get(kind string, name string, options *K8sOptions) (*Object, error) {
 	if k.client != nil {
-		obj, err := k.client.Get().Namespace(k.ns(options)).Resource(kind).Name(name).Do().Get()
+		obj, err := k.client.Get().Namespace(k.Namespace(options)).Resource(kind).Name(name).Do().Get()
 		if err == nil {
 			return obj, nil
 		}
@@ -437,7 +443,7 @@ func (k *k8sImpl) Patch(kind string, name string, pt types.PatchType, patch stri
 	if k.client == nil {
 		return nil, errors.New("Not connected")
 	}
-	obj, err := k.client.Patch(pt).Namespace(k.ns(options)).Resource(kind).Name(name).Body([]byte(patch)).Do().Get()
+	obj, err := k.client.Patch(pt).Namespace(k.Namespace(options)).Resource(kind).Name(name).Body([]byte(patch)).Do().Get()
 	if err != nil {
 		if options.IgnoreNotFound {
 			statusError, ok := err.(*k8serrors.StatusError)
@@ -463,10 +469,10 @@ func (k *k8sImpl) CreateOrUpdate(obj *Object, mutate func(obj *Object) error, op
 		if !k.IsNotExist(err) {
 			return nil, err
 		}
-		req = k.client.Post().Namespace(k.ns(options)).Resource(obj.Kind)
+		req = k.client.Post().Namespace(k.Namespace(options)).Resource(obj.Kind)
 	} else {
 		obj = old
-		req = k.client.Put().Namespace(k.ns(options)).Resource(obj.Kind).Name(obj.MetaData.Name)
+		req = k.client.Put().Namespace(k.Namespace(options)).Resource(obj.Kind).Name(obj.MetaData.Name)
 	}
 	err = mutate(obj)
 	if err != nil {
@@ -484,7 +490,7 @@ func (k *k8sImpl) DeleteByName(kind string, name string, options *K8sOptions) er
 	if k.client == nil {
 		return errors.New("Not connected")
 	}
-	err := k.client.Delete().Namespace(k.ns(options)).Resource(kind).Name(name).Do().Error()
+	err := k.client.Delete().Namespace(k.Namespace(options)).Resource(kind).Name(name).Do().Error()
 	if err != nil {
 		if options.IgnoreNotFound && k8serrors.IsNotFound(err) {
 			return nil
@@ -588,7 +594,7 @@ func run(cmd *exec.Cmd) error {
 
 }
 
-func (k *k8sImpl) ns(options *K8sOptions) *string {
+func (k *k8sImpl) Namespace(options *K8sOptions) *string {
 	if options.ClusterScoped {
 		return nil
 	}
@@ -605,7 +611,7 @@ func (k *k8sImpl) kubectl(command string, options *K8sOptions, flags ...string) 
 	} else {
 		flags = append([]string{command}, flags...)
 	}
-	namespace := k.ns(options)
+	namespace := k.Namespace(options)
 	if namespace != nil {
 		flags = append(flags, "-n", *namespace)
 	}
@@ -639,7 +645,7 @@ func (k *k8sImpl) kapp(command string, options *K8sOptions, flags ...string) *ex
 	} else {
 		flags = append([]string{command}, flags...)
 	}
-	namespace := k.ns(options)
+	namespace := k.Namespace(options)
 	if namespace != nil {
 		flags = append(flags, "-n", *namespace)
 	} else if len(k.kubeConfig) != 0 {

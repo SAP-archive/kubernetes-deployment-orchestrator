@@ -1,4 +1,4 @@
-package shalm
+package k8s
 
 import (
 	"context"
@@ -226,4 +226,8 @@ func (k K8sInMemory) DeleteByName(kind string, name string, options *K8sOptions)
 
 // Progress -
 func (k K8sInMemory) Progress(progress int) {
+}
+
+func (k K8sInMemory) Namespace(options *K8sOptions) *string {
+	return &options.Namespace
 }

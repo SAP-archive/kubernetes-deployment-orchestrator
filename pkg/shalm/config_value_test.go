@@ -7,7 +7,7 @@ import (
 	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/pkg/errors"
+	"github.com/wonderix/shalm/pkg/k8s"
 )
 
 var _ = Describe("config value", func() {
@@ -48,14 +48,7 @@ var _ = Describe("config value", func() {
 			})
 
 			It("reads values from k8s", func() {
-				k8s := &FakeK8s{
-					GetStub: func(kind string, name string, k8s *K8sOptions) (*Object, error) {
-						return nil, errors.New("NotFound")
-					},
-					IsNotExistStub: func(err error) bool {
-						return true
-					},
-				}
+				k8s := k8s.NewK8sInMemoryEmpty()
 				err := cv.read(&vaultK8s{k8s: k8s})
 				Expect(err).NotTo(HaveOccurred())
 

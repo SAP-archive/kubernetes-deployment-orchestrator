@@ -1,4 +1,4 @@
-package shalm
+package k8s
 
 import (
 	"bytes"
@@ -114,7 +114,8 @@ func (o ObjectStream) Filter(filter func(obj *Object) bool) ObjectStream {
 	}
 }
 
-func decode(in Stream) ObjectStream {
+// Decode -
+func Decode(in Stream) ObjectStream {
 	return func(w ObjectWriter) error {
 		buffer := &bytes.Buffer{}
 		err := in(buffer)

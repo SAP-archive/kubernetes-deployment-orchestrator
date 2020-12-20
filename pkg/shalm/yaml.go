@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/k14s/starlark-go/starlark"
+	"github.com/wonderix/shalm/pkg/starutils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -49,10 +50,10 @@ func ReadYamlFile(filename string) (starlark.Value, error) {
 	if err != nil {
 		return starlark.None, err
 	}
-	return WrapDict(ToStarlark(content)), nil
+	return starutils.WrapDict(starutils.ToStarlark(content)), nil
 }
 
 // WriteYamlFile -
 func WriteYamlFile(filename string, value starlark.Value) error {
-	return writeYamlFile(filename, toGo(value))
+	return writeYamlFile(filename, starutils.ToGo(value))
 }

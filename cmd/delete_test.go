@@ -5,6 +5,7 @@ import (
 	"path"
 
 	semver "github.com/Masterminds/semver/v3"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm"
 
 	. "github.com/onsi/ginkgo"
@@ -15,13 +16,13 @@ var _ = Describe("Delete Chart", func() {
 
 	It("produces the correct output", func() {
 		writer := bytes.Buffer{}
-		k := &FakeK8s{
-			DeleteStub: func(i shalm.ObjectStream, options *shalm.K8sOptions) error {
+		k := &k8s.FakeK8s{
+			DeleteStub: func(i k8s.ObjectStream, options *k8s.K8sOptions) error {
 				i.Encode()(&writer)
 				return nil
 			},
 		}
-		k.ForSubChartStub = func(s string, app string, version *semver.Version, children int) shalm.K8s {
+		k.ForSubChartStub = func(s string, app string, version *semver.Version, children int) k8s.K8s {
 			return k
 		}
 

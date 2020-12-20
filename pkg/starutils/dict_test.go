@@ -1,4 +1,4 @@
-package shalm
+package starutils
 
 import (
 	"github.com/k14s/starlark-go/starlark"

@@ -10,6 +10,8 @@ import (
 
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/k14s/starlark-go/starlarkstruct"
+	"github.com/wonderix/shalm/pkg/k8s"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 func (c *chartImpl) loadChartYaml() error {
@@ -50,7 +52,7 @@ func toProperty(vi interface{}) PropertyValue {
 		}
 		return s
 	default:
-		return newProperty(ToStarlark(vi))
+		return newProperty(starutils.ToStarlark(vi))
 	}
 
 }
@@ -79,7 +81,7 @@ func NewChartFunction(repo Repo, dir string, options ...ChartOption) func(thread
 		}
 
 		co := chartOptions(options)
-		parser := &kwargsParser{kwargs: kwargs}
+		parser := &starutils.KwArgsParser{KwArgs: kwargs}
 		parser.Arg("namespace", func(value starlark.Value) {
 			co.namespace = value.(starlark.String).GoString()
 		})
@@ -173,14 +175,14 @@ func (c *chartImpl) wrapNamespace(callable starlark.Callable) starlark.Callable 
 		if len(args) == 0 {
 			return nil, fmt.Errorf("Missing first argument k8s")
 		}
-		k, ok := args[0].(K8sValue)
+		k, ok := args[0].(k8s.K8sValue)
 		if !ok {
 			return nil, fmt.Errorf("Invalid first argument to %s", callable.Name())
 		}
 		children := 0
 		c.eachSubChart(func(subChart *chartImpl) error { children++; return nil })
 		subK8s := k.ForSubChart(c.namespace, c.GetName(), c.GetVersion(), children)
-		args[0] = &k8sValueImpl{subK8s}
+		args[0] = k8s.NewK8sValue(subK8s)
 		value, err := starlark.Call(thread, callable, args, kwargs)
 		return value, err
 

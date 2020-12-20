@@ -7,6 +7,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
+	"github.com/wonderix/shalm/pkg/starutils"
 )
 
 var nameRegexp = regexp.MustCompile("^[a-zA-Z][a-zA-Z0-9\\-\\./]*$")
@@ -58,17 +59,17 @@ func (cc *chartClass) Attr(name string) (starlark.Value, error) {
 	case "description":
 		return starlark.String(cc.Description), nil
 	case "keywords":
-		return ToStarlark(cc.Keywords), nil
+		return starutils.ToStarlark(cc.Keywords), nil
 	case "home":
 		return starlark.String(cc.Home), nil
 	case "sources":
-		return ToStarlark(cc.Sources), nil
+		return starutils.ToStarlark(cc.Sources), nil
 	case "icon":
 		return starlark.String(cc.Icon), nil
 	case "kube_version":
 		return starlark.String(cc.KubeVersion), nil
 	case "maintainers":
-		return ToStarlark(cc.Maintainers), nil
+		return starutils.ToStarlark(cc.Maintainers), nil
 	case "engine":
 		return starlark.String(cc.Engine), nil
 	case "app_version":
@@ -145,17 +146,17 @@ func (cc *chartClass) SetField(name string, val starlark.Value) error {
 	case "description":
 		cc.Description = val.(starlark.String).GoString()
 	case "keywords":
-		cc.Keywords = toGoStringList(val)
+		cc.Keywords = starutils.ToGoStringList(val)
 	case "home":
 		cc.Home = val.(starlark.String).GoString()
 	case "sources":
-		cc.Sources = toGoStringList(val)
+		cc.Sources = starutils.ToGoStringList(val)
 	case "icon":
 		cc.Icon = val.(starlark.String).GoString()
 	case "kube_version":
 		cc.KubeVersion = val.(starlark.String).GoString()
 	case "maintainers":
-		maintainers := toGo(val).([]interface{})
+		maintainers := starutils.ToGo(val).([]interface{})
 		cc.Maintainers = make([]map[string]interface{}, 0)
 		for _, maintainer := range maintainers {
 			cc.Maintainers = append(cc.Maintainers, maintainer.(map[string]interface{}))

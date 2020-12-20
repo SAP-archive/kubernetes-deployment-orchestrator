@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/wonderix/shalm/pkg/extensions"
+	"github.com/wonderix/shalm/pkg/k8s"
 	"github.com/wonderix/shalm/pkg/shalm"
 )
 
@@ -133,14 +134,14 @@ func WithTestFlags(flags func(flagsSet *pflag.FlagSet)) ExecuteOption {
 }
 
 // WithK8s overrides constructor for k8s
-func WithK8s(k func(configs ...shalm.K8sConfig) (shalm.K8s, error)) ExecuteOption {
+func WithK8s(k func(configs ...k8s.K8sConfig) (k8s.K8s, error)) ExecuteOption {
 	return func(e *ExecuteOptions) {
-		k8s = k
+		newK8s = k
 	}
 }
 
 // WithTestK8s overrides constructor for k8s
-func WithTestK8s(k func(configs ...shalm.K8sConfig) (shalm.K8s, error)) ExecuteOption {
+func WithTestK8s(k func(configs ...k8s.K8sConfig) (k8s.K8s, error)) ExecuteOption {
 	return func(e *ExecuteOptions) {
 		testK8s = k
 	}

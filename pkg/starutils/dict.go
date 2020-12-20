@@ -1,4 +1,4 @@
-package shalm
+package starutils
 
 import (
 	"fmt"

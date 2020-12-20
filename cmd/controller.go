@@ -2,7 +2,7 @@ package cmd
 
 import (
 	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
-	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/wonderix/shalm/pkg/k8s"
 
 	"github.com/pkg/errors"
 	"github.com/wonderix/shalm/controllers"
@@ -14,7 +14,7 @@ import (
 	control "sigs.k8s.io/controller-runtime/pkg/controller"
 )
 
-var controllerK8sArgs = shalm.K8sConfigs{}
+var controllerK8sArgs = k8s.K8sConfigs{}
 
 var controllerCmd = &cobra.Command{
 	Use:   "controller",
@@ -55,9 +55,9 @@ func controller(stopCh <-chan struct{}) error {
 		Scheme: mgr.GetScheme(),
 		Log:    reconcilerLog,
 		Repo:   repo,
-		K8s: func(configs ...shalm.K8sConfig) (shalm.K8s, error) {
-			configs = append([]shalm.K8sConfig{controllerK8sArgs.Merge()}, configs...)
-			return shalm.NewK8s(configs...)
+		K8s: func(configs ...k8s.K8sConfig) (k8s.K8s, error) {
+			configs = append([]k8s.K8sConfig{controllerK8sArgs.Merge()}, configs...)
+			return k8s.NewK8s(configs...)
 		},
 		Load:     rootExecuteOptions.load,
 		Recorder: mgr.GetEventRecorderFor("shalmchart-controller"),
