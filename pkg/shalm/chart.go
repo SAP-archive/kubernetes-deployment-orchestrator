@@ -312,11 +312,9 @@ func (c *chartImpl) applyLocalFunction() starlark.Callable {
 		var k k8s.K8sValue
 		var glob string
 		k8sOptions := &k8s.Options{}
-		options, done := k8sOptions.Args()
-		if err := starlark.UnpackArgs("__apply", args, kwargs, append([]interface{}{"k8s", &k, "glob?", &glob}, options...)...); err != nil {
+		if err := k8sOptions.UnpackArgs("__apply", args, kwargs, "k8s", &k, "glob?", &glob); err != nil {
 			return nil, err
 		}
-		done()
 		return starlark.None, c.applyLocal(thread, k, k8sOptions, glob)
 	})
 }
@@ -452,11 +450,9 @@ func (c *chartImpl) deleteLocalFunction() starlark.Callable {
 		var k k8s.K8sValue
 		var glob string
 		k8sOptions := &k8s.Options{}
-		options, done := k8sOptions.Args()
-		if err := starlark.UnpackArgs("__delete", args, kwargs, append([]interface{}{"k8s", &k, "glob?", &glob}, options...)...); err != nil {
+		if err := k8sOptions.UnpackArgs("__delete", args, kwargs, "k8s", &k, "glob?", &glob); err != nil {
 			return nil, err
 		}
-		done()
 		return starlark.None, c.deleteLocal(thread, k, k8sOptions, glob)
 	})
 }
