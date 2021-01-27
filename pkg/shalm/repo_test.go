@@ -35,24 +35,24 @@ var _ = Describe("Repo", func() {
 			repo, _ = NewRepo()
 		})
 		It("reads chart from directory", func() {
-			chart, err := repo.Get(thread, path.Join(example, "mariadb"), WithNamespace("namespace"))
+			chart, err := repo.Get(thread, path.Join(example, "uaa"), WithNamespace("namespace"))
 			Expect(err).ToNot(HaveOccurred())
-			Expect(chart.GetName()).To(Equal("mariadb"))
+			Expect(chart.GetName()).To(Equal("uaa"))
 		})
 		It("reads chart from tar file", func() {
-			chart, err := repo.Get(thread, path.Join(example, "mariadb-6.12.2.tgz"), WithNamespace("namespace"))
+			chart, err := repo.Get(thread, path.Join(example, "uaa-1.3.4.tgz"), WithNamespace("namespace"))
 			Expect(err).ToNot(HaveOccurred())
-			Expect(chart.GetName()).To(Equal("mariadb"))
+			Expect(chart.GetName()).To(Equal("uaa"))
 		})
 		It("reads chart from zip file", func() {
-			chart, err := repo.Get(thread, path.Join(example, "mariadb-6.12.2.zip"), WithNamespace("namespace"))
+			chart, err := repo.Get(thread, path.Join(example, "uaa-1.3.4.zip"), WithNamespace("namespace"))
 			Expect(err).ToNot(HaveOccurred())
-			Expect(chart.GetName()).To(Equal("mariadb"))
+			Expect(chart.GetName()).To(Equal("uaa"))
 		})
 		It("reads chart from http", func() {
 
-			http.HandleFunc("/mariadb.tgz", func(w http.ResponseWriter, r *http.Request) {
-				content, _ := ioutil.ReadFile(path.Join(example, "mariadb-6.12.2.tgz"))
+			http.HandleFunc("/uaa.tgz", func(w http.ResponseWriter, r *http.Request) {
+				content, _ := ioutil.ReadFile(path.Join(example, "uaa-1.3.4.tgz"))
 				w.Write(content)
 			})
 
@@ -64,12 +64,12 @@ var _ = Describe("Repo", func() {
 					break
 				}
 			}
-			chart, err := repo.Get(thread, "http://localhost:8675/mariadb.tgz", WithNamespace("namespace"))
+			chart, err := repo.Get(thread, "http://localhost:8675/uaa.tgz", WithNamespace("namespace"))
 			Expect(err).ToNot(HaveOccurred())
-			Expect(chart.GetName()).To(Equal("mariadb"))
+			Expect(chart.GetName()).To(Equal("uaa"))
 		})
 		It("creates chart from spec", func() {
-			tgz, err := ioutil.ReadFile(path.Join(example, "mariadb-6.12.2.tgz"))
+			tgz, err := ioutil.ReadFile(path.Join(example, "uaa-1.3.4.tgz"))
 			Expect(err).ToNot(HaveOccurred())
 			chart, err := repo.GetFromSpec(thread, &shalmv1a2.ChartSpec{
 				Namespace: "namespace",
@@ -77,7 +77,7 @@ var _ = Describe("Repo", func() {
 				Values:    runtime2.RawExtension{Raw: []byte(`{ "timeout" : 8 , "name" : "test"}`)},
 			})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(chart.GetName()).To(Equal("mariadb"))
+			Expect(chart.GetName()).To(Equal("uaa"))
 			Expect(chart.(*chartImpl).values["timeout"]).To(Equal(starlark.Float(8))) // json.Unmarshal converts always to float64
 			Expect(chart.(*chartImpl).values["name"]).To(Equal(starlark.String("test")))
 		})

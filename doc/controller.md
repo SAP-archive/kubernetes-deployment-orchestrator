@@ -23,5 +23,5 @@ or from inside another shalm chart
 
 ```python
 def init(self):
-  self.mariadb = chart("mariadb",proxy="local")
+  self.uaa = chart("uaa",proxy="local")
 ```

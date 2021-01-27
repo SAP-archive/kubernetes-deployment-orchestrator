@@ -14,11 +14,11 @@ Tests can be written in starlark.  The following symbols are predefined
 | `assert.neq(v1,v2)`     | Assert not equals                                                                |
 
 ```python
-c = chart("../charts/example/simple/mariadb")
+c = chart("../charts/example/simple/uaa")
 c.apply(k8s)
-mariadb = k8s.get("statefulset","mariadb-master")
-assert.eq(mariadb.metadata.name,"mariadb-master")
-assert.neq(mariadb.metadata.name,"mariadb-masterx")
+uaa = k8s.get("statefulset","uaa-master")
+assert.eq(uaa.metadata.name,"uaa-master")
+assert.neq(uaa.metadata.name,"uaa-masterx")
 ```
 
 ### Running tests

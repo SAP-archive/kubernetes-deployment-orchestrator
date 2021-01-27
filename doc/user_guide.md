@@ -106,12 +106,12 @@ two parameters `(self, glob='')` or three parameters `(self, glob='', k8s=None)`
 
 ```python
 def init(self):
-  self.mariadb = chart("mariadb")
-  self.uaa = chart("uaa",database = self.mariadb)
+  self.uaa = chart("uaa")
+  self.uaa = chart("uaa",database = self.uaa)
 
 def apply(self,k8s):
-  self.mariadb.apply(k8s) # Apply mariadb stuff (recursive)
-  k8s.rollout_status("statefulset","mariadb-master")  # Interact with kubernetes
+  self.uaa.apply(k8s) # Apply uaa stuff (recursive)
+  k8s.rollout_status("statefulset","uaa-master")  # Interact with kubernetes
   self.uaa.apply(k8s)     # Apply uaa stuff (recursive)
   self.__apply(k8s)       # Apply everthing defined in this chart (not recursive)
 

@@ -12,6 +12,7 @@ import (
 var _ = Describe("Template Chart", func() {
 
 	It("template the correct output", func() {
+		Skip("unsupported")
 		writer := &bytes.Buffer{}
 		err := template(path.Join(example, "cf"), k8s.NewK8sInMemoryEmpty())(writer)
 		Expect(err).ToNot(HaveOccurred())

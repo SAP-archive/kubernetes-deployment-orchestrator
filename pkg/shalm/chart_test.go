@@ -25,20 +25,20 @@ var _ = Describe("Chart", func() {
 			dir := NewTestDir()
 			defer dir.Remove()
 			repo, _ := NewRepo()
-			dir.WriteFile("Chart.yaml", []byte("name: mariadb\nversion: 6.12.2\n"), 0644)
+			dir.WriteFile("Chart.yaml", []byte("name: uaa\nversion: 1.3.4\n"), 0644)
 			c, err := newChart(thread, repo, dir.Root())
 			Expect(err).NotTo(HaveOccurred())
-			Expect(c.GetName()).To(Equal("mariadb"))
+			Expect(c.GetName()).To(Equal("uaa"))
 		})
 		It("reads Chart.yaml 'v' prefix in version", func() {
 			thread := &starlark.Thread{Name: "main"}
 			dir := NewTestDir()
 			defer dir.Remove()
 			repo, _ := NewRepo()
-			dir.WriteFile("Chart.yaml", []byte("name: mariadb\nversion: v6.12.2\n"), 0644)
+			dir.WriteFile("Chart.yaml", []byte("name: uaa\nversion: v6.12.2\n"), 0644)
 			c, err := newChart(thread, repo, dir.Root())
 			Expect(err).NotTo(HaveOccurred())
-			Expect(c.GetName()).To(Equal("mariadb"))
+			Expect(c.GetName()).To(Equal("uaa"))
 			Expect(c.GetVersion()).To(Equal(semver.MustParse("v6.12.2")))
 		})
 
@@ -301,12 +301,12 @@ def init(self):
 			dir = NewTestDir()
 			dir.MkdirAll("templates", 0755)
 			dir.WriteFile("templates/deployment.yaml", []byte("namespace: {{ .Release.Namespace}}"), 0644)
-			dir.WriteFile("Chart.yaml", []byte("name: mariadb\nversion: 6.12.2\n"), 0644)
+			dir.WriteFile("Chart.yaml", []byte("name: uaa\nversion: 1.3.4\n"), 0644)
 			repo, _ := NewRepo()
 			var err error
 			c, err = newChart(thread, repo, dir.Root(), WithNamespace("namespace"), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(c.GetName()).To(Equal("mariadb"))
+			Expect(c.GetName()).To(Equal("uaa"))
 
 		})
 		AfterEach(func() {
@@ -314,7 +314,7 @@ def init(self):
 		})
 		It("templates a chart", func() {
 			defer dir.Remove()
-			Expect(c.GetName()).To(Equal("mariadb"))
+			Expect(c.GetName()).To(Equal("uaa"))
 			buf := &bytes.Buffer{}
 			err := c.Template(thread, k8s.NewK8sInMemoryEmpty())(buf)
 			Expect(err).NotTo(HaveOccurred())
@@ -322,7 +322,7 @@ def init(self):
 		})
 
 		It("applies a chart", func() {
-			Expect(c.GetName()).To(Equal("mariadb"))
+			Expect(c.GetName()).To(Equal("uaa"))
 			writer := bytes.Buffer{}
 			k := &k8s.FakeK8s{
 				ApplyStub: func(i k8s.ObjectStream, options *k8s.Options) error {
@@ -338,7 +338,7 @@ def init(self):
 		})
 
 		It("deletes a chart", func() {
-			Expect(c.GetName()).To(Equal("mariadb"))
+			Expect(c.GetName()).To(Equal("uaa"))
 			writer := bytes.Buffer{}
 			k := &k8s.FakeK8s{
 				DeleteStub: func(i k8s.ObjectStream, options *k8s.Options) error {
@@ -412,12 +412,12 @@ def init(self):
 				dir.WriteFile(fmt.Sprintf(".ignored/test%d.md", i), []byte("0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789"), 0644)
 			}
 			dir.WriteFile(".shalmignore", []byte(".ignored\n"), 0644)
-			dir.WriteFile("Chart.yaml", []byte("name: mariadb\nversion: 6.12.2\n"), 0644)
+			dir.WriteFile("Chart.yaml", []byte("name: uaa\nversion: 1.3.4\n"), 0644)
 			repo, _ := NewRepo()
 			var err error
 			c, err = newChart(thread, repo, dir.Root(), WithNamespace("namespace"), WithSkipChart(true))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(c.GetName()).To(Equal("mariadb"))
+			Expect(c.GetName()).To(Equal("uaa"))
 
 		})
 		AfterEach(func() {
@@ -427,7 +427,7 @@ def init(self):
 			writer := &bytes.Buffer{}
 			err := c.Package(writer, false)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(writer.Bytes()).To(HaveLen(198))
+			Expect(writer.Bytes()).To(HaveLen(192))
 		})
 	})
 	It("behaves like starlark value", func() {

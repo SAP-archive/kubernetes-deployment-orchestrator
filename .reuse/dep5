@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: github.com/sap/kubernetes-deployment-orchestrator
+Upstream-Contact: u.kramer@sap.com
+Source: https://github.com/sap/kubernetes-deployment-orchestrator
+
+Files: **
+Copyright:  2020-2021 SAP SE or an SAP affiliate company and kubernetes-deployment-orchestrator contributors
+License: Apache-2.0

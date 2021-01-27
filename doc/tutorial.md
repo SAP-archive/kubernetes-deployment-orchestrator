@@ -494,11 +494,11 @@ def apply(self,k8s):
 There is an in memory implementation of the kubernetes client
 
 ```python
-c = chart("../charts/example/simple/mariadb")
+c = chart("../charts/example/simple/uaa")
 c.apply(k8s)
-mariadb = k8s.get("statefulset","mariadb-master")
-assert.eq(mariadb.metadata.name,"mariadb-master")
-assert.neq(mariadb.metadata.name,"mariadb-masterx")
+uaa = k8s.get("statefulset","uaa-master")
+assert.eq(uaa.metadata.name,"uaa-master")
+assert.neq(uaa.metadata.name,"uaa-masterx")
 ```
 
 ```bash

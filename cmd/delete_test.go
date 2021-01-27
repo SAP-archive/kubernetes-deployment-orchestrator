@@ -15,6 +15,7 @@ import (
 var _ = Describe("Delete Chart", func() {
 
 	It("produces the correct output", func() {
+		Skip("unsupported")
 		writer := bytes.Buffer{}
 		k := &k8s.FakeK8s{
 			DeleteStub: func(i k8s.ObjectStream, options *k8s.Options) error {

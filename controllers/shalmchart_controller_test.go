@@ -44,7 +44,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 
 	Context("ShalmChartReconciler", func() {
 
-		chartTgz, _ := ioutil.ReadFile(path.Join(example, "mariadb-6.12.2.tgz"))
+		chartTgz, _ := ioutil.ReadFile(path.Join(example, "uaa-1.3.4.tgz"))
 
 		var (
 			chart      *shalmv1a2.ShalmChart
@@ -125,7 +125,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			_, err := reconciler.Reconcile(ctrl.Request{})
 			k8sConfigs.Progress(100)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(buffer.String()).To(ContainSubstring(`"serviceName":"mariadb-master"`))
+			Expect(buffer.String()).To(ContainSubstring(`"stringData":{"password":"test","username":"test"}`))
 			Expect(chart.ObjectMeta.Finalizers).To(ContainElement("controller.shalm.wonderix.github.com"))
 			Expect(chart.Status.LastOp.Progress).To(Equal(100))
 			Expect(k.ApplyCallCount()).To(Equal(1))
@@ -165,7 +165,7 @@ var _ = Describe("ShalmChartReconciler", func() {
 			Expect(err).NotTo(HaveOccurred())
 			Expect(chart.ObjectMeta.Finalizers).NotTo(ContainElement("controller.shalm.wonderix.github.com"))
 			Expect(k.DeleteCallCount()).To(Equal(1))
-			Expect(buffer.String()).To(ContainSubstring(`"serviceName":"mariadb-master"`))
+			Expect(buffer.String()).To(ContainSubstring(`"stringData":{"password":"test","username":"test"}`))
 		})
 		It("handles error correct during delete", func() {
 			chart = &shalmv1a2.ShalmChart{
