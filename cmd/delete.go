@@ -4,19 +4,19 @@ import (
 	"fmt"
 
 	"github.com/k14s/starlark-go/starlark"
-	"github.com/wonderix/shalm/pkg/k8s"
-	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
 
 	"github.com/spf13/cobra"
 )
 
-var deleteChartArgs = shalm.ChartOptions{}
+var deleteChartArgs = kdo.ChartOptions{}
 var deleteK8sArgs = k8s.Configs{}
-var deleteOptions = shalm.DeleteOptions{}
+var deleteOptions = kdo.DeleteOptions{}
 
 var deleteCmd = &cobra.Command{
 	Use:   "delete [chart]",
-	Short: "delete shalm chart",
+	Short: "delete kdo chart",
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -30,7 +30,7 @@ var deleteCmd = &cobra.Command{
 	},
 }
 
-func delete(url string, k k8s.K8s, deleteOpt *shalm.DeleteOptions, opts ...shalm.ChartOption) error {
+func delete(url string, k k8s.K8s, deleteOpt *kdo.DeleteOptions, opts ...kdo.ChartOption) error {
 	repo, err := repo()
 	if err != nil {
 		return err

@@ -10,11 +10,11 @@ import (
 
 	"github.com/k14s/ytt/pkg/yttlibrary"
 	"github.com/k14s/ytt/pkg/yttlibrary/overlay"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/extensions"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/wonderix/shalm/pkg/extensions"
-	"github.com/wonderix/shalm/pkg/k8s"
-	"github.com/wonderix/shalm/pkg/shalm"
 )
 
 var repoConfigFile string
@@ -26,7 +26,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	repoConfigFileDefault = path.Join(homedir, ".shalm", "config")
+	repoConfigFileDefault = path.Join(homedir, ".kdo", "config")
 	rootCmd.AddCommand(applyCmd)
 	rootCmd.AddCommand(templateCmd)
 	rootCmd.AddCommand(deleteCmd)
@@ -35,21 +35,21 @@ func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(testCmd)
 	rootCmd.AddCommand(listCmd)
-	rootCmd.PersistentFlags().StringVar(&repoConfigFile, "config", repoConfigFileDefault, "shalm configuration file (e.g. credentials)")
+	rootCmd.PersistentFlags().StringVar(&repoConfigFile, "config", repoConfigFileDefault, "kdo configuration file (e.g. credentials)")
 }
 
-func repo() (shalm.Repo, error) {
+func repo() (kdo.Repo, error) {
 	if repoConfigFile == repoConfigFileDefault {
 		if _, err := os.Stat(repoConfigFile); err != nil {
-			return shalm.NewRepo()
+			return kdo.NewRepo()
 		}
 	}
-	return shalm.NewRepo(shalm.WithConfigFile(repoConfigFile))
+	return kdo.NewRepo(kdo.WithConfigFile(repoConfigFile))
 }
 
 var rootCmd = &cobra.Command{
-	Use:   "shalm",
-	Short: "Shalm brings the starlark language to helm charts",
+	Use:   "kdo",
+	Short: "Kubernete deployment orchestrator brings the starlark language to helm charts",
 	Long:  ``,
 	Args:  cobra.ExactArgs(2),
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -86,9 +86,9 @@ func defaultLoad(thread *starlark.Thread, module string) (starlark.StringDict, e
 		return yttlibrary.StructAPI, nil
 	case "@ytt:module":
 		return yttlibrary.ModuleAPI, nil
-	case "@shalm:bcrypt":
+	case "@kdo:bcrypt":
 		return BcryptAPI, nil
-	case "@shalm:osb":
+	case "@kdo:osb":
 		return extensions.OsbAPI(rootOsbConfig), nil
 	}
 	return nil, fmt.Errorf("Unknown module '%s'", module)
@@ -97,7 +97,7 @@ func defaultLoad(thread *starlark.Thread, module string) (starlark.StringDict, e
 // ExecuteOption -
 type ExecuteOption func(e *ExecuteOptions)
 
-// WithModules add new modules to shalm, which can be loaded using load inside starlark scripts
+// WithModules add new modules to kdo, which can be loaded using load inside starlark scripts
 func WithModules(load func(thread *starlark.Thread, module string) (starlark.StringDict, error)) ExecuteOption {
 	return func(e *ExecuteOptions) {
 		oldLoad := e.load

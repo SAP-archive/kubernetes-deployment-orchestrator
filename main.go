@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/wonderix/shalm/cmd"
+	"github.com/sap/kubernetes-deployment-orchestrator/cmd"
 )
 
 func main() {

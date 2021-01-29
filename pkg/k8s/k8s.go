@@ -360,8 +360,8 @@ func (k *k8sImpl) objMapper() func(obj *Object) *Object {
 		if obj.MetaData.Labels == nil {
 			obj.MetaData.Labels = make(map[string]string)
 		}
-		obj.MetaData.Labels["shalm.wonderix.github.com/app"] = FixLabelValue(k.app)
-		obj.MetaData.Labels["shalm.wonderix.github.com/version"] = FixLabelValue(k.version.String())
+		obj.MetaData.Labels["kdo.sap.github.com/app"] = FixLabelValue(k.app)
+		obj.MetaData.Labels["kdo.sap.github.com/version"] = FixLabelValue(k.version.String())
 		return obj
 	}
 }

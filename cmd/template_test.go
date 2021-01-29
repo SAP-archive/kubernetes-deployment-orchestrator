@@ -6,7 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/wonderix/shalm/pkg/k8s"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
 )
 
 var _ = Describe("Template Chart", func() {

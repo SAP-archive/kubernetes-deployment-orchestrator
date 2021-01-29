@@ -5,8 +5,8 @@ import (
 	"path"
 
 	semver "github.com/Masterminds/semver/v3"
-	"github.com/wonderix/shalm/pkg/k8s"
-	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -27,7 +27,7 @@ var _ = Describe("Delete Chart", func() {
 			return k
 		}
 
-		err := delete(path.Join(example, "cf"), k, &shalm.DeleteOptions{})
+		err := delete(path.Join(example, "cf"), k, &kdo.DeleteOptions{})
 		Expect(err).ToNot(HaveOccurred())
 		output := writer.String()
 		Expect(output).To(ContainSubstring("CREATE OR REPLACE USER 'uaa'"))

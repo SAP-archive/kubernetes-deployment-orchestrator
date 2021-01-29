@@ -13,7 +13,7 @@ var helmFormat bool
 
 var packageCmd = &cobra.Command{
 	Use:   "package [chart]",
-	Short: "package shalm chart",
+	Short: "package kdo chart",
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -41,5 +41,5 @@ func pkg(url string) error {
 }
 
 func init() {
-	packageCmd.Flags().BoolVar(&helmFormat, "helm", false, "package shalm chart as helm chart")
+	packageCmd.Flags().BoolVar(&helmFormat, "helm", false, "package kdo chart as helm chart")
 }

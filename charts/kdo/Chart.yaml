@@ -1,0 +1,10 @@
+apiVersion: v1
+name: kdo
+version: 0.0.1
+description: 
+sources:
+- https://github.com/sap/kubernetes-deployment-orchestrator
+maintainers:
+- name: Ulrich Kramer
+  email: u.kramer@sap.com
+engine: gotpl

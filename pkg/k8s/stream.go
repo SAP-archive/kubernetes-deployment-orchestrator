@@ -7,8 +7,8 @@ import (
 
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/pkg/errors"
-	"github.com/wonderix/shalm/pkg/shalm/renderer"
-	"github.com/wonderix/shalm/pkg/starutils"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo/renderer"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/starutils"
 )
 
 // Stream -

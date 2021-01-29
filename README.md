@@ -1,9 +1,9 @@
 
-# Scriptable helm charts
+# Kubernetes Deployment Orchestrator
 
 This project brings the starlark scripting language to helm charts.
 
-![build and test](https://github.com/wonderix/shalm/workflows/build%20and%20test/badge.svg)
+![build and test](https://github.com/sap/kubernetes-deployment-orchestrator/workflows/build%20and%20test/badge.svg)
 
 ## Features
 
@@ -24,7 +24,7 @@ This project brings the starlark scripting language to helm charts.
 
 ## Installation
 
-Installing shalm can be done in [various ways](doc/installation.md)
+Installing the kubernetes deployment orchestrator can be done in [various ways](doc/installation.md)
 
 ## Architecture
 
@@ -32,7 +32,7 @@ Installing shalm can be done in [various ways](doc/installation.md)
 
 ## Usage
 
-How to start shalm from the command line is described [here](doc/command_line.md)
+How to start kubernetes deployment orchestrator from the command line is described [here](doc/command_line.md)
 
 ## Getting started
 
@@ -48,23 +48,23 @@ Solutions for a set of problems are shown [here](doc/user_guide.md)
 
 ## Repos
 
-Shalm can load charts from a [various set of locations](doc/repos.md).
+Kubernete deployment orchestrator can load charts from a [various set of locations](doc/repos.md).
 
 ## Kubernetes Controller
 
-Shalm can also run as [controller](doc/controller.md) inside a kubernets cluster
+Kubernete deployment orchestrator can also run as [controller](doc/controller.md) inside a kubernets cluster
 
 ## Reference
 
-A reference for the complete [shalm starlark API](doc/reference.md)
+A reference for the complete [kubernetes deployment orchestrator starlark API](doc/reference.md)
 
 ## Testing
 
-Shalm also supports [unit testing](doc/unit_tests.md)
+Kubernete deployment orchestrator also supports [unit testing](doc/unit_tests.md)
 
 ## Comparison
 
-|                                | shalm           | helm  | ytt/kapp | kustomize |
+|                                | kubernetes deployment orchestrator           | helm  | ytt/kapp | kustomize |
 | ------------------------------ | --------------- | ----- | -------- | --------- |
 | Scripting                      | +               | (3.1) | +        | -         |
 | API definition                 | +               | -     | (+)      | -         |
@@ -88,6 +88,6 @@ Shalm also supports [unit testing](doc/unit_tests.md)
 * Global variables are not supported.
 * The `--set` command line parameters are passed to the `init` method of the corresponding chart.
 It's not possible to set values (from `values.yaml`) directly.
-If you would like to set a lot of values, it's more convenient to write a separate shalm chart.
-* `shalm` doesn't track installed charts on a kubernetes cluster (except you are using `kapp` for deployment). It works more like `kubectl apply`
+If you would like to set a lot of values, it's more convenient to write a separate kubernetes deployment orchestrator chart.
+* `kdo` doesn't track installed charts on a kubernetes cluster (except you are using `kapp` for deployment). It works more like `kubectl apply`
 * The `.Release.Name` value is build as follows: `<chart.name>-<chart.suffix>`. If no suffix is given, the hyphen is also ommited.

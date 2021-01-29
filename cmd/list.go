@@ -5,18 +5,18 @@ import (
 	"text/tabwriter"
 
 	"github.com/k14s/starlark-go/starlark"
-	"github.com/wonderix/shalm/pkg/k8s"
-	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
 
 	"github.com/spf13/cobra"
 )
 
-var listOptions = &shalm.RepoListOptions{}
+var listOptions = &kdo.RepoListOptions{}
 var listK8sArgs = &k8s.Configs{}
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "list shalm charts",
+	Short: "list kdo charts",
 	Long:  ``,
 	Args:  cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -28,7 +28,7 @@ var listCmd = &cobra.Command{
 	},
 }
 
-func list(k k8s.K8s, listOptions *shalm.RepoListOptions) error {
+func list(k k8s.K8s, listOptions *kdo.RepoListOptions) error {
 	repo, err := repo()
 	if err != nil {
 		return err

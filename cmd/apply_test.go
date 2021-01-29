@@ -7,14 +7,14 @@ import (
 	"runtime"
 
 	semver "github.com/Masterminds/semver/v3"
-	"github.com/wonderix/shalm/pkg/k8s"
-	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o ./fake_k8s_test.go ../pkg/shalm K8s
+//go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -o ./fake_k8s_test.go ../pkg/kdo K8s
 
 var (
 	_, b, _, _ = runtime.Caller(0)
@@ -40,7 +40,7 @@ var _ = Describe("Apply Chart", func() {
 			return &k8s.Object{}, nil
 		}
 
-		err := apply(path.Join(example, "cf"), k, shalm.WithNamespace("mynamespace"))
+		err := apply(path.Join(example, "cf"), k, kdo.WithNamespace("mynamespace"))
 		Expect(err).ToNot(HaveOccurred())
 		output := writer.String()
 		Expect(output).To(ContainSubstring("CREATE OR REPLACE USER 'uaa'"))
@@ -61,8 +61,7 @@ var _ = Describe("Apply Chart", func() {
 	It("produces correct objects", func() {
 		Skip("unsupported")
 		k := k8s.NewK8sInMemory("default")
-
-		err := apply(path.Join(example, "cf"), k, shalm.WithNamespace("mynamespace"))
+		err := apply(path.Join(example, "cf"), k, kdo.WithNamespace("mynamespace"))
 		Expect(err).ToNot(HaveOccurred())
 		uaa := k.ForSubChart("uaa", "uaa", &semver.Version{}, 0).(*k8s.K8sInMemory)
 		_, err = uaa.GetObject("secret", "uaa-secret", nil)

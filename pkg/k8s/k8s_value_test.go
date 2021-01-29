@@ -8,7 +8,7 @@ import (
 	"github.com/k14s/starlark-go/starlark"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/wonderix/shalm/pkg/starutils"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/starutils"
 )
 
 var _ = Describe("K8sValue", func() {

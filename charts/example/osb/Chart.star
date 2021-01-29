@@ -1,4 +1,4 @@
-load("@shalm:osb","osb")
+load("@kdo:osb","osb")
 
 
 def init(self):

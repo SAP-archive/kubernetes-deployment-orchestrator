@@ -1,10 +1,10 @@
 domain: github.com
-repo: github.com/wonderix/shalm
+repo: github.com/sap/kubernetes-deployment-orchestrator
 resources:
-- group: wonderix
-  kind: ShalmChart
+- group: sap
+  kind: KdoChart
   version: v1alpha1
-- group: wonderix
-  kind: ShalmChart
+- group: sap
+  kind: KdoChart
   version: v1alpha2
 version: "2"

@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/wonderix/shalm/pkg/k8s"
-	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
 
 	"github.com/k14s/starlark-go/starlark"
 
 	"github.com/spf13/cobra"
 )
 
-var templateChartArgs = shalm.ChartOptions{}
+var templateChartArgs = kdo.ChartOptions{}
 var templateK8sArgs = k8s.Configs{}
 
 var templateCmd = &cobra.Command{
 	Use:   "template [chart]",
-	Short: "template shalm chart",
+	Short: "template kdo chart",
 	Long:  ``,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

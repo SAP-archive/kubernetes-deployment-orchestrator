@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kdo
+  labels:
+    app: kdo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kdo
+  template:
+    metadata:
+      labels:
+        app: kdo
+    spec:
+      serviceAccountName: kdo
+      containers:
+      - name: kdo
+        image: sap/kubernetes-deployment-orchestrator:latest
+        {{ if .Values.image_pull_policy }}
+        imagePullPolicy: {{ default .Values.image_pull_policy }}
+        {{ end }}

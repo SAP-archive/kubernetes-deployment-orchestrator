@@ -10,9 +10,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/k14s/starlark-go/starlarkstruct"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/starutils"
 	"github.com/spf13/pflag"
-	"github.com/wonderix/shalm/pkg/shalm"
-	"github.com/wonderix/shalm/pkg/starutils"
 	osb "sigs.k8s.io/go-open-service-broker-client/v2"
 )
 
@@ -53,7 +53,7 @@ func (o *OsbConfig) factory() (osb.Client, error) {
 		return nil, err
 	}
 	client, err := osb.NewClient(&osb.ClientConfiguration{
-		Name:       "shalm",
+		Name:       "kdo",
 		URL:        config.URL,
 		APIVersion: osb.Version2_14(),
 		AuthConfig: &osb.AuthConfig{
@@ -80,17 +80,17 @@ type osbBindingBackend struct {
 }
 
 var (
-	_         shalm.ComplexJewelBackend = (*osbBindingBackend)(nil)
-	orgGUID                             = uuid.New().String()
-	spaceGUID                           = uuid.New().String()
+	_         kdo.ComplexJewelBackend = (*osbBindingBackend)(nil)
+	orgGUID                           = uuid.New().String()
+	spaceGUID                         = uuid.New().String()
 )
 
 func (v *osbBindingBackend) Name() string {
 	return "binding"
 }
 
-func (v *osbBindingBackend) Keys() map[string]shalm.JewelValue {
-	return map[string]shalm.JewelValue{
+func (v *osbBindingBackend) Keys() map[string]kdo.JewelValue {
+	return map[string]kdo.JewelValue{
 		"credentials": {Name: "credentials", Converter: func(data []byte) (starlark.Value, error) {
 			credentials := map[string]interface{}{}
 			err := json.Unmarshal(data, &credentials)
@@ -291,7 +291,7 @@ func makeOsbBindung(clientFactory osbClientFactory) func(thread *starlark.Thread
 		if bindingParameters != nil {
 			c.bindingParameters = starutils.ToGoMap(bindingParameters)
 		}
-		return shalm.NewJewel(c, name)
+		return kdo.NewJewel(c, name)
 	}
 }
 

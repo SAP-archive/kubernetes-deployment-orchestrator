@@ -4,6 +4,6 @@ WORKDIR /app
 ENV HOME=/app
 COPY kapp /usr/bin/
 COPY kubectl /usr/bin/
-COPY shalm /usr/bin/
+COPY kdo /usr/bin/
 
-ENTRYPOINT ["/usr/bin/shalm","controller"]
+ENTRYPOINT ["/usr/bin/kdo","controller"]

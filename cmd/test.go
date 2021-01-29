@@ -15,8 +15,8 @@ import (
 
 	"github.com/k14s/starlark-go/starlark"
 	"github.com/k14s/starlark-go/starlarktest"
-	"github.com/wonderix/shalm/pkg/k8s"
-	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
 
 	"github.com/spf13/cobra"
 )
@@ -33,8 +33,8 @@ var testK8s = func(configs ...k8s.Config) (k8s.K8s, error) {
 
 var testCmd = &cobra.Command{
 	Use:   "test [chart]",
-	Short: "test shalm charts",
-	Long:  `test shalm charts using starlark`,
+	Short: "test kdo charts",
+	Long:  `test kdo charts using starlark`,
 	Run: func(cmd *cobra.Command, args []string) {
 		exit(test(args, k8s.NewK8sInMemory("test")))
 	},
@@ -66,7 +66,7 @@ func test(files []string, k k8s.K8s) error {
 		}
 		predeclared := starlark.StringDict{
 			"env":    starlark.NewBuiltin("env", env),
-			"chart":  starlark.NewBuiltin("chart", shalm.NewChartFunction(repo, path.Dir(file), nil, shalm.WithNamespace(namespace))),
+			"chart":  starlark.NewBuiltin("chart", kdo.NewChartFunction(repo, path.Dir(file), nil, kdo.WithNamespace(namespace))),
 			"k8s":    k8s.NewK8sValue(k),
 			"struct": starlark.NewBuiltin("struct", starlarkstruct.Make),
 			"assert": &starlarkstruct.Module{

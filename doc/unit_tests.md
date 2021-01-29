@@ -5,7 +5,7 @@ Tests can be written in starlark.  The following symbols are predefined
 
 | Name                    | Description                                                                      |
 |-------------------------|----------------------------------------------------------------------------------|
-| `chart(url,...)`        | Function to load shalm chart. The `url` can be given relative to the test script |
+| `chart(url,...)`        | Function to load kdo chart. The `url` can be given relative to the test script |
 | `k8s`                   | In memory implemention of k8s                                                    |
 | `env(name)`             | Read environment variable                                                        |
 | `assert.fail(msg)`      | Make test fail with given message                                                |
@@ -24,5 +24,5 @@ assert.neq(uaa.metadata.name,"uaa-masterx")
 ### Running tests
 
 ```bash
-shalm test test/*.star
+kdo test test/*.star
 ```

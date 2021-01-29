@@ -23,11 +23,11 @@ jobs:
     - name: make docker-prepare
       run: make docker-prepare
 
-    - name: docker push
-      uses: elgohr/Publish-Docker-Github-Action@master
-      with:
-        name: wonderix/shalm
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-        context: docker-context
-        dockerfile: Dockerfile
+#    - name: docker push
+#      uses: elgohr/Publish-Docker-Github-Action@master
+#      with:
+#        name: sap/kubernetes-deployment-orchestrator
+#        username: ${{ secrets.DOCKER_USERNAME }}
+#        password: ${{ secrets.DOCKER_PASSWORD }}
+#        context: docker-context
+#        dockerfile: Dockerfile

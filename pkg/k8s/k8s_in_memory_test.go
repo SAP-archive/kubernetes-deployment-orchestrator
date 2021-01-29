@@ -8,7 +8,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	. "github.com/wonderix/shalm/pkg/shalm/test"
+	. "github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo/test"
 )
 
 var _ = Describe("k8s_in_memory", func() {

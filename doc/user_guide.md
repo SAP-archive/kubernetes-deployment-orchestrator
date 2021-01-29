@@ -54,12 +54,12 @@ def init(self):
     self.base = depends_on("/tmp/base",">= 1.0")
 ```
 
-If you install this package, shalm automatically ensures, 
+If you install this package, kdo automatically ensures, 
 that all required dependencies are installed.
 
 ### Catalog
 
-You can setup catalogs in your `~/.shalm/config` file
+You can setup catalogs in your `~/.kdo/config` file
 
 ```yaml
 catalogs:
@@ -77,31 +77,31 @@ This will try to install the chart located in `https://github.com/kyma-project/k
 
 ## Packaging charts
 
-You can package `shalm` charts using the following command:
+You can package `kdo` charts using the following command:
 
 ```bash
-shalm package <shalm chart>
+kdo package <kdo chart>
 ```
 
-It's also possible to convert `shalm` charts to `helm` charts:
+It's also possible to convert `kdo` charts to `helm` charts:
 
 ```bash
-shalm package --helm <shalm chart>
+kdo package --helm <kdo chart>
 ```
 
 In this case, the helm chart only includes two jobs (`post-install` and `pre-delete` hooks) which do the whole work.
 
-If you put a `.shalmignore` file in the chart folder, files matching the patterns in this file will be ignored.
+If you put a `.kdoignore` file in the chart folder, files matching the patterns in this file will be ignored.
 
 ## kapp Support
 
-Shalm charts can be applied/deleted using kapp. Therefore, you can pass `--tool kapp` at the command line.
+Kubernete deployment orchestrator charts can be applied/deleted using kapp. Therefore, you can pass `--tool kapp` at the command line.
 
 ## Examples
 
 ### Override apply, delete or template
 
-With `shalm` it's possible to override the `apply`, `delete` and `template` methods. The `template` function can be overridden with either
+With `kdo` it's possible to override the `apply`, `delete` and `template` methods. The `template` function can be overridden with either
 two parameters `(self, glob='')` or three parameters `(self, glob='', k8s=None)`, The following example illustrates how this could be done
 
 ```python
@@ -121,14 +121,14 @@ def template(self,glob='', k8s=None):
 
 ### Jewels
 
-Shalm provides the concept of jewels to store things like
+Kubernete deployment orchestrator provides the concept of jewels to store things like
 
 * certificates
 * user credentials
 
 with the help of secrets in kubernetes.
 
-It's also possible to extend shalm to provide other types of jewels:
+It's also possible to extend kdo to provide other types of jewels:
 
 * AWS users
 * GCP users
@@ -145,7 +145,7 @@ The content of username and password can only be accessed after the call to `__a
 Therefore, you need to override the `apply` method.
 
 All user credentials created inside a `Chart.star` file are automatically applied to kubernetes.
-If you run `shalm template`, the content of the username and password is undefined.
+If you run `kdo template`, the content of the username and password is undefined.
 
 ```python
 def init(self):
@@ -161,7 +161,7 @@ def apply(self,k8s):
 
 #### Create Certificates
 
-Shalm provides creation on self signed certificactes out of the box. These certificates can be used for
+Kubernete deployment orchestrator provides creation on self signed certificactes out of the box. These certificates can be used for
 * Mutual TLS within your application
 * Register k8s webhooks
 
@@ -185,7 +185,7 @@ def template(self, glob = "", k8s = None):
 Put this template info `ytt/configmap.yml`
 
 ```yaml
-#@ load("@shalm:self","self")
+#@ load("@kdo:self","self")
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -196,6 +196,6 @@ data:
 ```
 
 
-## Extending and embedding shalm
+## Extending and embedding kdo
 
-It's possible to extend shalm with starlark modules. See `examples/extension` directory for details.
+It's possible to extend kdo with starlark modules. See `examples/extension` directory for details.

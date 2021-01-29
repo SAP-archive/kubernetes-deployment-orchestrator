@@ -4,24 +4,24 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/wonderix/shalm/pkg/shalm"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo"
 
 	"github.com/k14s/starlark-go/starlark"
-	"github.com/wonderix/shalm/cmd"
+	"github.com/sap/kubernetes-deployment-orchestrator/cmd"
 )
 
 type myJewelBackend struct {
 	prefix string
 }
 
-var _ shalm.JewelBackend = (*myJewelBackend)(nil)
+var _ kdo.JewelBackend = (*myJewelBackend)(nil)
 
 func (v *myJewelBackend) Name() string {
 	return "myjewel"
 }
 
-func (v *myJewelBackend) Keys() map[string]shalm.JewelValue {
-	return map[string]shalm.JewelValue{
+func (v *myJewelBackend) Keys() map[string]kdo.JewelValue {
+	return map[string]kdo.JewelValue{
 		"username": {Name: "username"},
 	}
 }
@@ -39,7 +39,7 @@ func makeMyJewel(thread *starlark.Thread, fn *starlark.Builtin, args starlark.Tu
 	if err != nil {
 		return nil, err
 	}
-	return shalm.NewJewel(c, name)
+	return kdo.NewJewel(c, name)
 }
 
 func myExtensions(thread *starlark.Thread, module string) (starlark.StringDict, error) {

@@ -1,6 +1,6 @@
 # Tutorial
 
-This tutorial will guide you through the different topics of shalm
+This tutorial will guide you through the different topics of kdo
 
 ## Starlark
 
@@ -9,25 +9,25 @@ in a controlled sandbox without access to the outer world.
 
 ## Interoperability with helm
 
-Shalm is designed from ground up to be mostly compatible with helm packages
+Kubernete deployment orchestrator is designed from ground up to be mostly compatible with helm packages
 
 
 
-### Helm to shalm
+### Helm to kdo
 
-You can deploy almost every helm chart using *shalm* except those, which uses [hooks](https://helm.sh/docs/topics/charts_hooks/) for deployment. 
+You can deploy almost every helm chart using *kdo* except those, which uses [hooks](https://helm.sh/docs/topics/charts_hooks/) for deployment. 
 
 ```
-shalm apply helm://charts.helm.sh/stable/mysql
+kdo apply helm://charts.helm.sh/stable/mysql
 kubectl get pods
-shalm list -A
-shalm delete helm://charts.helm.sh/stable/mysql
+kdo list -A
+kdo delete helm://charts.helm.sh/stable/mysql
 
 ```
 
-### Shalm to helm
+### Kubernete deployment orchestrator to helm
 
-Shalm charts can be wrapped into helm charts using `shalm package --helm`. Shalm uses [hooks](https://helm.sh/docs/topics/charts_hooks/) to implement this.
+Kubernete deployment orchestrator charts can be wrapped into helm charts using `kdo package --helm`. Kubernete deployment orchestrator uses [hooks](https://helm.sh/docs/topics/charts_hooks/) to implement this.
 
 
 ```python
@@ -44,7 +44,7 @@ cat > Chart.star <<EOF
 def init(self):
   self.__class__.version = "0.0.1"
 EOF
-shalm package --helm .
+kdo package --helm .
 helm upgrade -i example example-0.0.1.tgz
 helm uninstall example
 ```
@@ -52,12 +52,12 @@ helm uninstall example
 
 ## Templating
 
-In shalm, you can chose between go templating and [ytt](https://get-ytt.io/)
+In kdo, you can chose between go templating and [ytt](https://get-ytt.io/)
 
 ### ytt templating
 
 
-You should prefer ytt templating because ytt also uses starlark. Therefore the interoperability between shalm and ytt is much better compared to helm templating.
+You should prefer ytt templating because ytt also uses starlark. Therefore the interoperability between kdo and ytt is much better compared to helm templating.
 You can directly call methods from ytt.
 
 ```python
@@ -86,7 +86,7 @@ kind: Secret
 stringData:
   timeout: #@ self.timeout
 EOF
-shalm template .
+kdo template .
 ```
 
 ### Go Templating (helm)
@@ -119,7 +119,7 @@ kind: Secret
 stringData:
   timeout: {{ .Values.timeout | quote }}
 EOF
-shalm template .
+kdo template .
 ```
 
 #### Methods
@@ -150,7 +150,7 @@ kind: Secret
 stringData:
   upper: {{ call .Methods.name }}
 EOF
-shalm template .
+kdo template .
 ```
 
 
@@ -176,7 +176,7 @@ def template(self, glob="", k8s=None):
    print("Hello World")
    return self.__template(glob, k8s)
 EOF
-shalm template .
+kdo template .
 ```
 
 ## Deployment
@@ -204,8 +204,8 @@ metadata:
 stringData:
   test: test
 EOF
-shalm apply .
-shalm delete .
+kdo apply .
+kdo delete .
 ```
 ### kapp
 
@@ -233,9 +233,9 @@ metadata:
 stringData:
   test: test
 EOF
-shalm apply .
+kdo apply .
 kapp list -A
-shalm delete .
+kdo delete .
 ```
 
 
@@ -256,7 +256,7 @@ stringData:
 ```
 
 ```bash
-shalm template . --set timeout=60
+kdo template . --set timeout=60
 ```
 
 ```bash
@@ -272,7 +272,7 @@ kind: Secret
 stringData:
   timeout: #@ self.timeout
 EOF
-shalm template . --set timeout=60
+kdo template . --set timeout=60
 ```
 
 
@@ -302,7 +302,7 @@ def init(self):
   self.mysql = chart('helm://charts.helm.sh/stable/mysql')
   self.mysql.ssl.enabled = False
 EOF
-shalm template .
+kdo template .
 ```
 
 ### Helm subcharts
@@ -363,7 +363,7 @@ def init(self):
 def apply(self,k8s):
   self.hello.hello("Kyma")
 EOF
-shalm apply /tmp/example
+kdo apply /tmp/example
 ```
 
 ## URLs
@@ -374,7 +374,7 @@ shalm apply /tmp/example
 | `helm://charts.helm.sh/stable/mysql`                                | latest helm chart in this helm repository |
 | `helm://charts.helm.sh/stable/mysql`                                | latest helm chart in this helm repository |
 | `https://github.com/<repo>/archive/<branch-or-tag>.zip`             | Github repository                         |
-| `https://github.com/wonderix/shalm/archive/master.zip#charts/shalm` | Subdirectory in github repository         |
+| `https://github.com/sap/kubernetes-deployment-orchestrator/archive/master.zip#charts/kdo` | Subdirectory in github repository         |
 | `https://<host>/api/v3/repos/<owner>/<repo>/zipball/<branch>`       | Enterprise github repository              |
 | `catalog:<chart>`                                                   | Chart from catalog (see below)            |
 
@@ -382,7 +382,7 @@ shalm apply /tmp/example
 
 You can define a catalog, which contains all charts, you would like to be able to deploy. 
 The chart name is appended to the configured catalog URL.
-The catalog can be configured in `~/.shalm/config`. You can have many catalogs. They are tried in the given order.
+The catalog can be configured in `~/.kdo/config`. You can have many catalogs. They are tried in the given order.
 
 ```yaml
 catalogs:
@@ -392,7 +392,7 @@ catalogs:
 You can use the urls like
 
 ```bash
-shalm template catalog:cluster-essentials
+kdo template catalog:cluster-essentials
 ```
 
 ## Utilities
@@ -411,7 +411,7 @@ cat > Chart.star <<EOF
 def init(self):
   self.credential = user_credential('test')
 EOF
-shalm template .
+kdo template .
 ```
 
 ### Certificates
@@ -429,12 +429,12 @@ cat > Chart.star <<EOF
 def init(self):
   self.certificate = certificate('test',is_ca=True,domain="example.com")
 EOF
-shalm template .
+kdo template .
 ```
 
 ## kubernetes client
 
-Shalm includes a full featured kubernetes client which can be used in `apply`, `delete` or `template` actions
+Kubernete deployment orchestrator includes a full featured kubernetes client which can be used in `apply`, `delete` or `template` actions
 
 ### Get
 
@@ -451,7 +451,7 @@ cat > Chart.star <<EOF
 def apply(self,k8s):
   print(k8s.get('service','kubernetes').status)
 EOF
-shalm apply .
+kdo apply .
 ```
 
 ### Watch
@@ -473,7 +473,7 @@ def apply(self,k8s):
   for service in k8s.watch('service','kubernetes'):
     print(service)
 EOF
-shalm apply .
+kdo apply .
 ```
 
 
@@ -502,7 +502,7 @@ assert.neq(uaa.metadata.name,"uaa-masterx")
 ```
 
 ```bash
-shalm test test/*.star
+kdo test test/*.star
 ```
 
 ## Controller
@@ -510,5 +510,5 @@ shalm test test/*.star
 There is also a controller available, which reconciles installation. Currently it's broken.
 ## Extend
 
-It's easy to extend shalm with you own DSL: https://github.com/wonderix/cfpkg
+It's easy to extend kdo with you own DSL: https://github.com/wonderix/cfpkg
 

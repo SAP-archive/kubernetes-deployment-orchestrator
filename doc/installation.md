@@ -10,23 +10,23 @@
 
 
 ```bash
-brew tap wonderix/tap
-brew install shalm
+brew tap sap/tap
+brew install kdo
 ```
 
 ## Install binary
 
-* Download `shalm` (e.g. for mac os)
+* Download `kdo` (e.g. for mac os)
 
 ```bash
-curl -L https://github.com/wonderix/shalm/releases/latest/download/shalm-binary-darwin.tgz | tar xzvf -
+curl -L https://github.com/sap/kubernetes-deployment-orchestrator/releases/latest/download/kdo-binary-darwin.tgz | tar xzvf -
 ```
 
-## Build `shalm` from source
+## Build `kdo` from source
 
 * Install `go` e.g. using `brew install go`
-* Install `shalm`
+* Install `kdo`
 
 ```bash
-go get github.com/wonderix/shalm
+go get github.com/sap/kubernetes-deployment-orchestrator
 ```

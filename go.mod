@@ -1,4 +1,4 @@
-module github.com/wonderix/shalm
+module github.com/sap/kubernetes-deployment-orchestrator
 
 go 1.13
 

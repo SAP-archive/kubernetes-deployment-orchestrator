@@ -13,9 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package v1alpha2 contains API Schema definitions for the shalm v1alpha2 API group
+// Package v1alpha2 contains API Schema definitions for the kdo v1alpha2 API group
 // +kubebuilder:object:generate=true
-// +groupName=wonderix.github.com
+// +groupName=sap.github.com
 package v1alpha2
 
 import (
@@ -25,7 +25,7 @@ import (
 
 var (
 	// GroupVersion is group version used to register these objects
-	GroupVersion = schema.GroupVersion{Group: "wonderix.github.com", Version: "v1alpha2"}
+	GroupVersion = schema.GroupVersion{Group: "sap.github.com", Version: "v1alpha2"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: GroupVersion}

@@ -6,9 +6,9 @@ During this tutorial, we would like to setup WordPress with an external producti
 The bitnami worldpress helm chart is already bundled with a mysql database, which has only a few configuration parameters.The goal of this tutorial will be to
 setup a wordpress installation with a highly configurable database.
 
-### Install shalm
+### Install kdo
 
-Follow the [installation instructions](installation.md) to install shalm
+Follow the [installation instructions](installation.md) to install kdo
 
 ### Setting up an kubernetes cluster
 
@@ -45,7 +45,7 @@ kube-system       Active   55d
 3. Apply it to your cluster
 
     ```bash
-    shalm apply postgres-operator
+    kdo apply postgres-operator
     ```
 
 4. After this step, there should be a running pod inside the default namespace
@@ -121,7 +121,7 @@ kube-system       Active   55d
 6. Apply it to your cluster
 
   ```bash
-  shalm apply postgres-instance
+  kdo apply postgres-instance
   ```
 
 ### More comming soon

@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	shalmv1a2 "github.com/wonderix/shalm/api/v1alpha2"
-	"github.com/wonderix/shalm/pkg/k8s"
+	kdov1a2 "github.com/sap/kubernetes-deployment-orchestrator/api/v1alpha2"
+	"github.com/sap/kubernetes-deployment-orchestrator/pkg/k8s"
 
 	"github.com/pkg/errors"
-	"github.com/wonderix/shalm/controllers"
+	"github.com/sap/kubernetes-deployment-orchestrator/controllers"
 
 	"github.com/spf13/cobra"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -41,16 +41,16 @@ func controller(stopCh <-chan struct{}) error {
 		return err
 	}
 
-	err = shalmv1a2.AddToScheme(mgr.GetScheme())
+	err = kdov1a2.AddToScheme(mgr.GetScheme())
 	if err != nil {
-		return errors.Wrap(err, "unable to add shalm scheme")
+		return errors.Wrap(err, "unable to add kdo scheme")
 	}
 	repo, err := repo()
 	if err != nil {
 		return err
 	}
 
-	reconciler := &controllers.ShalmChartReconciler{
+	reconciler := &controllers.KdoChartReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 		Log:    reconcilerLog,
@@ -60,7 +60,7 @@ func controller(stopCh <-chan struct{}) error {
 			return k8s.NewK8s(configs...)
 		},
 		Load:     rootExecuteOptions.load,
-		Recorder: mgr.GetEventRecorderFor("shalmchart-controller"),
+		Recorder: mgr.GetEventRecorderFor("kdochart-controller"),
 	}
 	err = reconciler.SetupWithManager(mgr, options)
 	if err != nil {
@@ -68,7 +68,7 @@ func controller(stopCh <-chan struct{}) error {
 	}
 
 	err = ctrl.NewWebhookManagedBy(mgr).
-		For(&shalmv1a2.ShalmChart{}).
+		For(&kdov1a2.KdoChart{}).
 		Complete()
 	if err != nil {
 		return errors.Wrap(err, "unable to create webhook")

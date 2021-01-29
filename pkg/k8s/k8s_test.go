@@ -8,8 +8,8 @@ import (
 	"github.com/Masterminds/semver/v3"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/sap/kubernetes-deployment-orchestrator/pkg/kdo/test"
 	"github.com/spf13/pflag"
-	. "github.com/wonderix/shalm/pkg/shalm/test"
 )
 
 var _ = Describe("k8s", func() {
@@ -123,8 +123,8 @@ var _ = Describe("k8s", func() {
 		})
 		It("Adds labels", func() {
 			obj := k8s.objMapper()(&Object{})
-			Expect(obj.MetaData.Labels).To(HaveKeyWithValue("shalm.wonderix.github.com/app", "app"))
-			Expect(obj.MetaData.Labels).To(HaveKeyWithValue("shalm.wonderix.github.com/version", "1.2.0"))
+			Expect(obj.MetaData.Labels).To(HaveKeyWithValue("kdo.sap.github.com/app", "app"))
+			Expect(obj.MetaData.Labels).To(HaveKeyWithValue("kdo.sap.github.com/version", "1.2.0"))
 			Expect(obj.MetaData.Namespace).To(Equal("namespace"))
 		})
 	})
