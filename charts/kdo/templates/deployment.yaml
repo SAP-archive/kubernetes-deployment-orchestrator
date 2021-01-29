@@ -17,7 +17,7 @@ spec:
       serviceAccountName: kdo
       containers:
       - name: kdo
-        image: sap/kubernetes-deployment-orchestrator:latest
+        image: ulrichsap/kdo:latest
         {{ if .Values.image_pull_policy }}
         imagePullPolicy: {{ default .Values.image_pull_policy }}
         {{ end }}

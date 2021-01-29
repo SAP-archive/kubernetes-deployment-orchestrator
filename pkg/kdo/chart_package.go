@@ -195,7 +195,7 @@ spec:
       serviceAccountName: << .name >>-<< .version >>
       containers:
       - name: << .name >>-<< .version >>-apply
-        image: sap/kubernetes-deployment-orchestrator:<< .tag >>
+        image: ulrichsap/kdo:<< .tag >>
         command: ["/usr/bin/kdo"]
         args: 
         - apply
@@ -237,7 +237,7 @@ spec:
       serviceAccountName: << .name >>-<< .version >>
       containers:
       - name: << .name >>-<< .version >>-delete
-        image: sap/kubernetes-deployment-orchestrator:<< .tag >>
+        image: ulrichsap/kdo:<< .tag >>
         command: ["/usr/bin/kdo"]
         args: 
         - delete

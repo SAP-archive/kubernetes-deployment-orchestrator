@@ -17,21 +17,21 @@ jobs:
       id: go
     - name: git checkout kdo
       uses: actions/checkout@v2
-    - name: bump homebrew-tap
-      run: |
-        git clone "https://$GITHUB_ACTOR:${{ secrets.PUSH_TOKEN }}@github.com/wonderix/homebrew-tap.git" homebrew-tap
-        make formula
-        cd homebrew-tap
-        git config --local user.email "u.kramer@sap.com"
-        git config --local user.name "GitHub Action"
-        git commit -a -m "Bump to newest kdo release"
-        git push
+    # - name: bump homebrew-tap
+    #   run: |
+    #     git clone "https://$GITHUB_ACTOR:${{ secrets.PUSH_TOKEN }}@github.com/wonderix/homebrew-tap.git" homebrew-tap
+    #     make formula
+    #     cd homebrew-tap
+    #     git config --local user.email "u.kramer@sap.com"
+    #     git config --local user.name "GitHub Action"
+    #     git commit -a -m "Bump to newest kdo release"
+    #     git push
     - name: make docker-prepare
       run: make docker-prepare
     - name: docker push
       uses: elgohr/Publish-Docker-Github-Action@master
       with:
-        name: sap/kubernetes-deployment-orchestrator
+        name: ulrichsap/kdo
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         tag_names: true

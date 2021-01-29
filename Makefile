@@ -2,7 +2,7 @@
 # Image URL to use all building/pushing image targets
 OS := $(shell uname )
 VERSION := $(shell git describe --tags --always --dirty)
-REPOSITORY := sap/kubernetes-deployment-orchestrator
+REPOSITORY := ulrichsap/kdo
 IMG ?= ${REPOSITORY}:${VERSION}
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd"
@@ -102,10 +102,10 @@ chart:
 	cp -r charts/kdo /tmp/kdo
 ifeq ($(OS),Darwin)
 	sed -i '' -e 's|version:.*|version: ${VERSION}|g' /tmp/kdo/Chart.yaml
-	sed -i '' -e 's|image: sap/kubernetes-deployment-orchestrator:.*|image: sap/kubernetes-deployment-orchestrator:${VERSION}|g' /tmp/kdo/templates/deployment.yaml
+	sed -i '' -e 's|image: ulrichsap/kdo:.*|image: ulrichsap/kdo:${VERSION}|g' /tmp/kdo/templates/deployment.yaml
 else
 	sed -i -e 's|version:.*|version: ${VERSION}|g' /tmp/kdo/Chart.yaml
-	sed -i -e 's|image: sap/kubernetes-deployment-orchestrator:.*|image: sap/kubernetes-deployment-orchestrator:${VERSION}|g' /tmp/kdo/templates/deployment.yaml
+	sed -i -e 's|image: ulrichsap/kdo:.*|image: ulrichsap/kdo:${VERSION}|g' /tmp/kdo/templates/deployment.yaml
 endif
 	mkdir -p bin
 	cd bin && go run .. package /tmp/kdo
