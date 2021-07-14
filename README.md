@@ -23,9 +23,13 @@ This project brings the starlark scripting language to helm charts.
 * Easy embeddable and extendable
 * Integration of [kapp](https://github.com/k14s/kapp)
 
-## Installation
+## Download and Installation
 
 Installing the kubernetes deployment orchestrator can be done in [various ways](doc/installation.md)
+
+# Requirements
+
+Nothing is required
 
 ## Architecture
 
@@ -92,3 +96,7 @@ It's not possible to set values (from `values.yaml`) directly.
 If you would like to set a lot of values, it's more convenient to write a separate kubernetes deployment orchestrator chart.
 * `kdo` doesn't track installed charts on a kubernetes cluster (except you are using `kapp` for deployment). It works more like `kubectl apply`
 * The `.Release.Name` value is build as follows: `<chart.name>-<chart.suffix>`. If no suffix is given, the hyphen is also ommited.
+
+# How to obtain support
+
+Create an issue.
