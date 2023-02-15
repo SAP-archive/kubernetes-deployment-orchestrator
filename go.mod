@@ -20,7 +20,7 @@ require (
 	github.com/onsi/gomega v1.9.0
 	github.com/pivotal-cf/brokerapi v6.4.2+incompatible
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/procfs v0.0.11 // indirect
 	github.com/rickb777/date v1.12.4
 	github.com/sabhiram/go-gitignore v0.0.0-20180611051255-d3107576ba94
@@ -34,6 +34,7 @@ require (
 	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v0.17.2
 	sigs.k8s.io/controller-runtime v0.5.2
+	sigs.k8s.io/controller-tools v0.2.5 // indirect
 	sigs.k8s.io/go-open-service-broker-client/v2 v2.0.0-20200911103215-9787cad28392
 
 )
