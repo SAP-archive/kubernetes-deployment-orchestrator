@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	code.cloudfoundry.org/lager v2.0.0+incompatible
+	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.0.3
 	github.com/Masterminds/sprig/v3 v3.0.2
 	github.com/drewolson/testflight v1.0.0 // indirect
