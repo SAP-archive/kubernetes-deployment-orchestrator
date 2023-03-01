@@ -2,13 +2,13 @@
 # DEPRECATED Kubernetes Deployment Orchestrator
 
 
-**This repository is no longer supported, please consider using helm instead.**
+**This repository is no longer maintained, please consider using helm instead.**
 
 ## Summary
 
 This project brings the starlark scripting language to helm charts.
 
-![No Maintenance Intended](http://unmaintained.tech/badge.svg)
+![No Maintenance Intended](https://unmaintained.tech/badge.svg)
 ![build and test](https://github.com/sap/kubernetes-deployment-orchestrator/workflows/build%20and%20test/badge.svg)
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/kubernetes-deployment-orchestrator)](https://api.reuse.software/info/github.com/SAP/kubernetes-deployment-orchestrator)
 
